@@ -83,7 +83,7 @@ function render() {
       dayRecords.forEach(r => {
         const card = document.createElement("article");
         card.className = "activity";
-        if (normalize(r.Couleur)) card.style.borderLeftColor = normalize(r.Couleur);
+        if (normalize(r.Couleur)) card.style.borderColor = normalize(r.Couleur);
 
         const start = formatTime(r.Debut);
         const end = formatTime(r.Fin);
