@@ -113,6 +113,19 @@ function render() {
           detail.className = "detail";
           detail.innerHTML = details.map(x => `<div>${escapeHtml(x)}</div>`).join("");
           card.appendChild(detail);
+
+        // Ajout de l'image si disponible
+        if (normalize(r.Image)) {
+          const img = document.createElement("img");
+          img.src = normalize(r.Image);
+          img.alt = "Image de l'activité";
+          img.style.maxWidth = "100%";
+          img.style.height = "auto";
+          img.style.marginBottom = "8px";
+          img.style.borderRadius = "7px";
+          card.appendChild(img);
+        }
+
         }
         items.appendChild(card);
       });
@@ -143,7 +156,8 @@ grist.ready({
     {name: "Salle", title: "Salle", type: "Any", optional: true},
     {name: "Professionnel", title: "Professionnel", type: "Any", optional: true},
     {name: "Couleur", title: "Couleur", type: "Text", optional: true},
-    {name: "Notes", title: "Notes", type: "Text", optional: true}
+    {name: "Notes", title: "Notes", type: "Text", optional: true},
+    {name: "Image", title: "Image", type: "Any", optional: true}
   ]
 });
 
