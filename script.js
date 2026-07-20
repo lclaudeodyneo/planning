@@ -85,7 +85,7 @@ function render() {
         card.className = "activity";
         if (normalize(r.Couleur)) {
           card.style.borderColor = normalize(r.Couleur);
-          card.style.backgroundcolor = `rgba(${r.Couleur}, 0.2)`;
+          card.style.backgroundcolor = `normalize(r.Couleur)` + `normalize(0.2)`;
         }
 
         const start = formatTime(r.Debut);
