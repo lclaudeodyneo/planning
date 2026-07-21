@@ -281,9 +281,9 @@ button {
 .activity-card {
   position: relative;
   background: #fff;
-  border: 1px solid var(--line);
-  border-left: 6px solid var(--card-color, var(--accent));
-  border-radius: 10px;
+  /*border: 1px solid var(--line);*/
+  border: 2px solid var(--card-color, var(--accent));
+  border-radius: 4px;
   padding: 10px;
   margin: 0 0 8px;
   break-inside: avoid;
