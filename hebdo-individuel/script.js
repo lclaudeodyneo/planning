@@ -25,15 +25,43 @@ function initials(name){ return text(name,'?').split(/\s+/).filter(Boolean).slic
 function colorFor(name){ let h=0; for(const c of text(name)) h=(h*31+c.charCodeAt(0))%360; return `hsl(${h} 48% 48%)`; }
 function esc(s){ return text(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-async function attachmentUrl(value){
-  const ids=refIds(value); if(!ids.length) return '';
-  const id=ids[0]; if(state.attachmentUrls.has(id)) return state.attachmentUrls.get(id);
-  try{
-    if(grist.docApi && typeof grist.docApi.getAttachmentUrl === 'function'){
-      const url=await grist.docApi.getAttachmentUrl(id); state.attachmentUrls.set(id,url); return url;
+let attachmentTokenInfo = null;
+
+async function attachmentUrl(value) {
+  const ids = refIds(value);
+
+  if (!ids.length) {
+    return '';
+  }
+
+  const id = ids[0];
+
+  if (state.attachmentUrls.has(id)) {
+    return state.attachmentUrls.get(id);
+  }
+
+  try {
+    if (!attachmentTokenInfo) {
+      attachmentTokenInfo = await grist.docApi.getAccessToken({
+        readOnly: true
+      });
     }
-  }catch(e){ console.warn('Pièce jointe non affichable',id,e); }
-  return '';
+
+    const url =
+      `${attachmentTokenInfo.baseUrl}/attachments/${id}/download` +
+      `?auth=${encodeURIComponent(attachmentTokenInfo.token)}`;
+
+    state.attachmentUrls.set(id, url);
+
+    return url;
+  } catch (error) {
+    console.error(
+      `Impossible de charger la pièce jointe ${id}`,
+      error
+    );
+
+    return '';
+  }
 }
 
 async function fetchAll(){
