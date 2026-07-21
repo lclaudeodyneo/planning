@@ -1,24 +1,47 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Semainier des activités</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planning individuel SAJ</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
 </head>
 <body>
-  <div class="toolbar">
-    <label for="personSelect">Personne :</label>
-    <select class="visibility: hidden;" id="personSelect"></select>
-    <button id="printButton" type="button">Imprimer</button>
-  </div>
+  <header class="toolbar no-print">
+    <div class="brand">
+      <div class="brand-mark">SAJ</div>
+      <div><h1>Planning individuel</h1><p>SAJ Anagallis</p></div>
+    </div>
+    <div class="controls">
+      <label>Personne
+        <select id="personSelect"><option value="">Chargement…</option></select>
+      </label>
+      <label>Format
+        <select id="formatSelect"><option value="a4">A4 paysage</option><option value="a3">A3 paysage</option></select>
+      </label>
+      <label class="toggle"><input id="showEmpty" type="checkbox" checked> Créneaux vides</label>
+      <button id="printBtn" type="button">Imprimer / PDF</button>
+      <button id="reloadBtn" type="button" class="secondary">Actualiser</button>
+    </div>
+  </header>
 
-  <h1 id="personName" class="name">Planning hebdomadaire</h1>
-  <main id="week" class="week">
-    <div class="message">Chargement du planning…</div>
+  <main id="app">
+    <section id="status" class="status">Connexion à Grist…</section>
+    <section id="sheet" class="sheet hidden">
+      <div class="sheet-head">
+        <div class="identity">
+          <div id="portrait" class="portrait"><span>?</span></div>
+          <div><p class="eyebrow">PLANNING HEBDOMADAIRE</p><h2 id="personName">—</h2><p id="presenceText" class="muted"></p></div>
+        </div>
+        <div class="legend"><span><i class="dot morning"></i> Matin</span><span><i class="dot afternoon"></i> Après-midi</span></div>
+      </div>
+      <div id="weekGrid" class="week-grid"></div>
+      <footer class="sheet-foot">Planning généré depuis Grist · Les modifications de la base sont reprises après actualisation.</footer>
+    </section>
   </main>
 
+  <dialog id="errorDialog"><h3>Impossible de charger le planning</h3><pre id="errorText"></pre><button onclick="this.closest('dialog').close()">Fermer</button></dialog>
   <script src="script.js"></script>
 </body>
 </html>
