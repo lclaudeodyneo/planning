@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Planning SAJ — 10 demi-journées A3</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+</head>
+<body>
+  <nav id="toolbar" class="toolbar" aria-label="Commandes du planning">
+    <div id="dayButtons" class="day-buttons"></div>
+    <div class="period-buttons" role="group" aria-label="Demi-journée">
+      <button type="button" data-period="Matin" class="active">Matin</button>
+      <button type="button" data-period="Apres-midi">Après-midi</button>
+    </div>
+    <button id="printCurrentButton" type="button">Imprimer cette page A3</button>
+    <button id="printAllButton" type="button">Imprimer les 10 pages</button>
+  </nav>
+  <main id="pages" class="pages" aria-live="polite"><section class="status">Chargement du planning…</section></main>
+
+  <template id="pageTemplate">
+    <article class="a3-page">
+      <header class="poster-header">
+        <div class="saj-logo-wrap"><img class="saj-logo" alt="Logo du SAJ"></div>
+        <div class="title-block"><h1 class="day-title"></h1><div class="period-title"></div></div>
+        <div></div>
+      </header>
+      <section class="schedule-row">
+        <aside class="time-band"><div class="period-icon">☀</div><div class="period-label"></div><div class="period-time"></div></aside>
+        <div class="activities-grid"></div>
+      </section>
+      <section class="meal-row">
+        <aside class="meal-label"><span class="meal-icon">🍴</span><span>REPAS<br>DE MIDI</span></aside>
+        <div class="meal-content"><span class="meal-main-icon">🍽️</span><h2 class="meal-title">REPAS DE MIDI<span class="meal-time"></span></h2><span class="meal-group-icon">👥</span></div>
+      </section>
+    </article>
+  </template>
+  <template id="activityTemplate"><article class="activity-card"><header class="activity-header"><img class="activity-logo" alt=""><h2 class="activity-name"></h2></header><div class="participants"></div></article></template>
+  <template id="participantTemplate"><figure class="participant"><div class="photo-frame"><img class="participant-photo" alt=""><span class="photo-placeholder">👤</span></div><figcaption class="participant-name"></figcaption></figure></template>
+  <script src="app.js"></script>
+</body>
+</html>

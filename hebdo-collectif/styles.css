@@ -1,0 +1,44 @@
+:root {
+  --navy:#06266f;
+  --blue:#0c60c8;
+  --green:#07935f;
+  --meal:#ffb000;
+  --ink:#182033;
+  --paper:#ffffff;
+  --line:#dbe4ef;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#eef2f7;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+body{min-height:100vh}
+.toolbar{position:sticky;top:0;z-index:10;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.toolbar button{border:2px solid var(--navy);border-radius:10px;padding:9px 14px;background:#fff;color:var(--navy);font-weight:800;cursor:pointer}
+.toolbar button.active,.toolbar button:hover{background:var(--navy);color:#fff}
+.day-buttons,.period-buttons{display:flex;gap:7px;flex-wrap:wrap}
+.pages{padding:18px}
+.status{max-width:900px;margin:40px auto;padding:24px;background:#fff;border-radius:16px;text-align:center;font-size:20px}
+.a3-page{width:min(100%,1580px);aspect-ratio:420/297;margin:0 auto;background:var(--paper);border:1px solid #ccd5e1;border-radius:12px;box-shadow:0 12px 40px rgba(33,48,73,.18);padding:18px 20px;display:grid;grid-template-rows:auto 1fr auto;gap:14px;overflow:hidden}
+.poster-header{display:grid;grid-template-columns:230px 1fr 230px;align-items:center;min-height:118px}
+.saj-logo-wrap{display:flex;align-items:center;justify-content:flex-start;height:106px}
+.saj-logo{max-width:220px;max-height:104px;object-fit:contain}
+.logo-placeholder{display:flex;align-items:center;gap:12px;font-weight:900;color:var(--navy)}
+.logo-mark{font-size:50px}.logo-text{font-size:32px;line-height:1}.logo-sub{font-size:15px;margin-top:5px}
+.title-block{text-align:center}.day-title{margin:0;color:var(--navy);font-size:60px;line-height:1;font-weight:900;letter-spacing:1px}.period-title{display:inline-block;margin-top:10px;background:var(--navy);color:#fff;border-radius:9px;padding:8px 26px;font-size:25px;font-weight:900}
+.schedule-row{display:grid;grid-template-columns:145px minmax(0,1fr);gap:12px;min-height:0}
+.time-band{border-radius:12px;padding:20px 12px;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:linear-gradient(180deg,#0861ca,#053f94)}
+.a3-page[data-period="Apres-midi"] .time-band{background:linear-gradient(180deg,#0aa06b,#05734f)}
+.period-icon{font-size:52px;line-height:1}.period-label{font-size:30px;font-weight:900;margin:12px 0;border-bottom:2px solid rgba(255,255,255,.65);padding-bottom:12px;width:100%}.period-time{white-space:pre-line;font-size:27px;line-height:1.55;font-weight:900}
+.activities-grid{display:grid;gap:10px;min-width:0;height:100%}
+.activities-grid.count-1{grid-template-columns:1fr}.activities-grid.count-2{grid-template-columns:repeat(2,1fr)}.activities-grid.count-3{grid-template-columns:repeat(3,1fr)}.activities-grid.count-4{grid-template-columns:repeat(4,1fr)}.activities-grid.count-5{grid-template-columns:repeat(5,1fr)}.activities-grid.count-6{grid-template-columns:repeat(6,1fr)}.activities-grid.count-7{grid-template-columns:repeat(7,1fr)}
+.activity-card{--card:#2f80ed;--tint:#eaf3ff;border:1px solid color-mix(in srgb,var(--card) 28%,white);border-radius:12px;background:linear-gradient(180deg,var(--tint),color-mix(in srgb,var(--tint) 65%,white));min-width:0;overflow:hidden;padding:13px 10px 10px;display:flex;flex-direction:column}
+.activity-header{text-align:center;min-height:145px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px}.activity-logo{width:82px;height:82px;border-radius:50%;object-fit:contain;background:var(--card);padding:8px}.activity-logo.hidden{display:none}.activity-fallback{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;background:var(--card);color:white;font-size:46px}.activity-name{margin:0;color:var(--card);font-size:24px;line-height:1.05;font-weight:900;text-transform:uppercase;overflow-wrap:anywhere}
+.participants{margin-top:auto;display:grid;grid-template-columns:repeat(var(--participant-cols,3),minmax(0,1fr));align-content:end;gap:10px 5px;min-height:0}
+.participant{margin:0;min-width:0;text-align:center}.photo-frame{width:100%;aspect-ratio:4/5;max-height:115px;border-radius:9px;overflow:hidden;background:rgba(255,255,255,.82);border:3px solid #fff;display:grid;place-items:center}.participant-photo{width:100%;height:100%;object-fit:cover}.participant-photo.hidden{display:none}.photo-placeholder{font-size:45px;color:var(--card)}.participant-name{font-size:15px;font-weight:800;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meal-row{display:grid;grid-template-columns:145px 1fr;gap:12px;min-height:118px}.meal-label{border-radius:10px;background:linear-gradient(180deg,#ffc11f,#f4a900);display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;font-size:19px;font-weight:900}.meal-icon{font-size:38px}.meal-content{border:1px solid #f5c765;border-radius:10px;background:#fff8e8;display:flex;align-items:center;justify-content:center;gap:40px;color:#ef7600}.meal-main-icon,.meal-group-icon{font-size:55px}.meal-title{font-size:34px;text-align:center;margin:0}.meal-time{display:block;color:#111;font-size:25px;margin-top:5px}
+.a3-page[data-period="Apres-midi"]{grid-template-rows:auto 1fr}.a3-page[data-period="Apres-midi"] .meal-row{display:none}
+.empty{display:grid;place-items:center;height:100%;border:2px dashed #cbd5e1;border-radius:12px;color:#64748b;font-size:24px;font-weight:700}
+@media(max-width:900px){.a3-page{aspect-ratio:auto;min-height:900px}.poster-header{grid-template-columns:150px 1fr 0}.day-title{font-size:42px}.schedule-row,.meal-row{grid-template-columns:105px 1fr}.activities-grid{grid-template-columns:repeat(2,1fr)!important}.time-band{padding:10px 6px}.period-label{font-size:20px}.period-time{font-size:20px}.activity-header{min-height:118px}.activity-logo,.activity-fallback{width:64px;height:64px}.activity-name{font-size:18px}}
+@media print{
+  @page{size:A3 landscape;margin:0}
+  html,body{background:#fff}
+  .toolbar{display:none!important}.pages{padding:0}.a3-page{width:420mm;height:297mm;aspect-ratio:auto;margin:0;border:0;border-radius:0;box-shadow:none;page-break-after:always;break-after:page;padding:10mm 11mm}.a3-page:last-child{page-break-after:auto}.a3-page.print-hidden{display:none!important}
+}
