@@ -270,7 +270,7 @@ async function activityCard(a) {
   return `<div class="activity-card" style="--card-color:${colorFor(a.name)}">
     ${logo ? `<img class="activity-logo" src="${esc(logo)}" alt="">` : ''}
     <h4 class="activity-title">${esc(a.name)}</h4>
-    ${time ? `<span class="activity-time">⌚ ${esc(time)}</span>` : ''}
+    ${time ? `<span class="activity-time">${esc(time)}</span>` : ''}
     <div class="activity-meta">
       ${a.animators.length ? `<div><strong>Animateur${a.animators.length > 1 ? 's' : ''} :</strong> ${esc(a.animators.join(', '))}</div>` : ''}
       ${a.capacity ? `<div><strong>Capacité :</strong> ${esc(a.capacity)}</div>` : ''}
