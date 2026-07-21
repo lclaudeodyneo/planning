@@ -86,6 +86,7 @@ function render() {
         if (normalize(r.Couleur)) {
           card.style.borderColor = normalize(r.Couleur);
           card.style.background = normalize(r.Couleur);
+          card.style.background = opacity(20%);
         }
 
         const start = formatTime(r.Debut);
