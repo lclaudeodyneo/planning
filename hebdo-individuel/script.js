@@ -273,7 +273,6 @@ async function activityCard(a) {
     ${time ? `<span class="activity-time">${esc(time)}</span>` : ''}
     <div class="activity-meta">
       ${a.animators.length ? `<div><strong>Animateur${a.animators.length > 1 ? 's' : ''} :</strong> ${esc(a.animators.join(', '))}</div>` : ''}
-      ${a.capacity ? `<div><strong>Capacité :</strong> ${esc(a.capacity)}</div>` : ''}
     </div>
     ${a.description ? `<p class="activity-desc">${esc(a.description)}</p>` : ''}
   </div>`;
