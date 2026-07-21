@@ -274,7 +274,7 @@ async function activityCard(a) {
     <div class="activity-meta">
       ${a.animators.length ? `<div><strong>Animateur${a.animators.length > 1 ? 's' : ''} :</strong> ${esc(a.animators.join(', '))}</div>` : ''}
     </div>
-    ${a.description ? `<p class="activity-desc">${esc(a.description.slice(0, 50))}</p>` : ''}
+    ${a.description ? `<p class="activity-desc">${esc(a.description.slice(0, 100))}</p>` : ''}
   </div>`;
 }
 
