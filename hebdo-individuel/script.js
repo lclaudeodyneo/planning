@@ -442,8 +442,8 @@ async function renderDayPeriod(person, day, label, showHeader) {
 }
 
 async function activityCard(activity) {
-  const logo = await attachmentUrl(activity.visual);
-  //const logo = await attachmentUrl(https://donner.odyneo.fr/wp-content/themes/arimc/images/logo.png);
+  //const logo = await attachmentUrl(activity.visual);
+  const logo = "https://donner.odyneo.fr/wp-content/themes/arimc/images/logo.png";
   const time = activity.schedule || [activity.start, activity.end].filter(Boolean).join(' – ');
   const cardColor = colorFor(activity.name);
 
