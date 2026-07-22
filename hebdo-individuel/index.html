@@ -9,61 +9,90 @@
 </head>
 <body>
   <header class="toolbar no-print">
-    <div class="brand"><div class="brand-mark">SAJ</div><div><h1>Planning individuel</h1><p>SAJ Anagallis</p></div></div>
+    <div class="brand">
+      <div class="brand-mark">SAJ</div>
+      <div>
+        <h1>Planning individuel</h1>
+        <p>SAJ Anagallis</p>
+      </div>
+    </div>
+
     <div class="controls">
-      <label>Personne<select id="personSelect"><option>Chargement…</option></select></label>
-      <label>Format<select id="printFormat"><option value="a4">A4 paysage</option><option value="a3">A3 paysage</option></select></label>
-      <label class="toggle"><input id="showEmpty" type="checkbox" checked> Créneaux vides</label>
-      <button id="opacityButton" class="secondary" type="button">Opacité des jours</button>
-      <button id="printButton" type="button">Imprimer / PDF</button>
-      <button id="refreshButton" class="secondary" type="button">Actualiser</button>
+      <label>
+        Personne
+        <select id="personSelect">
+          <option value="">Chargement…</option>
+        </select>
+      </label>
+
+      <label>
+        Format
+        <select id="formatSelect">
+          <option value="a4">A4 paysage</option>
+          <option value="a3">A3 paysage</option>
+        </select>
+      </label>
+
+      <label class="toggle">
+        <input id="showEmpty" type="checkbox" checked>
+        Créneaux vides
+      </label>
+
+      <details class="opacity-settings">
+        <summary>Opacité des jours</summary>
+        <div class="opacity-controls">
+          <label>Lundi <input id="opacityLundi" type="range" min="0" max="100" value="18"></label>
+          <label>Mardi <input id="opacityMardi" type="range" min="0" max="100" value="18"></label>
+          <label>Mercredi <input id="opacityMercredi" type="range" min="0" max="100" value="18"></label>
+          <label>Jeudi <input id="opacityJeudi" type="range" min="0" max="100" value="18"></label>
+          <label>Vendredi <input id="opacityVendredi" type="range" min="0" max="100" value="18"></label>
+        </div>
+      </details>
+
+      <button id="printBtn" type="button">Imprimer / PDF</button>
+      <button id="reloadBtn" type="button" class="secondary">Actualiser</button>
     </div>
   </header>
 
   <main id="app">
-    <div id="status" class="status">Connexion à Grist…</div>
+    <section id="status" class="status">Connexion à Grist…</section>
+
     <section id="sheet" class="sheet hidden">
-      <header class="sheet-head">
+      <div class="sheet-head">
         <div class="identity">
-          <div id="portrait" class="portrait">?</div>
+          <div id="portrait" class="portrait"><span>?</span></div>
           <div>
             <p class="eyebrow">PLANNING HEBDOMADAIRE</p>
             <h2 id="personName">—</h2>
-            <p id="presenceText" class="presence-text"></p>
+            <p id="presenceText" class="muted"></p>
           </div>
         </div>
-        <div class="saj-logo-box" aria-label="Emplacement du logo">
-          <img
-            id="sajLogo"
-            class="saj-logo"
-            src="logo.png"
-            alt="Logo du SAJ"
-          >
-          <span id="sajLogoFallback" class="saj-logo-fallback">LOGO</span>
-        </div>
-      </header>
-      <div class="week-banner" aria-label="Jours de la semaine">
-        <span>Lundi</span><span>Mardi</span><span>Mercredi</span><span>Jeudi</span><span>Vendredi</span>
+
+        <img id="siteLogo" class="site-logo" src="logo.png" alt="Logo du service">
       </div>
-      <div id="week" class="week-grid"></div>
-      <footer class="sheet-foot">Odynéo - Les Tourrais de Craponne - Service d'accueil de Jour Anagallis.</footer>
+
+      <div class="week-banner" aria-hidden="true">
+        <span>Lundi</span>
+        <span>Mardi</span>
+        <span>Mercredi</span>
+        <span>Jeudi</span>
+        <span>Vendredi</span>
+      </div>
+
+      <div id="weekGrid" class="week-grid"></div>
+
+      <footer class="sheet-foot">
+        Odynéo - Les Tourrais de Craponne - Service d'accueil de Jour Anagallis.
+      </footer>
     </section>
   </main>
 
-  <dialog id="opacityDialog"><form method="dialog"><h3>Opacité du fond des jours</h3><div id="opacityControls"></div><div class="dialog-actions"><button id="resetOpacity" class="secondary" type="button">Valeurs par défaut</button><button value="close">Fermer</button></div></form></dialog>
-  <dialog id="errorDialog"><h3>Impossible de charger le planning</h3><pre id="errorText"></pre><button onclick="this.closest('dialog').close()">Fermer</button></dialog>
-  <script>
-    const sajLogo = document.getElementById('sajLogo');
-    const sajLogoFallback = document.getElementById('sajLogoFallback');
-    sajLogo.addEventListener('load', () => {
-      sajLogo.classList.add('loaded');
-      sajLogoFallback.hidden = true;
-    });
-    sajLogo.addEventListener('error', () => {
-      sajLogo.classList.remove('loaded');
-      sajLogoFallback.hidden = false;
-    });
-  </script>
+  <dialog id="errorDialog">
+    <h3>Impossible de charger le planning</h3>
+    <pre id="errorText"></pre>
+    <button onclick="this.closest('dialog').close()">Fermer</button>
+  </dialog>
+
   <script src="script.js"></script>
 </body>
 </html>
