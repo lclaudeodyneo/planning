@@ -348,23 +348,19 @@ button {
   margin-bottom: 8px;
 }
 
-.meal-separator {
+.meal-banner {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 0 10px;
-  color: #8d5a1b;
-  font-size: 10px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.meal-separator::before,
-.meal-separator::after {
-  content: "";
-  flex: 1;
-  height: 2px;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 12px;
   background: var(--week-orange);
+  color: #fff;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
 }
 
 .activity-card {
@@ -593,9 +589,10 @@ body.print-a3 {
     padding: 6px;
   }
 
-  .meal-separator {
-    margin: 0 6px;
-    font-size: 8px;
+  .meal-banner {
+    min-height: 24px;
+    padding: 4px 8px;
+    font-size: 9px;
   }
 
   .activity-card {

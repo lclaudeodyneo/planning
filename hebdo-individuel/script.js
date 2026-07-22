@@ -275,7 +275,12 @@ function buildModel() {
         otherActivity.gristHelper_Display6
       );
 
+      const hourRow = hours.get(refIds(
+        firstDefined(otherActivity, ['Heure', 'Horaire'])
+      )[0]);
+
       const rawSchedule = text(
+        hourRow?.Heures ||
         firstDefined(otherActivity, ['Horaire', 'gristHelper_Display3'])
       );
 
@@ -373,14 +378,24 @@ async function render() {
     ? `<img src="${portraitUrl}" alt="Portrait de ${esc(person.name)}">`
     : `<span>${esc(initials(person.name))}</span>`;
 
-  const cards = await Promise.all(
-    DAYS.map((day) => renderDay(person, day))
+  const morningCards = await Promise.all(
+    DAYS.map((day) => renderDayPeriod(person, day, 'Matin', true))
   );
 
-  $('weekGrid').innerHTML = cards.join('');
+  const eveningCards = await Promise.all(
+    DAYS.map((day) => renderDayPeriod(person, day, 'Soir', false))
+  );
+
+  $('weekGrid').innerHTML = `
+    ${morningCards.join('')}
+    <div class="meal-banner" aria-label="Repas de 12 heures">
+      <span>12 h · Repas</span>
+    </div>
+    ${eveningCards.join('')}
+  `;
 }
 
-async function renderDay(person, day) {
+async function renderDayPeriod(person, day, label, showHeader) {
   const regularActivities = state.activities.filter((activity) => (
     activity.day === day && activity.participants.has(person.id)
   ));
@@ -390,58 +405,37 @@ async function renderDay(person, day) {
   ));
 
   const activities = [...regularActivities, ...otherActivities].sort(sortActivities);
-
-  const groups = {
-    Matin: activities.filter((activity) => periodOf(activity) === 'Matin'),
-    Soir: activities.filter((activity) => periodOf(activity) === 'Soir')
-  };
-
+  const list = activities.filter((activity) => periodOf(activity) === label);
   const showEmpty = $('showEmpty').checked;
   const present = isPresent(person, day);
-  const sections = [];
 
-  for (const label of ['Matin', 'Soir']) {
-    const list = groups[label];
-
-    if (!list.length && !showEmpty) {
-      continue;
-    }
-
-    const inner = list.length
-      ? (await Promise.all(list.map(activityCard))).join('')
-      : `<div class="empty-slot">${present ? 'Aucune activité renseignée' : 'Non présent'}</div>`;
-
-    sections.push(`
-      <section class="period period-${label.toLowerCase()}">
-        <div class="period-title">${label}</div>
-        ${inner}
-      </section>
-    `);
-
-    if (label === 'Matin') {
-      sections.push(`
-        <div class="meal-separator" aria-label="Repas de 12 heures">
-          <span>12 h · Repas</span>
-        </div>
-      `);
-    }
-  }
+  const inner = list.length
+    ? (await Promise.all(list.map(activityCard))).join('')
+    : showEmpty
+      ? `<div class="empty-slot">${present ? 'Aucune activité renseignée' : 'Non présent'}</div>`
+      : '';
 
   const dayColor = DAY_COLORS[day];
   const dayBackground = hexToRgba(dayColor, opacityFor(day));
   const absenceClass = present ? '' : ' day-absent';
+  const periodClass = label.toLowerCase();
 
   return `
     <article
-      class="day${absenceClass}"
+      class="day day-${periodClass}${absenceClass}"
       style="--day-color: ${dayColor}; --day-background: ${dayBackground};"
     >
-      <div class="day-head">
-        <h3>${day}</h3>
-        <span>${present ? `${activities.length} activité${activities.length > 1 ? 's' : ''}` : 'ABSENT'}</span>
-      </div>
+      ${showHeader ? `
+        <div class="day-head">
+          <h3>${day}</h3>
+          <span>${present ? `${activities.length} activité${activities.length > 1 ? 's' : ''}` : 'ABSENT'}</span>
+        </div>
+      ` : ''}
       <div class="day-content">
-        ${sections.join('')}
+        <section class="period period-${periodClass}">
+          <div class="period-title">${label}</div>
+          ${inner}
+        </section>
       </div>
     </article>
   `;
