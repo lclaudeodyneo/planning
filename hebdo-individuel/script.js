@@ -1,7 +1,7 @@
 const DAYS = [
   {name:'Lundi', short:'Lu', color:'#7A4DA3'},
   {name:'Mardi', short:'Ma', color:'#2F80A8'},
-  {name:'Mercredi', short:'Me', color:'#348B68'},
+  {name:'Mercredi', short:'Me', color:'#fd4343'},
   {name:'Jeudi', short:'Je', color:'#D1842C'},
   {name:'Vendredi', short:'Ve', color:'#B64B5D'}
 ];
