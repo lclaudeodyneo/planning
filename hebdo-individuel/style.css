@@ -355,7 +355,7 @@ button {
   justify-content: center;
   min-height: 34px;
   padding: 7px 12px;
-  background: var(--week-orange);
+  background: var(--accent);
   color: #fff;
   border-radius: 5px;
   font-size: 12px;

@@ -15,11 +15,11 @@ const TABLES = {
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
 
 const DAY_COLORS = {
-  Lundi: '#5b8def',
-  Mardi: '#55a868',
-  Mercredi: '#c77cff',
-  Jeudi: '#e6a23c',
-  Vendredi: '#e66b6b'
+  Lundi: '#f527b0',
+  Mardi: '#0fa833',
+  Mercredi: '#1100fa',
+  Jeudi: '#ff0000',
+  Vendredi: '#ea00ff'
 };
 
 const state = {
@@ -442,7 +442,8 @@ async function renderDayPeriod(person, day, label, showHeader) {
 }
 
 async function activityCard(activity) {
-  const logo = await attachmentUrl(activity.visual);
+  //const logo = await attachmentUrl(activity.visual);
+  const logo = await attachmentUrl(https://donner.odyneo.fr/wp-content/themes/arimc/images/logo.png);
   const time = activity.schedule || [activity.start, activity.end].filter(Boolean).join(' – ');
   const cardColor = colorFor(activity.name);
 
