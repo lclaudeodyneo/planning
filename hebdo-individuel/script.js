@@ -1,9 +1,9 @@
 const DAYS = [
-  {name:'Lundi', short:'Lu', color:'#7A4DA3'},
-  {name:'Mardi', short:'Ma', color:'#2F80A8'},
-  {name:'Mercredi', short:'Me', color:'#fd4343'},
-  {name:'Jeudi', short:'Je', color:'#D1842C'},
-  {name:'Vendredi', short:'Ve', color:'#B64B5D'}
+  {name:'Lundi', short:'Lu', color:'#ec4fab'},
+  {name:'Mardi', short:'Ma', color:'#009107'},
+  {name:'Mercredi', short:'Me', color:'#0010f5'},
+  {name:'Jeudi', short:'Je', color:'#e20101'},
+  {name:'Vendredi', short:'Ve', color:'#7900db'}
 ];
 const DEFAULT_OPACITY = 0.12;
 const TABLES = {activities:'Activites', other:'Activites_autres', participation:'Participations', users:'Usagers'};
