@@ -49,7 +49,7 @@ html, body {
 .brand-mark {
   width: 46px;
   height: 46px;
-  border-radius: 14px;
+  border-radius: 5px;
   display: grid;
   place-items: center;
   background: var(--accent);
@@ -170,7 +170,7 @@ button {
 .portrait {
   width: 74px;
   height: 74px;
-  border-radius: 18px;
+  border-radius: 5px;
   background: var(--soft);
   border: 2px solid #cfe2e5;
   display: grid;
@@ -311,7 +311,7 @@ button {
   color: var(--accent);
   background: var(--soft);
   padding: 3px 7px;
-  border-radius: 99px;
+  border-radius: 5px;
 }
 
 .activity-meta {
@@ -364,7 +364,7 @@ button {
 /* ==================== MODAL / DIALOG ==================== */
 dialog {
   border: 0;
-  border-radius: 14px;
+  border-radius: 5px;
   max-width: 620px;
   box-shadow: 0 20px 60px #0003;
 }
@@ -373,7 +373,7 @@ dialog pre {
   white-space: pre-wrap;
   background: #f5f7f8;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 dialog button {
