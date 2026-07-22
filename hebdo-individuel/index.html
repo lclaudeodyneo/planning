@@ -24,25 +24,30 @@
     <div id="status" class="status">Connexion à Grist…</div>
     <section id="sheet" class="sheet hidden">
       <header class="sheet-head">
-        <div class="identity"><div id="portrait" class="portrait">?</div><div><p class="eyebrow">PLANNING HEBDOMADAIRE</p><h2 id="personName">—</h2><p class="muted">Les jours hachurés signalent une absence prévue.</p></div></div>
-        <div class="period-icons" aria-label="Repères temporels">
-          <span title="Matin" aria-label="Matin" class="period-icon sun">☀</span>
-          <span title="Après-midi" aria-label="Après-midi" class="period-icon moon">◐</span>
+        <div class="identity">
+          <div id="portrait" class="portrait">?</div>
+          <div>
+            <p class="eyebrow">PLANNING HEBDOMADAIRE</p>
+            <h2 id="personName">—</h2>
+            <p id="presenceText" class="presence-text"></p>
+          </div>
         </div>
+        <img
+          class="saj-logo"
+          src="logo.png"
+          alt="Logo du SAJ"
+          onerror="this.style.display='none'"
+        >
       </header>
+      <div class="week-banner" aria-label="Jours de la semaine">
+        <span>Lundi</span><span>Mardi</span><span>Mercredi</span><span>Jeudi</span><span>Vendredi</span>
+      </div>
       <div id="week" class="week-grid"></div>
       <footer class="sheet-foot">Odynéo - Les Tourrais de Craponne - Service d'accueil de Jour Anagallis.</footer>
     </section>
   </main>
 
-  <dialog id="opacityDialog">
-    <form method="dialog">
-      <h3>Opacité du fond des jours</h3>
-      <p>La couleur reste identique à l’en-tête ; seul le fond sous le jour devient plus ou moins transparent.</p>
-      <div id="opacityControls"></div>
-      <div class="dialog-actions"><button id="resetOpacity" class="secondary" type="button">Valeurs par défaut</button><button value="close">Fermer</button></div>
-    </form>
-  </dialog>
+  <dialog id="opacityDialog"><form method="dialog"><h3>Opacité du fond des jours</h3><div id="opacityControls"></div><div class="dialog-actions"><button id="resetOpacity" class="secondary" type="button">Valeurs par défaut</button><button value="close">Fermer</button></div></form></dialog>
   <dialog id="errorDialog"><h3>Impossible de charger le planning</h3><pre id="errorText"></pre><button onclick="this.closest('dialog').close()">Fermer</button></dialog>
   <script src="script.js"></script>
 </body>
