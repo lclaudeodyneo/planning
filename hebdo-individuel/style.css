@@ -194,15 +194,47 @@ button {
   margin:6px 0 0
 }
 
-.saj-logo {
-  display:block;
-  max-width:150px;
-  max-height:74px;
-  width:auto;
-  height:auto;
-  object-fit:contain;
-  margin-left:auto
+.saj-logo-box {
+  width: 150px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  margin-left: auto;
 }
+
+.saj-logo,
+.saj-logo-fallback {
+  grid-area: 1 / 1;
+}
+
+.saj-logo {
+  display: none;
+  max-width: 150px;
+  max-height: 74px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.saj-logo.loaded {
+  display: block;
+}
+
+.saj-logo-fallback {
+  width: 150px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+  border: 2px dashed #c8d5db;
+  border-radius: 5px;
+  color: #687883;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  background: #f7fafb;
+}
+
 
 .week-banner {
   display:grid;

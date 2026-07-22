@@ -32,12 +32,15 @@
             <p id="presenceText" class="presence-text"></p>
           </div>
         </div>
-        <img
-          class="saj-logo"
-          src="logo.png"
-          alt="Logo du SAJ"
-          onerror="this.style.display='none'"
-        >
+        <div class="saj-logo-box" aria-label="Emplacement du logo">
+          <img
+            id="sajLogo"
+            class="saj-logo"
+            src="logo.png"
+            alt="Logo du SAJ"
+          >
+          <span id="sajLogoFallback" class="saj-logo-fallback">LOGO</span>
+        </div>
       </header>
       <div class="week-banner" aria-label="Jours de la semaine">
         <span>Lundi</span><span>Mardi</span><span>Mercredi</span><span>Jeudi</span><span>Vendredi</span>
@@ -49,6 +52,18 @@
 
   <dialog id="opacityDialog"><form method="dialog"><h3>Opacité du fond des jours</h3><div id="opacityControls"></div><div class="dialog-actions"><button id="resetOpacity" class="secondary" type="button">Valeurs par défaut</button><button value="close">Fermer</button></div></form></dialog>
   <dialog id="errorDialog"><h3>Impossible de charger le planning</h3><pre id="errorText"></pre><button onclick="this.closest('dialog').close()">Fermer</button></dialog>
+  <script>
+    const sajLogo = document.getElementById('sajLogo');
+    const sajLogoFallback = document.getElementById('sajLogoFallback');
+    sajLogo.addEventListener('load', () => {
+      sajLogo.classList.add('loaded');
+      sajLogoFallback.hidden = true;
+    });
+    sajLogo.addEventListener('error', () => {
+      sajLogo.classList.remove('loaded');
+      sajLogoFallback.hidden = false;
+    });
+  </script>
   <script src="script.js"></script>
 </body>
 </html>
