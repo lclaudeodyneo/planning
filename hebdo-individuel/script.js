@@ -226,7 +226,7 @@ async function render() {
 
   const presentDays = DAYS.filter(d => isPresent(person, d));
   $('presenceText').textContent = presentDays.length
-    ? `Présence habituelle : ${presentDays.join(', ')}`
+    ? `${presentDays.join(', ')}`
     : 'Présence habituelle non renseignée';
 
   const purl = await attachmentUrl(person.portrait);
