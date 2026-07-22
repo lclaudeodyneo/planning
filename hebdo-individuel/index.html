@@ -9,38 +9,40 @@
 </head>
 <body>
   <header class="toolbar no-print">
-    <div class="brand">
-      <div class="brand-mark">SAJ</div>
-      <div><h1>Planning individuel</h1><p>SAJ Anagallis</p></div>
-    </div>
+    <div class="brand"><div class="brand-mark">SAJ</div><div><h1>Planning individuel</h1><p>SAJ Anagallis</p></div></div>
     <div class="controls">
-      <label>Personne
-        <select id="personSelect"><option value="">Chargement…</option></select>
-      </label>
-      <label>Format
-        <select id="formatSelect"><option value="a4">A4 paysage</option><option value="a3">A3 paysage</option></select>
-      </label>
+      <label>Personne<select id="personSelect"><option>Chargement…</option></select></label>
+      <label>Format<select id="printFormat"><option value="a4">A4 paysage</option><option value="a3">A3 paysage</option></select></label>
       <label class="toggle"><input id="showEmpty" type="checkbox" checked> Créneaux vides</label>
-      <button id="printBtn" type="button">Imprimer / PDF</button>
-      <button id="reloadBtn" type="button" class="secondary">Actualiser</button>
+      <button id="opacityButton" class="secondary" type="button">Opacité des jours</button>
+      <button id="printButton" type="button">Imprimer / PDF</button>
+      <button id="refreshButton" class="secondary" type="button">Actualiser</button>
     </div>
   </header>
 
   <main id="app">
-    <section id="status" class="status">Connexion à Grist…</section>
+    <div id="status" class="status">Connexion à Grist…</div>
     <section id="sheet" class="sheet hidden">
-      <div class="sheet-head">
-        <div class="identity">
-          <div id="portrait" class="portrait"><span>?</span></div>
-          <div><p class="eyebrow">PLANNING HEBDOMADAIRE</p><h2 id="personName">—</h2><p id="presenceText" class="muted"></p></div>
+      <header class="sheet-head">
+        <div class="identity"><div id="portrait" class="portrait">?</div><div><p class="eyebrow">PLANNING HEBDOMADAIRE</p><h2 id="personName">—</h2><p class="muted">Les jours hachurés signalent une absence prévue.</p></div></div>
+        <div class="period-icons" aria-label="Repères temporels">
+          <span title="Matin" aria-label="Matin" class="period-icon sun">☀</span>
+          <span title="Après-midi" aria-label="Après-midi" class="period-icon moon">◐</span>
         </div>
-        <div class="legend"><span><i class="dot morning"></i> Matin</span><span><i class="dot afternoon"></i> Après-midi</span></div>
-      </div>
-      <div id="weekGrid" class="week-grid"></div>
+      </header>
+      <div id="week" class="week-grid"></div>
       <footer class="sheet-foot">Odynéo - Les Tourrais de Craponne - Service d'accueil de Jour Anagallis.</footer>
     </section>
   </main>
 
+  <dialog id="opacityDialog">
+    <form method="dialog">
+      <h3>Opacité du fond des jours</h3>
+      <p>La couleur reste identique à l’en-tête ; seul le fond sous le jour devient plus ou moins transparent.</p>
+      <div id="opacityControls"></div>
+      <div class="dialog-actions"><button id="resetOpacity" class="secondary" type="button">Valeurs par défaut</button><button value="close">Fermer</button></div>
+    </form>
+  </dialog>
   <dialog id="errorDialog"><h3>Impossible de charger le planning</h3><pre id="errorText"></pre><button onclick="this.closest('dialog').close()">Fermer</button></dialog>
   <script src="script.js"></script>
 </body>
