@@ -383,7 +383,7 @@ async function render() {
   );
 
   const eveningCards = await Promise.all(
-    DAYS.map((day) => renderDayPeriod(person, day, 'Après-midi', false))
+    DAYS.map((day) => renderDayPeriod(person, day, 'Soir', false))
   );
 
   $('weekGrid').innerHTML = `
