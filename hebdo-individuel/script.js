@@ -329,7 +329,7 @@ function showStatus(message, error = false) {
 }
 
 function periodOf(activity) {
-  return minutes(activity.start) < 13 * 60 ? 'Matin' : 'Après-midi';
+  return minutes(activity.start) < 13 * 60 ? 'Matin' : 'Apres-midi';
 }
 
 function isPresent(person, day) {
@@ -405,14 +405,14 @@ async function renderDay(person, day) {
 
   const groups = {
     Matin: activities.filter((activity) => periodOf(activity) === 'Matin'),
-    Après-midi: activities.filter((activity) => periodOf(activity) === 'Après-midi')
+    Apres-midi: activities.filter((activity) => periodOf(activity) === 'Apres-midi')
   };
 
   const showEmpty = $('showEmpty').checked;
   const present = isPresent(person, day);
   const sections = [];
 
-  for (const label of ['Matin', 'Après-midi']) {
+  for (const label of ['Matin', 'Apres-midi']) {
     const list = groups[label];
 
     if (!list.length && !showEmpty) {
