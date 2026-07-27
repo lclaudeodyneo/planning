@@ -405,14 +405,14 @@ async function renderDay(person, day) {
 
   const groups = {
     Matin: activities.filter((activity) => periodOf(activity) === 'Matin'),
-    Apres-midi: activities.filter((activity) => periodOf(activity) === 'Apres-midi')
+    Apresmidi: activities.filter((activity) => periodOf(activity) === 'Apres-midi')
   };
 
   const showEmpty = $('showEmpty').checked;
   const present = isPresent(person, day);
   const sections = [];
 
-  for (const label of ['Matin', 'Apres-midi']) {
+  for (const label of ['Matin', 'Apresmidi']) {
     const list = groups[label];
 
     if (!list.length && !showEmpty) {
