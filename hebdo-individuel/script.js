@@ -329,7 +329,7 @@ function showStatus(message, error = false) {
 }
 
 function periodOf(activity) {
-  return minutes(activity.start) < 13 * 60 ? 'Matin' : 'apresmidi';
+  return minutes(activity.start) < 13 * 60 ? 'Matin' : 'Apres-midi';
 }
 
 function isPresent(person, day) {
@@ -412,7 +412,7 @@ async function renderDay(person, day) {
   const present = isPresent(person, day);
   const sections = [];
 
-  for (const label of ['Matin', 'apresmidi']) {
+  for (const label of ['Matin', 'Apres-midi']) {
     const list = groups[label];
 
     if (!list.length && !showEmpty) {
