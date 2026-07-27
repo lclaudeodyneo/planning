@@ -254,7 +254,7 @@ button {
 .week-banner {
   display: grid;
   grid-template-columns: repeat(5, minmax(190px, 1fr));
-  background: var(--week-orange);
+  background: var(--accent);
   color: #fff;
   border-radius: 5px 5px 0 0;
   overflow: hidden;
@@ -363,7 +363,7 @@ button {
   justify-content: center;
   height: 34px;
   padding: 7px 12px;
-  background: var(--week-orange);
+  background: var(--accent);
   color: #fff;
   border-radius: 5px;
   font-size: 12px;
