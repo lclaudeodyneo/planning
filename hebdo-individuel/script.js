@@ -506,7 +506,7 @@ async function activityCard(activity) {
 
   const otherMeta = activity.kind === 'other'
     ? `
-      ${activity.partner ? `<div><strong>Partenaire :</strong> ${esc(activity.partner)}</div>` : ''}
+      ${activity.partner ? `<div><strong>Avec :</strong> ${esc(activity.partner)}</div>` : ''}
       ${activity.place ? `<div><strong>Lieu :</strong> ${esc(activity.place)}</div>` : ''}
     `
     : '';
