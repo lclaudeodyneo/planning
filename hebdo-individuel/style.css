@@ -348,31 +348,6 @@ button {
   margin-bottom: 8px;
 }
 
-<<<<<<< HEAD
-.meal-gap {
-  height: 34px;
-}
-
-.meal-banner {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 34px;
-  padding: 7px 12px;
-  background: var(--week-orange);
-  color: #fff;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: 800;
-  text-align: center;
-  pointer-events: none;
-}
-
-=======
 .meal-banner {
   grid-column: 1 / -1;
   display: flex;
@@ -388,7 +363,6 @@ button {
   text-align: center;
 }
 
->>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
 .activity-card {
   position: relative;
   background: #fff;
@@ -615,25 +589,12 @@ body.print-a3 {
     padding: 6px;
   }
 
-<<<<<<< HEAD
-  .meal-gap {
-    height: 24px;
-  }
-
-  .meal-banner {
-    height: 24px;
-    padding: 4px 8px;
-    font-size: 9px;
-  }
-
-=======
   .meal-banner {
     min-height: 24px;
     padding: 4px 8px;
     font-size: 9px;
   }
 
->>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
   .activity-card {
     padding: 6px;
     margin-bottom: 5px;
