@@ -14,6 +14,16 @@ const TABLES = {
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
 
+<<<<<<< HEAD
+const DAY_COLORS = {
+  Lundi: '#5b8def',
+  Mardi: '#55a868',
+  Mercredi: '#c77cff',
+  Jeudi: '#e6a23c',
+  Vendredi: '#e66b6b'
+};
+
+=======
 const DAY_COLORS = {
   Lundi: '#f527b0',
   Mardi: '#0fa833',
@@ -22,6 +32,7 @@ const DAY_COLORS = {
   Vendredi: '#ea00ff'
 };
 
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
 const state = {
   tables: {},
   people: [],
@@ -378,6 +389,20 @@ async function render() {
     ? `<img src="${portraitUrl}" alt="Portrait de ${esc(person.name)}">`
     : `<span>${esc(initials(person.name))}</span>`;
 
+<<<<<<< HEAD
+  const cards = await Promise.all(
+    DAYS.map((day) => renderDay(person, day))
+  );
+
+  $('weekGrid').innerHTML = `
+    ${cards.join('')}
+    <div class="meal-banner" aria-label="Repas de 12 heures">
+      <span>12 h · Repas</span>
+    </div>
+  `;
+
+  alignMealBanner();
+=======
   const morningCards = await Promise.all(
     DAYS.map((day) => renderDayPeriod(person, day, 'Matin', true))
   );
@@ -393,9 +418,11 @@ async function render() {
     </div>
     ${eveningCards.join('')}
   `;
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
 }
 
-async function renderDayPeriod(person, day, label, showHeader) {
+<<<<<<< HEAD
+async function renderDay(person, day) {
   const regularActivities = state.activities.filter((activity) => (
     activity.day === day && activity.participants.has(person.id)
   ));
@@ -405,16 +432,89 @@ async function renderDayPeriod(person, day, label, showHeader) {
   ));
 
   const activities = [...regularActivities, ...otherActivities].sort(sortActivities);
+
+  const groups = {
+    Matin: activities.filter((activity) => periodOf(activity) === 'Matin'),
+    Soir: activities.filter((activity) => periodOf(activity) === 'Soir')
+  };
+
+  const showEmpty = $('showEmpty').checked;
+  const present = isPresent(person, day);
+  const sections = [];
+=======
+async function renderDayPeriod(person, day, label, showHeader) {
+  const regularActivities = state.activities.filter((activity) => (
+    activity.day === day && activity.participants.has(person.id)
+  ));
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
+
+<<<<<<< HEAD
+  for (const label of ['Matin', 'Soir']) {
+    const list = groups[label];
+=======
+  const otherActivities = state.otherActivities.filter((activity) => (
+    activity.day === day && activity.participants.has(person.id)
+  ));
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
+
+<<<<<<< HEAD
+    if (!list.length && !showEmpty) {
+      if (label === 'Matin') {
+        sections.push('<div class="meal-gap" aria-hidden="true"></div>');
+      }
+      continue;
+    }
+
+    const inner = list.length
+      ? (await Promise.all(list.map(activityCard))).join('')
+      : `<div class="empty-slot">${present ? 'Aucune activité renseignée' : 'Non présent'}</div>`;
+=======
+  const activities = [...regularActivities, ...otherActivities].sort(sortActivities);
   const list = activities.filter((activity) => periodOf(activity) === label);
   const showEmpty = $('showEmpty').checked;
   const present = isPresent(person, day);
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
 
+<<<<<<< HEAD
+    sections.push(`
+      <section class="period period-${label.toLowerCase()}">
+        <div class="period-title">${label}</div>
+        ${inner}
+      </section>
+    `);
+
+    if (label === 'Matin') {
+      sections.push('<div class="meal-gap" aria-hidden="true"></div>');
+    }
+  }
+=======
   const inner = list.length
     ? (await Promise.all(list.map(activityCard))).join('')
     : showEmpty
       ? `<div class="empty-slot">${present ? 'Aucune activité renseignée' : 'Non présent'}</div>`
       : '';
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
 
+<<<<<<< HEAD
+  const dayColor = DAY_COLORS[day];
+  const dayBackground = hexToRgba(dayColor, opacityFor(day));
+  const absenceClass = present ? '' : ' day-absent';
+
+  return `
+    <article
+      class="day${absenceClass}"
+      style="--day-color: ${dayColor}; --day-background: ${dayBackground};"
+    >
+      <div class="day-head">
+        <h3>${day}</h3>
+        <span>${present ? `${activities.length} activité${activities.length > 1 ? 's' : ''}` : 'ABSENT'}</span>
+      </div>
+      <div class="day-content">
+        ${sections.join('')}
+      </div>
+    </article>
+  `;
+=======
   const dayColor = DAY_COLORS[day];
   const dayBackground = hexToRgba(dayColor, opacityFor(day));
   const absenceClass = present ? '' : ' day-absent';
@@ -439,11 +539,83 @@ async function renderDayPeriod(person, day, label, showHeader) {
       </div>
     </article>
   `;
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
 }
 
+<<<<<<< HEAD
+function alignMealBanner() {
+  const grid = $('weekGrid');
+  const morningSections = [...grid.querySelectorAll('.period-matin')];
+  const banner = grid.querySelector('.meal-banner');
+=======
 async function activityCard(activity) {
   const logo = await attachmentUrl(activity.visual);
   //const logo = "https://donner.odyneo.fr/wp-content/themes/arimc/images/logo.png";
+  const time = activity.schedule || [activity.start, activity.end].filter(Boolean).join(' – ');
+  const cardColor = colorFor(activity.name);
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
+
+<<<<<<< HEAD
+  if (!morningSections.length || !banner) {
+    return;
+  }
+
+  morningSections.forEach((section) => {
+    section.style.minHeight = '';
+  });
+
+  const maxMorningHeight = Math.max(
+    ...morningSections.map((section) => section.getBoundingClientRect().height)
+  );
+
+  morningSections.forEach((section) => {
+    section.style.minHeight = `${maxMorningHeight}px`;
+  });
+
+  const firstGap = grid.querySelector('.meal-gap');
+
+  if (!firstGap) {
+    return;
+  }
+
+  const gridRect = grid.getBoundingClientRect();
+  const gapRect = firstGap.getBoundingClientRect();
+  banner.style.top = `${gapRect.top - gridRect.top}px`;
+=======
+  const regularMeta = activity.kind === 'regular' && activity.animators.length
+    ? `
+      <div>
+        <strong>Animateur${activity.animators.length > 1 ? 's' : ''} :</strong>
+        ${esc(activity.animators.join(', '))}
+      </div>
+    `
+    : '';
+
+  const otherMeta = activity.kind === 'other'
+    ? `
+      ${activity.partner ? `<div><strong>Partenaire :</strong> ${esc(activity.partner)}</div>` : ''}
+      ${activity.place ? `<div><strong>Lieu :</strong> ${esc(activity.place)}</div>` : ''}
+    `
+    : '';
+
+  return `
+    <article class="activity-card${activity.kind === 'other' ? ' activity-card-other' : ''}" style="--card-color: ${cardColor}">
+      ${logo ? `<img class="activity-logo" src="${logo}" alt="">` : ''}
+      <h4 class="activity-title">${esc(activity.name)}</h4>
+      ${time ? `<div class="activity-time">${esc(time)}</div>` : ''}
+      <div class="activity-meta">
+        ${regularMeta}
+        ${otherMeta}
+      </div>
+      ${activity.description ? `<p class="activity-desc">${esc(activity.description.slice(0, 100))}</p>` : ''}
+    </article>
+  `;
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
+}
+
+<<<<<<< HEAD
+async function activityCard(activity) {
+  const logo = await attachmentUrl(activity.visual);
   const time = activity.schedule || [activity.start, activity.end].filter(Boolean).join(' – ');
   const cardColor = colorFor(activity.name);
 
@@ -479,6 +651,10 @@ async function activityCard(activity) {
 
 function showError(error) {
   console.error(error);
+=======
+function showError(error) {
+  console.error(error);
+>>>>>>> c72d620081123965bf17342cbb4e4613ffaa9d8f
   showStatus('Une erreur empêche l’affichage du planning.', true);
 
   $('errorText').textContent =
