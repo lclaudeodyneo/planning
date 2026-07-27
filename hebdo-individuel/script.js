@@ -405,7 +405,7 @@ async function renderDay(person, day) {
 
   const groups = {
     Matin: activities.filter((activity) => periodOf(activity) === 'Matin'),
-    Apresmidi: activities.filter((activity) => periodOf(activity) === 'Apres-midi')
+    Apresmidi: activities.filter((activity) => periodOf(activity) === 'Apresmidi')
   };
 
   const showEmpty = $('showEmpty').checked;
