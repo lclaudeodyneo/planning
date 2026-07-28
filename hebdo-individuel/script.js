@@ -449,7 +449,7 @@ async function renderDay(person, day) {
     >
       <div class="day-head">
         <h3>${day}</h3>
-        <span>${present ? `${activities.length} activité${activities.length > 1 ? 's' : ''}` : 'ABSENT'}</span>
+        <span>${present ? `${activities.length} activité${activities.length > 1 ? 's' : ''}` : 'ABSENT·E'}</span>
       </div>
       <div class="day-content">
         ${sections.join('')}
@@ -498,7 +498,7 @@ async function activityCard(activity) {
   const regularMeta = activity.kind === 'regular' && activity.animators.length
     ? `
       <div>
-        <strong>Animateur${activity.animators.length > 1 ? 's' : ''} :</strong>
+        <strong>Animateur·rice${activity.animators.length > 1 ? 's' : ''} :</strong>
         ${esc(activity.animators.join(', '))}
       </div>
     `
