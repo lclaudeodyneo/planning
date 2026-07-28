@@ -260,7 +260,7 @@ button {
 }
 
 .week-banner span {
-  padding: 9px 8px;
+  padding: 5px 8px;
   text-align: center;
   font-size: 13px;
   font-weight: 800;
@@ -360,7 +360,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 34px;
+  height: 26px;
   padding: 7px 12px;
   background: var(--accent);
   color: #fff;
