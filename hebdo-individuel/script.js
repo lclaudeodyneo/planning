@@ -498,7 +498,7 @@ async function activityCard(activity) {
   const regularMeta = activity.kind === 'regular' && activity.animators.length
     ? `
       <div>
-        <strong>Animateur·rice${activity.animators.length > 1 ? 's' : ''} :</strong>
+        <strong>Avec :</strong>
         ${esc(activity.animators.join(', '))}
       </div>
     `
