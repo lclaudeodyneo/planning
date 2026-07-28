@@ -531,7 +531,7 @@ body.print-a3 {
 @media print {
   html,
   body {
-    background: #fff;
+    background: #fff; /* impression : fond blanc */
   }
 
   .no-print,
@@ -549,6 +549,7 @@ body.print-a3 {
     box-shadow: none;
     border-radius: 0;
     padding: 0;
+    background: var(--paper);
   }
 
   .sheet-head {
@@ -570,6 +571,7 @@ body.print-a3 {
     font-size: 21px;
   }
 
+  /* conserver la grille identique au screen (5 colonnes) */
   .week-banner,
   .week-grid {
     grid-template-columns: repeat(5, 1fr);
@@ -610,7 +612,13 @@ body.print-a3 {
   .activity-card {
     padding: 6px;
     margin-bottom: 5px;
+
+    /* réduire plutôt que casser le style */
     border-left-width: 4px;
+    break-inside: avoid;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: none;
   }
 
   .activity-title {
@@ -638,6 +646,9 @@ body.print-a3 {
   .empty-slot {
     padding: 8px;
     font-size: 8px;
+    border-radius: 9px;
+    /* garder le style screen via les variables/couleurs du CSS */
+    border: 1px dashed #cad6dc;
   }
 
   .sheet-foot {
