@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Slider 0-5</title>
+
+<script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+
+<style>
+body{
+    margin:0;
+    padding:10px;
+    font-family:Segoe UI, sans-serif;
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+#slider{
+    flex:1;
+}
+
+#value{
+    width:32px;
+    text-align:center;
+    font-weight:bold;
+    font-size:18px;
+}
+</style>
+
+</head>
+
+<body>
+
+<input
+    id="slider"
+    type="range"
+    min="0"
+    max="5"
+    step="1">
+
+<div id="value">0</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
