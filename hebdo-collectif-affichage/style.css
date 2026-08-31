@@ -5,16 +5,20 @@
 :root {
 
   --ink: #183042;
+
   --muted: #687883;
+
   --line: #dbe5ea;
 
   --paper: #ffffff;
+
   --background: #eef3f6;
 
   --purple: #6421a8;
-  --purple-soft: #f2eafb;
 
-  --meal: #6421a8;
+  --purple-dark: #50178c;
+
+  --purple-soft: #f2eafb;
 
 }
 
@@ -71,7 +75,8 @@ body {
 
   display: flex;
 
-  justify-content: space-between;
+  justify-content:
+    space-between;
 
   align-items: center;
 
@@ -89,13 +94,13 @@ body {
 
   box-shadow:
     0 3px 12px
-    rgba(23, 48, 66, 0.08);
+    rgba(23,48,66,.08);
 
 }
 
 
 /* ==========================================================
-   LOGO SAJ
+   IDENTITÉ
    ========================================================== */
 
 .brand {
@@ -126,7 +131,7 @@ body {
 
   color: white;
 
-  font-weight: 800;
+  font-weight: 900;
 
 }
 
@@ -178,7 +183,7 @@ body {
 
   font-size: 14px;
 
-  font-weight: 700;
+  font-weight: 800;
 
   cursor: pointer;
 
@@ -187,8 +192,8 @@ body {
 
 #printBtn:hover {
 
-  filter:
-    brightness(0.94);
+  background:
+    var(--purple-dark);
 
 }
 
@@ -199,8 +204,7 @@ body {
 
 #app {
 
-  padding:
-    22px;
+  padding: 22px;
 
 }
 
@@ -240,7 +244,7 @@ body {
 
 
 /* ==========================================================
-   CONTENEUR DES 5 PAGES
+   CONTENEUR DES JOURS
    ========================================================== */
 
 .pages {
@@ -249,32 +253,26 @@ body {
 
   flex-direction: column;
 
-  gap: 28px;
-
   align-items: center;
+
+  gap: 30px;
 
 }
 
 
 /* ==========================================================
-   PAGE A3 D'UNE JOURNÉE
+   PAGE D'UN JOUR
    ========================================================== */
 
 .day-page {
 
-  /*
-   * Ratio A3 portrait :
-   * 297 × 420 mm
-   */
+  width:
+    min(
+      100%,
+      1080px
+    );
 
-  width: min(
-    100%,
-    1000px
-  );
-
-  min-height: 1414px;
-
-  position: relative;
+  min-height: 1450px;
 
   display: flex;
 
@@ -283,29 +281,29 @@ body {
   overflow: hidden;
 
   background:
-    var(--paper);
+    white;
 
   border-radius: 18px;
 
   box-shadow:
     0 8px 30px
-    rgba(23, 48, 66, 0.12);
+    rgba(23,48,66,.12);
 
 }
 
 
 /* ==========================================================
-   BANDEAU JOUR
+   TITRE JOUR
    ========================================================== */
 
 .day-title {
+
+  min-height: 78px;
 
   flex:
     0
     0
     auto;
-
-  min-height: 74px;
 
   display: flex;
 
@@ -314,7 +312,7 @@ body {
   justify-content: center;
 
   padding:
-    12px
+    14px
     20px;
 
   background:
@@ -322,46 +320,32 @@ body {
 
   color: white;
 
-  font-size: 30px;
+  font-size: 34px;
 
   font-weight: 900;
 
-  text-align: center;
+  text-transform:
+    uppercase;
 
-  text-transform: uppercase;
-
-  letter-spacing: 0.08em;
+  letter-spacing:
+    .08em;
 
 }
 
 
 /* ==========================================================
-   CONTENU PRINCIPAL
+   CONTENU JOUR
    ========================================================== */
 
 .day-body {
 
   flex: 1;
 
+  display: flex;
+
+  flex-direction: column;
+
   min-height: 0;
-
-  display: grid;
-
-  /*
-   * Matin :
-   * hauteur adaptée au contenu.
-   *
-   * Repas :
-   * hauteur fixe.
-   *
-   * Après-midi :
-   * prend l'espace restant.
-   */
-
-  grid-template-rows:
-    auto
-    42px
-    1fr;
 
   background:
     var(--day-background);
@@ -370,46 +354,69 @@ body {
 
 
 /* ==========================================================
-   MATIN / APRÈS-MIDI
+   PÉRIODE
    ========================================================== */
 
 .period {
 
-  min-height: 0;
-
   padding:
     24px
-    34px;
+    30px;
 
 }
 
 
 /* ==========================================================
-   TITRE MATIN / APRÈS-MIDI
+   MATIN
+   ========================================================== */
+
+.period-morning {
+
+  flex:
+    0
+    0
+    auto;
+
+}
+
+
+/* ==========================================================
+   APRÈS-MIDI
+   ========================================================== */
+
+.period-afternoon {
+
+  flex:
+    1
+    1
+    auto;
+
+}
+
+
+/* ==========================================================
+   TITRE PÉRIODE
    ========================================================== */
 
 .period-title {
 
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 
-  font-size: 19px;
-
-  line-height: 1;
+  font-size: 21px;
 
   font-weight: 900;
 
-  text-transform: uppercase;
+  text-transform:
+    uppercase;
 
-  letter-spacing: 0.08em;
-
-  color:
-    #243442;
+  letter-spacing:
+    .08em;
 
 }
 
 
 /* ==========================================================
-   LISTE DES ACTIVITÉS
+   LISTE ACTIVITÉS
    ========================================================== */
 
 .activities-list {
@@ -418,25 +425,26 @@ body {
 
   flex-direction: column;
 
-  gap: 22px;
+  gap: 20px;
 
 }
 
 
 /* ==========================================================
-   ACTIVITÉ
+   CARTE ACTIVITÉ
    ========================================================== */
 
 .activity-card {
 
   position: relative;
 
+  width: 100%;
+
   padding:
-    18px
     20px;
 
   background:
-    rgba(255, 255, 255, 0.93);
+    rgba(255,255,255,.95);
 
   border:
     1px solid
@@ -463,15 +471,15 @@ body {
 
   position: relative;
 
-  min-height: 92px;
+  min-height: 110px;
 
-  padding-right: 120px;
+  padding-right: 135px;
 
 }
 
 
 /* ==========================================================
-   NOM DE L'ACTIVITÉ
+   TITRE ACTIVITÉ
    ========================================================== */
 
 .activity-title {
@@ -481,9 +489,9 @@ body {
     0
     10px;
 
-  font-size: 26px;
+  font-size: 29px;
 
-  line-height: 1.1;
+  line-height: 1.08;
 
   font-weight: 900;
 
@@ -499,15 +507,17 @@ body {
 
 .activity-time {
 
-  display: inline-flex;
+  display:
+    inline-flex;
 
   align-items: center;
 
   padding:
-    5px
-    10px;
+    6px
+    12px;
 
-  border-radius: 99px;
+  border-radius:
+    999px;
 
   background:
     var(--purple-soft);
@@ -515,9 +525,7 @@ body {
   color:
     var(--purple);
 
-  font-size: 17px;
-
-  line-height: 1.1;
+  font-size: 19px;
 
   font-weight: 900;
 
@@ -536,17 +544,17 @@ body {
 
   right: 0;
 
-  width: 95px;
+  width: 110px;
 
-  height: 95px;
+  height: 110px;
 
   object-fit: contain;
 
   object-position: center;
 
-  background: white;
-
   border-radius: 10px;
+
+  background: white;
 
 }
 
@@ -557,9 +565,9 @@ body {
 
 .activity-meta {
 
-  margin-top: 18px;
+  margin-top: 15px;
 
-  font-size: 16px;
+  font-size: 18px;
 
   line-height: 1.4;
 
@@ -583,54 +591,70 @@ body {
 
 .participants-title {
 
-  margin-top: 19px;
+  margin-top: 20px;
 
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 
   padding-top: 12px;
 
   border-top:
-    1px solid
-    var(--line);
+    2px solid
+    #e3e8eb;
 
   color:
-    #344957;
+    #354c5b;
 
-  font-size: 17px;
+  font-size: 18px;
 
   font-weight: 900;
 
-  text-transform: uppercase;
+  text-transform:
+    uppercase;
 
-  letter-spacing: 0.05em;
+  letter-spacing:
+    .05em;
 
 }
 
 
 /* ==========================================================
-   GRILLE DES PARTICIPANTS
+   GRILLE PARTICIPANTS DYNAMIQUE
    ========================================================== */
 
 .participants-grid {
 
+  width: 100%;
+
   display: grid;
 
+
   /*
-   * Ton dessin montre environ
-   * 3 participants par ligne.
+   * IMPORTANT
+   *
+   * AUCUN NOMBRE DE COLONNES FIXE.
+   *
+   * Le navigateur choisit automatiquement
+   * le nombre de colonnes selon :
+   *
+   * - largeur disponible
+   * - taille minimale d'une personne
+   * - largeur de la page
    */
 
   grid-template-columns:
     repeat(
-      3,
-      90px
+      auto-fit,
+      minmax(125px, 1fr)
     );
 
+
   gap:
-    14px
-    20px;
+    18px
+    12px;
 
   align-items: start;
+
+  justify-items: center;
 
 }
 
@@ -641,7 +665,17 @@ body {
 
 .participant {
 
-  width: 90px;
+  width: 100%;
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: flex-start;
 
   text-align: center;
 
@@ -650,26 +684,22 @@ body {
 
 /* ==========================================================
    PHOTO PARTICIPANT
-   60 × 60 PX
+   110 × 110 PX
    ========================================================== */
 
 .participant-photo {
 
-  width: 60px;
+  width: 110px;
 
-  height: 60px;
+  height: 110px;
 
-  min-width: 60px;
+  min-width: 110px;
 
-  min-height: 60px;
+  min-height: 110px;
 
-  max-width: 60px;
+  max-width: 110px;
 
-  max-height: 60px;
-
-  margin:
-    0
-    auto;
+  max-height: 110px;
 
   display: grid;
 
@@ -683,13 +713,17 @@ body {
     #edf3f5;
 
   border:
-    1px solid
-    #b8c6ce;
+    3px solid
+    white;
+
+  box-shadow:
+    0 0 0 2px
+    #b7c5cc;
 
   color:
     var(--purple);
 
-  font-size: 14px;
+  font-size: 24px;
 
   font-weight: 900;
 
@@ -697,56 +731,61 @@ body {
 
 
 /* ==========================================================
-   IMAGE DU PARTICIPANT
+   IMAGE PARTICIPANT
    ========================================================== */
 
 .participant-photo img {
 
   display: block;
 
-  width: 60px;
+  width: 110px;
 
-  height: 60px;
+  height: 110px;
 
-  min-width: 60px;
+  min-width: 110px;
 
-  min-height: 60px;
+  min-height: 110px;
 
-  max-width: 60px;
+  max-width: 110px;
 
-  max-height: 60px;
+  max-height: 110px;
 
   object-fit: cover;
 
-  object-position: center;
+  object-position:
+    center center;
 
 }
 
 
 /* ==========================================================
-   PRÉNOM
+   NOM PARTICIPANT
    ========================================================== */
 
 .participant-name {
 
-  width: 90px;
+  width: 100%;
 
-  margin-top: 5px;
+  margin-top: 8px;
+
+  padding:
+    0
+    3px;
 
   overflow: hidden;
 
-  text-overflow: ellipsis;
+  text-overflow:
+    ellipsis;
 
-  white-space: nowrap;
+  white-space:
+    nowrap;
 
   color:
     var(--ink);
 
-  font-size: 12px;
+  font-size: 15px;
 
-  line-height: 1.2;
-
-  font-weight: 700;
+  font-weight: 800;
 
 }
 
@@ -757,36 +796,36 @@ body {
 
 .meal-banner {
 
+  flex:
+    0
+    0
+    48px;
+
+  width: 100%;
+
   display: flex;
 
   align-items: center;
 
   justify-content: center;
 
-  width: 100%;
-
-  height: 42px;
-
-  padding:
-    0
-    12px;
-
   background:
-    var(--meal);
+    var(--purple);
 
   color: white;
 
-  font-size: 18px;
+  font-size: 20px;
 
   font-weight: 900;
 
-  letter-spacing: 0.03em;
+  letter-spacing:
+    .04em;
 
 }
 
 
 /* ==========================================================
-   AUCUNE ACTIVITÉ
+   CASE VIDE
    ========================================================== */
 
 .empty-slot {
@@ -803,17 +842,17 @@ body {
 
   border:
     1px dashed
-    #b9c8d0;
+    #bdcbd1;
 
   border-radius: 10px;
 
   background:
-    rgba(255, 255, 255, 0.40);
+    rgba(255,255,255,.45);
 
   color:
-    #82949e;
+    #899aa3;
 
-  font-size: 14px;
+  font-size: 15px;
 
   text-align: center;
 
@@ -821,7 +860,7 @@ body {
 
 
 /* ==========================================================
-   PIED DE PAGE
+   PIED PAGE
    ========================================================== */
 
 .page-footer {
@@ -832,7 +871,7 @@ body {
     auto;
 
   padding:
-    9px
+    10px
     20px;
 
   border-top:
@@ -844,9 +883,9 @@ body {
   color:
     #8b999f;
 
-  font-size: 9px;
-
   text-align: center;
+
+  font-size: 9px;
 
 }
 
@@ -857,7 +896,7 @@ body {
 
 dialog {
 
-  border: none;
+  border: 0;
 
   border-radius: 14px;
 
@@ -865,14 +904,15 @@ dialog {
 
   box-shadow:
     0 20px 60px
-    rgba(0, 0, 0, 0.2);
+    rgba(0,0,0,.20);
 
 }
 
 
 dialog pre {
 
-  white-space: pre-wrap;
+  white-space:
+    pre-wrap;
 
   background:
     #f5f7f8;
@@ -884,9 +924,115 @@ dialog pre {
 }
 
 
-dialog button {
+/* ==========================================================
+   ÉCRAN MOYEN
+   ========================================================== */
 
-  float: right;
+@media screen and (max-width: 900px) {
+
+  .activity-title {
+    font-size: 24px;
+  }
+
+
+  .activity-logo {
+
+    width: 90px;
+
+    height: 90px;
+
+  }
+
+
+  .activity-header {
+
+    min-height: 90px;
+
+    padding-right: 105px;
+
+  }
+
+
+  .participants-grid {
+
+    grid-template-columns:
+      repeat(
+        auto-fit,
+        minmax(115px, 1fr)
+      );
+
+  }
+
+
+  .participant-photo,
+  .participant-photo img {
+
+    width: 100px;
+
+    height: 100px;
+
+    min-width: 100px;
+
+    min-height: 100px;
+
+    max-width: 100px;
+
+    max-height: 100px;
+
+  }
+
+}
+
+
+/* ==========================================================
+   ÉCRAN PETIT
+   ========================================================== */
+
+@media screen and (max-width: 600px) {
+
+  #app {
+
+    padding: 8px;
+
+  }
+
+
+  .period {
+
+    padding:
+      18px
+      14px;
+
+  }
+
+
+  .participants-grid {
+
+    grid-template-columns:
+      repeat(
+        auto-fit,
+        minmax(105px, 1fr)
+      );
+
+  }
+
+
+  .participant-photo,
+  .participant-photo img {
+
+    width: 95px;
+
+    height: 95px;
+
+    min-width: 95px;
+
+    min-height: 95px;
+
+    max-width: 95px;
+
+    max-height: 95px;
+
+  }
 
 }
 
@@ -945,13 +1091,14 @@ dialog button {
 
   .pages {
 
-    display: block !important;
+    display:
+      block !important;
 
   }
 
 
   /* ========================================================
-     UNE JOURNÉE = UNE PAGE
+     PAGE A3
      ======================================================== */
 
   .day-page {
@@ -959,13 +1106,19 @@ dialog button {
     width: 100%;
 
     height:
-      calc(420mm - 16mm);
+      calc(
+        420mm - 16mm
+      );
 
     min-height:
-      calc(420mm - 16mm);
+      calc(
+        420mm - 16mm
+      );
 
     max-height:
-      calc(420mm - 16mm);
+      calc(
+        420mm - 16mm
+      );
 
     margin: 0;
 
@@ -977,18 +1130,22 @@ dialog button {
 
     overflow: hidden;
 
-    page-break-after: always;
+    page-break-after:
+      always;
 
-    break-after: page;
+    break-after:
+      page;
 
   }
 
 
   .day-page:last-child {
 
-    page-break-after: auto;
+    page-break-after:
+      auto;
 
-    break-after: auto;
+    break-after:
+      auto;
 
   }
 
@@ -999,93 +1156,79 @@ dialog button {
 
   .day-title {
 
-    min-height: 16mm;
+    min-height: 15mm;
 
-    padding: 2mm 4mm;
+    padding:
+      2mm
+      4mm;
 
-    font-size: 24px;
-
-  }
-
-
-  /* ========================================================
-     CORPS
-     ======================================================== */
-
-  .day-body {
-
-    /*
-     * Le matin s'adapte automatiquement.
-     * Le bandeau repas suit.
-     * L'après-midi prend le reste.
-     */
-
-    grid-template-rows:
-      auto
-      9mm
-      1fr;
+    font-size: 26px;
 
   }
 
 
   /* ========================================================
-     PÉRIODES
+     PÉRIODE
      ======================================================== */
 
   .period {
 
     padding:
-      5mm
-      7mm;
+      4mm
+      6mm;
 
   }
 
 
   .period-title {
 
-    margin-bottom: 3mm;
+    margin-bottom:
+      3mm;
 
-    font-size: 14px;
+    font-size: 16px;
 
   }
 
 
   .activities-list {
 
-    gap: 4mm;
+    gap: 3mm;
 
   }
 
 
   /* ========================================================
-     ACTIVITÉ
+     CARTE ACTIVITÉ
      ======================================================== */
 
   .activity-card {
 
     padding: 4mm;
 
-    border-left-width: 1.5mm;
+    border-left-width:
+      1.5mm;
 
-    border-radius: 3mm;
+    border-radius:
+      2.5mm;
 
   }
 
 
   .activity-header {
 
-    min-height: 22mm;
+    min-height: 24mm;
 
-    padding-right: 27mm;
+    padding-right: 29mm;
 
   }
 
 
   .activity-title {
 
-    margin-bottom: 2mm;
+    margin-bottom:
+      2mm;
 
-    font-size: 18px;
+    font-size: 19px;
 
   }
 
@@ -1107,20 +1250,21 @@ dialog button {
 
   .activity-logo {
 
-    width: 22mm;
+    width: 25mm;
 
-    height: 22mm;
+    height: 25mm;
 
   }
 
 
   /* ========================================================
-     ANIMATEURS
+     ANIMATEUR
      ======================================================== */
 
   .activity-meta {
 
-    margin-top: 3mm;
+    margin-top:
+      2.5mm;
 
     font-size: 11px;
 
@@ -1128,90 +1272,105 @@ dialog button {
 
 
   /* ========================================================
-     PARTICIPANTS
+     TITRE PARTICIPANTS
      ======================================================== */
 
   .participants-title {
 
-    margin-top: 3mm;
+    margin-top:
+      3mm;
 
-    margin-bottom: 2mm;
+    margin-bottom:
+      3mm;
 
-    padding-top: 2mm;
+    padding-top:
+      2mm;
 
-    font-size: 11px;
+    font-size: 12px;
 
   }
 
+
+  /* ========================================================
+     GRILLE DYNAMIQUE À L'IMPRESSION
+     ======================================================== */
 
   .participants-grid {
 
+    /*
+     * Toujours dynamique.
+     *
+     * Le nombre de colonnes dépend
+     * de la largeur réellement disponible.
+     */
+
     grid-template-columns:
       repeat(
-        3,
-        24mm
+        auto-fit,
+        minmax(28mm, 1fr)
       );
 
-    column-gap: 4mm;
+    column-gap:
+      2mm;
 
-    row-gap: 3mm;
-
-  }
-
-
-  .participant {
-
-    width: 24mm;
+    row-gap:
+      3mm;
 
   }
 
 
-  /*
-   * La photo reste exactement
-   * en 60 × 60 pixels.
-   */
+  /* ========================================================
+     PHOTO GRAND FORMAT IMPRESSION
+     ======================================================== */
 
   .participant-photo {
 
-    width: 60px;
+    width: 95px;
 
-    height: 60px;
+    height: 95px;
 
-    min-width: 60px;
+    min-width: 95px;
 
-    min-height: 60px;
+    min-height: 95px;
 
-    max-width: 60px;
+    max-width: 95px;
 
-    max-height: 60px;
+    max-height: 95px;
+
+    border-width: 2px;
+
+    box-shadow:
+      0 0 0 1px
+      #aaa;
+
+    font-size: 18px;
 
   }
 
 
   .participant-photo img {
 
-    width: 60px;
+    width: 95px;
 
-    height: 60px;
+    height: 95px;
 
-    min-width: 60px;
+    min-width: 95px;
 
-    min-height: 60px;
+    min-height: 95px;
 
-    max-width: 60px;
+    max-width: 95px;
 
-    max-height: 60px;
+    max-height: 95px;
 
   }
 
 
   .participant-name {
 
-    width: 24mm;
+    margin-top:
+      1.5mm;
 
-    margin-top: 1mm;
-
-    font-size: 9px;
+    font-size: 10px;
 
   }
 
@@ -1221,6 +1380,9 @@ dialog button {
      ======================================================== */
 
   .meal-banner {
+
+    flex-basis:
+      9mm;
 
     height: 9mm;
 
@@ -1235,9 +1397,11 @@ dialog button {
 
   .empty-slot {
 
-    min-height: 20mm;
+    min-height:
+      15mm;
 
-    padding: 3mm;
+    padding:
+      3mm;
 
     font-size: 10px;
 
@@ -1245,12 +1409,13 @@ dialog button {
 
 
   /* ========================================================
-     PIED DE PAGE
+     PIED PAGE
      ======================================================== */
 
   .page-footer {
 
-    padding: 2mm;
+    padding:
+      1.5mm;
 
     font-size: 7px;
 

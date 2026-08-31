@@ -3,8 +3,8 @@
 
 /* ============================================================
    PLANNING COLLECTIF
-   5 PAGES A3
-   UNE PAGE PAR JOUR
+   UNE PAGE A3 PAR JOUR
+   LUNDI → VENDREDI
    ============================================================ */
 
 
@@ -42,57 +42,72 @@ const TABLES = {
 const DAYS = [
 
   {
-    name: 'Lundi',
+
+    name:
+      'Lundi',
 
     color:
       '#1598e2',
 
     background:
-      'rgba(21,152,226,0.10)'
+      'rgba(21,152,226,.10)'
+
   },
 
 
   {
-    name: 'Mardi',
+
+    name:
+      'Mardi',
 
     color:
       '#2bb447',
 
     background:
-      'rgba(43,180,71,0.10)'
+      'rgba(43,180,71,.10)'
+
   },
 
 
   {
-    name: 'Mercredi',
+
+    name:
+      'Mercredi',
 
     color:
       '#c15bdf',
 
     background:
-      'rgba(193,91,223,0.10)'
+      'rgba(193,91,223,.10)'
+
   },
 
 
   {
-    name: 'Jeudi',
+
+    name:
+      'Jeudi',
 
     color:
       '#eda820',
 
     background:
-      'rgba(237,168,32,0.10)'
+      'rgba(237,168,32,.10)'
+
   },
 
 
   {
-    name: 'Vendredi',
+
+    name:
+      'Vendredi',
 
     color:
       '#d65357',
 
     background:
-      'rgba(214,83,87,0.10)'
+      'rgba(214,83,87,.10)'
+
   }
 
 ];
@@ -127,7 +142,7 @@ const $ =
 
 
 /* ============================================================
-   CONVERSION TABLE GRIST
+   TABLE GRIST → LIGNES
    ============================================================ */
 
 function rowsFromTable(table) {
@@ -144,6 +159,7 @@ function rowsFromTable(table) {
 
 
   return table.id.map(
+
     (
       id,
       index
@@ -173,6 +189,7 @@ function rowsFromTable(table) {
       return row;
 
     }
+
   );
 
 }
@@ -188,6 +205,8 @@ function refIds(value) {
     value === null
     ||
     value === undefined
+    ||
+    value === ''
   ) {
 
     return [];
@@ -225,15 +244,15 @@ function refIds(value) {
   }
 
 
-  const id =
+  const number =
     Number(value);
 
 
-  return Number.isFinite(id)
+  return Number.isFinite(number)
 
     ?
 
-    [id]
+    [number]
 
     :
 
@@ -243,7 +262,7 @@ function refIds(value) {
 
 
 /* ============================================================
-   INDEX PAR IDENTIFIANT
+   INDEX
    ============================================================ */
 
 function byId(rows) {
@@ -274,29 +293,26 @@ function text(
   fallback = ''
 ) {
 
-  return (
-
+  if (
     value === null
     ||
     value === undefined
     ||
     value === ''
+  ) {
 
-  )
+    return fallback;
 
-    ?
+  }
 
-    fallback
 
-    :
-
-    String(value);
+  return String(value);
 
 }
 
 
 /* ============================================================
-   HTML SÉCURISÉ
+   ÉCHAPPEMENT HTML
    ============================================================ */
 
 function esc(value) {
@@ -343,11 +359,11 @@ function normalizeDay(value) {
       .toLowerCase();
 
 
-  const day =
+  const found =
     DAYS.find(
 
-      item =>
-        item.name
+      day =>
+        day.name
           .toLowerCase()
 
         ===
@@ -357,15 +373,15 @@ function normalizeDay(value) {
     );
 
 
-  return day
-    ? day.name
+  return found
+    ? found.name
     : text(value);
 
 }
 
 
 /* ============================================================
-   HEURE EN MINUTES
+   HEURE → MINUTES
    ============================================================ */
 
 function minutes(value) {
@@ -420,18 +436,18 @@ function initials(name) {
 
     .map(
       part =>
-        part.charAt(0)
+        part
+          .charAt(0)
+          .toUpperCase()
     )
 
-    .join('')
-
-    .toUpperCase();
+    .join('');
 
 }
 
 
 /* ============================================================
-   COULEUR ACTIVITÉ
+   COULEUR DES ACTIVITÉS
    ============================================================ */
 
 function colorFor(name) {
@@ -449,7 +465,8 @@ function colorFor(name) {
       (
         hue * 31
         +
-        character.charCodeAt(0)
+        character
+          .charCodeAt(0)
       )
 
       %
@@ -467,7 +484,7 @@ function colorFor(name) {
 
 
 /* ============================================================
-   IMAGE GRIST
+   URL DES IMAGES GRIST
    ============================================================ */
 
 async function attachmentUrl(
@@ -491,12 +508,9 @@ async function attachmentUrl(
     ids[0];
 
 
-  /*
-   * Déjà en cache.
-   */
-
   if (
-    state.attachmentUrls
+    state
+      .attachmentUrls
       .has(id)
   ) {
 
@@ -509,10 +523,6 @@ async function attachmentUrl(
 
   try {
 
-    /*
-     * Token sécurisé Grist.
-     */
-
     if (
       !attachmentTokenInfo
     ) {
@@ -521,7 +531,8 @@ async function attachmentUrl(
         await grist.docApi
           .getAccessToken({
 
-            readOnly: true
+            readOnly:
+              true
 
           });
 
@@ -556,7 +567,9 @@ async function attachmentUrl(
   }
 
 
-  catch (error) {
+  catch (
+    error
+  ) {
 
     console.error(
 
@@ -577,7 +590,7 @@ async function attachmentUrl(
 
 
 /* ============================================================
-   CHARGEMENT DES TABLES
+   CHARGEMENT GRIST
    ============================================================ */
 
 async function fetchAll() {
@@ -690,8 +703,9 @@ function buildModel() {
     byId(users);
 
 
+
   /* ========================================================
-     PARTICIPANTS PAR ACTIVITÉ
+     ASSOCIATION ACTIVITÉ → PARTICIPANTS
      ======================================================== */
 
   const participantsByActivity =
@@ -718,7 +732,7 @@ function buildModel() {
     }
 
 
-    const participants =
+    const participantSet =
 
       participantsByActivity
         .get(activityId)
@@ -731,12 +745,16 @@ function buildModel() {
     refIds(
       participation.Participants
     )
+
     .forEach(
 
-      participantId =>
-        participants.add(
+      participantId => {
+
+        participantSet.add(
           Number(participantId)
-        )
+        );
+
+      }
 
     );
 
@@ -746,11 +764,12 @@ function buildModel() {
 
         activityId,
 
-        participants
+        participantSet
 
       );
 
   }
+
 
 
   /* ========================================================
@@ -778,7 +797,7 @@ function buildModel() {
             );
 
 
-          /* HEURE DÉBUT */
+          /* DÉBUT */
 
           const startRow =
             hours.get(
@@ -790,7 +809,7 @@ function buildModel() {
             );
 
 
-          /* HEURE FIN */
+          /* FIN */
 
           const endRow =
             hours.get(
@@ -811,10 +830,12 @@ function buildModel() {
             )
 
             .map(
+
               id =>
                 animators.get(
                   Number(id)
                 )
+
             )
 
             .filter(Boolean)
@@ -823,27 +844,29 @@ function buildModel() {
 
               animator => {
 
-                const display =
+                const displayName =
                   text(
                     animator.Nom2
                   );
 
 
                 if (
-                  display
+                  displayName
                 ) {
 
-                  return display;
+                  return displayName;
 
                 }
 
 
                 return (
+
                   `${text(
                     animator.Prenom
                   )} ${text(
                     animator.Nom
                   )}`
+
                 ).trim();
 
               }
@@ -853,12 +876,13 @@ function buildModel() {
             .filter(Boolean);
 
 
-          /* OBJET ACTIVITÉ */
 
           return {
 
             id:
-              Number(activity.id),
+              Number(
+                activity.id
+              ),
 
             name:
               text(
@@ -927,11 +951,6 @@ function buildModel() {
             visual:
               activity.Visuel,
 
-            description:
-              text(
-                activity.Remarques_planning
-              ),
-
             participants:
 
               participantsByActivity
@@ -957,7 +976,7 @@ function buildModel() {
 
 
 /* ============================================================
-   TRI DES ACTIVITÉS
+   TRI ACTIVITÉS
    ============================================================ */
 
 function sortActivities(
@@ -995,12 +1014,6 @@ function sortActivities(
 
 function periodOf(activity) {
 
-  /*
-   * Comme ton croquis :
-   * avant 12 h = matin
-   * à partir de 12 h = après-midi.
-   */
-
   return (
 
     minutes(
@@ -1025,10 +1038,12 @@ function periodOf(activity) {
 
 
 /* ============================================================
-   NOM D'UN USAGER
+   NOM USAGER
    ============================================================ */
 
-function userFullName(user) {
+function userFullName(
+  user
+) {
 
   if (
     !user
@@ -1060,7 +1075,9 @@ function userFullName(user) {
    PRÉNOM
    ============================================================ */
 
-function userFirstName(user) {
+function userFirstName(
+  user
+) {
 
   if (
     !user
@@ -1083,7 +1100,7 @@ function userFirstName(user) {
 
 
 /* ============================================================
-   PARTICIPANT
+   HTML PARTICIPANT
    ============================================================ */
 
 async function participantHtml(
@@ -1091,7 +1108,8 @@ async function participantHtml(
 ) {
 
   const user =
-    state.usersById
+    state
+      .usersById
       .get(
         Number(participantId)
       );
@@ -1120,14 +1138,14 @@ async function participantHtml(
     );
 
 
-  let portrait;
+  let photoHtml;
 
 
   if (
     portraitUrl
   ) {
 
-    portrait = `
+    photoHtml = `
 
       <div class="participant-photo">
 
@@ -1145,7 +1163,7 @@ async function participantHtml(
 
   else {
 
-    portrait = `
+    photoHtml = `
 
       <div class="participant-photo">
 
@@ -1164,7 +1182,7 @@ async function participantHtml(
 
     <div class="participant">
 
-      ${portrait}
+      ${photoHtml}
 
       <div class="participant-name">
 
@@ -1187,19 +1205,11 @@ async function activityCard(
   activity
 ) {
 
-  /* ========================================================
-     PICTOGRAMME
-     ======================================================== */
-
-  const logo =
+  const pictogramUrl =
     await attachmentUrl(
       activity.visual
     );
 
-
-  /* ========================================================
-     HORAIRE
-     ======================================================== */
 
   const schedule =
     [
@@ -1214,22 +1224,47 @@ async function activityCard(
     );
 
 
-  /* ========================================================
-     COULEUR ACTIVITÉ
-     ======================================================== */
-
-  const cardColor =
-    colorFor(
-      activity.name
-    );
-
-
-  /* ========================================================
-     PARTICIPANTS
-     ======================================================== */
-
   const participantIds =
     [...activity.participants];
+
+
+  /*
+   * Tri alphabétique des personnes.
+   */
+
+  participantIds.sort(
+
+    (
+      firstId,
+      secondId
+    ) => {
+
+      const first =
+        state.usersById
+          .get(
+            Number(firstId)
+          );
+
+
+      const second =
+        state.usersById
+          .get(
+            Number(secondId)
+          );
+
+
+      return userFirstName(first)
+        .localeCompare(
+
+          userFirstName(second),
+
+          'fr'
+
+        );
+
+    }
+
+  );
 
 
   const participantElements =
@@ -1248,26 +1283,28 @@ async function activityCard(
       .join('');
 
 
+  const cardColor =
+    colorFor(
+      activity.name
+    );
+
+
   /* ========================================================
      ANIMATEURS
      ======================================================== */
 
-  let animatorHtml =
-    '';
+  const animatorHtml =
 
-
-  if (
     activity.animators.length
-  ) {
 
-    animatorHtml = `
+      ?
+
+      `
 
       <div class="activity-meta">
 
         <strong>
-
           Avec :
-
         </strong>
 
         ${esc(
@@ -1277,18 +1314,20 @@ async function activityCard(
 
       </div>
 
-    `;
+      `
 
-  }
+      :
+
+      '';
 
 
   /* ========================================================
-     PICTOGRAMME HTML
+     PICTOGRAMME
      ======================================================== */
 
-  const logoHtml =
+  const pictogramHtml =
 
-    logo
+    pictogramUrl
 
       ?
 
@@ -1296,7 +1335,7 @@ async function activityCard(
 
       <img
         class="activity-logo"
-        src="${logo}"
+        src="${pictogramUrl}"
         alt=""
       >
 
@@ -1308,12 +1347,12 @@ async function activityCard(
 
 
   /* ========================================================
-     PARTICIPANTS HTML
+     PARTICIPANTS
      ======================================================== */
 
   const peopleHtml =
 
-    participantsHtml
+    participantIds.length
 
       ?
 
@@ -1326,6 +1365,8 @@ async function activityCard(
             ? 's'
             : ''
         }
+        ·
+        ${participantIds.length}
 
       </div>
 
@@ -1359,7 +1400,7 @@ async function activityCard(
 
 
   /* ========================================================
-     CARTE
+     HTML FINAL
      ======================================================== */
 
   return `
@@ -1409,7 +1450,7 @@ async function activityCard(
         }
 
 
-        ${logoHtml}
+        ${pictogramHtml}
 
 
       </div>
@@ -1434,10 +1475,11 @@ async function activityCard(
 
 async function periodHtml(
   title,
-  activities
+  activities,
+  cssClass
 ) {
 
-  let activitiesHtml;
+  let content;
 
 
   if (
@@ -1454,7 +1496,7 @@ async function periodHtml(
       );
 
 
-    activitiesHtml =
+    content =
       cards.join('');
 
   }
@@ -1462,7 +1504,7 @@ async function periodHtml(
 
   else {
 
-    activitiesHtml = `
+    content = `
 
       <div class="empty-slot">
 
@@ -1477,7 +1519,12 @@ async function periodHtml(
 
   return `
 
-    <section class="period">
+    <section
+      class="
+        period
+        ${cssClass}
+      "
+    >
 
 
       <div class="period-title">
@@ -1489,7 +1536,7 @@ async function periodHtml(
 
       <div class="activities-list">
 
-        ${activitiesHtml}
+        ${content}
 
       </div>
 
@@ -1502,16 +1549,12 @@ async function periodHtml(
 
 
 /* ============================================================
-   PAGE D'UN JOUR
+   PAGE D'UNE JOURNÉE
    ============================================================ */
 
 async function dayPage(
   day
 ) {
-
-  /* ========================================================
-     ACTIVITÉS DU JOUR
-     ======================================================== */
 
   const activities =
 
@@ -1531,11 +1574,8 @@ async function dayPage(
       );
 
 
-  /* ========================================================
-     MATIN
-     ======================================================== */
-
   const morning =
+
     activities.filter(
 
       activity =>
@@ -1546,11 +1586,8 @@ async function dayPage(
     );
 
 
-  /* ========================================================
-     APRÈS-MIDI
-     ======================================================== */
-
   const afternoon =
+
     activities.filter(
 
       activity =>
@@ -1561,27 +1598,29 @@ async function dayPage(
     );
 
 
-  /* ========================================================
-     HTML PÉRIODES
-     ======================================================== */
-
   const morningHtml =
     await periodHtml(
+
       'MATIN',
-      morning
+
+      morning,
+
+      'period-morning'
+
     );
 
 
   const afternoonHtml =
     await periodHtml(
+
       'APRÈS-MIDI',
-      afternoon
+
+      afternoon,
+
+      'period-afternoon'
+
     );
 
-
-  /* ========================================================
-     PAGE
-     ======================================================== */
 
   return `
 
@@ -1600,8 +1639,6 @@ async function dayPage(
     >
 
 
-      <!-- JOUR -->
-
       <header class="day-title">
 
         ${esc(
@@ -1611,17 +1648,12 @@ async function dayPage(
       </header>
 
 
-      <!-- CONTENU -->
 
       <div class="day-body">
 
 
-        <!-- MATIN -->
-
         ${morningHtml}
 
-
-        <!-- REPAS -->
 
         <div class="meal-banner">
 
@@ -1630,15 +1662,12 @@ async function dayPage(
         </div>
 
 
-        <!-- APRÈS-MIDI -->
-
         ${afternoonHtml}
 
 
       </div>
 
 
-      <!-- PIED DE PAGE -->
 
       <footer class="page-footer">
 
@@ -1656,7 +1685,7 @@ async function dayPage(
 
 
 /* ============================================================
-   RENDU DES 5 JOURS
+   RENDU DE LA SEMAINE
    ============================================================ */
 
 async function render() {
@@ -1669,11 +1698,7 @@ async function render() {
     '';
 
 
-  /* ========================================================
-     CRÉATION LUNDI → VENDREDI
-     ======================================================== */
-
-  const generatedPages =
+  const generated =
     await Promise.all(
 
       DAYS.map(
@@ -1684,12 +1709,8 @@ async function render() {
 
 
   pages.innerHTML =
-    generatedPages.join('');
+    generated.join('');
 
-
-  /* ========================================================
-     AFFICHAGE
-     ======================================================== */
 
   $('status')
     .classList
@@ -1773,7 +1794,7 @@ function showError(error) {
 
       `${error?.message || error}
 
-Vérifiez que les tables Grist portent exactement ces noms :
+Vérifiez les tables :
 
 ${Object.values(TABLES).join('\n')}`;
 
@@ -1803,15 +1824,10 @@ $('printBtn')
 
 
 /* ============================================================
-   GRIST
+   INITIALISATION GRIST
    ============================================================ */
 
 grist.ready({
-
-  /*
-   * Nécessaire car plusieurs tables
-   * sont lues directement.
-   */
 
   requiredAccess:
     'full'
@@ -1820,12 +1836,14 @@ grist.ready({
 
 
 grist.onOptions(
+
   (
     _options,
     interaction
   ) => {
 
     if (
+
       interaction?.access_level
 
       &&
@@ -1833,6 +1851,7 @@ grist.onOptions(
       interaction.access_level
       !==
       'full'
+
     ) {
 
       showStatus(
@@ -1846,6 +1865,7 @@ grist.onOptions(
     }
 
   }
+
 );
 
 

@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="fr">
 
 <head>
@@ -12,7 +11,7 @@
   >
 
   <title>
-    Planning collectif hebdomadaire - SAJ Anagallis
+    Planning collectif - SAJ Anagallis
   </title>
 
   <link
@@ -20,7 +19,9 @@
     href="style.css"
   >
 
-  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+  <script
+    src="https://docs.getgrist.com/grist-plugin-api.js"
+  ></script>
 
 </head>
 
@@ -29,7 +30,7 @@
 
 
   <!-- =====================================================
-       BARRE DE COMMANDE
+       BARRE SUPÉRIEURE
        ===================================================== -->
 
   <header class="toolbar no-print">
@@ -39,6 +40,7 @@
       <div class="brand-mark">
         SAJ
       </div>
+
 
       <div>
 
@@ -59,9 +61,7 @@
       id="printBtn"
       type="button"
     >
-
       Imprimer / PDF
-
     </button>
 
   </header>
@@ -75,8 +75,6 @@
   <main id="app">
 
 
-    <!-- CHARGEMENT -->
-
     <section
       id="status"
       class="status"
@@ -87,10 +85,10 @@
     </section>
 
 
-    <!--
-      Les 5 pages A3 seront générées ici
-      automatiquement par script.js
-    -->
+
+    <!-- ===================================================
+         LES 5 PAGES SONT CRÉÉES ICI
+         =================================================== -->
 
     <section
       id="pages"
@@ -124,10 +122,6 @@
   </dialog>
 
 
-
-  <!-- =====================================================
-       JAVASCRIPT
-       ===================================================== -->
 
   <script src="script.js"></script>
 
