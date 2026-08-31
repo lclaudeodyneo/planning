@@ -4,32 +4,6 @@
 /* ============================================================
    PLANNING COLLECTIF
    SAJ ANAGALLIS
-
-   Tables utilisées directement :
-
-   Participations
-      - Activites
-      - Participants
-
-   Activites
-      - Nom_activite
-      - Jour
-      - Heure_debut
-      - Heure_fin
-      - Visuel
-
-   Usagers
-      - Prenom
-      - Nom
-      - Usager
-      - Portrait
-
-   Jours_de_la_semaine
-      - Jour
-      - Num_jour
-
-   Heures
-      - Heures
    ============================================================ */
 
 
@@ -41,27 +15,32 @@ const DAYS = [
 
   {
     name: 'Lundi',
-    color: '#7A4DA3'
+    key: 'monday',
+    color: '#1598e2'
   },
 
   {
     name: 'Mardi',
-    color: '#2F80A8'
+    key: 'tuesday',
+    color: '#2bb447'
   },
 
   {
     name: 'Mercredi',
-    color: '#348B68'
+    key: 'wednesday',
+    color: '#c15bdf'
   },
 
   {
     name: 'Jeudi',
-    color: '#D1842C'
+    key: 'thursday',
+    color: '#eda820'
   },
 
   {
     name: 'Vendredi',
-    color: '#B64B5D'
+    key: 'friday',
+    color: '#d65357'
   }
 
 ];
@@ -95,7 +74,7 @@ const TABLES = {
 
 
 /* ============================================================
-   DONNÉES
+   ÉTAT
    ============================================================ */
 
 let state = {
@@ -114,10 +93,6 @@ let state = {
 
 };
 
-
-/* ============================================================
-   IMAGES GRIST
-   ============================================================ */
 
 let attachmentTokenInfo = null;
 
@@ -167,7 +142,7 @@ function get(
 
 
 /* ============================================================
-   CONVERTIT UNE TABLE GRIST EN TABLEAU DE LIGNES
+   TABLE GRIST → LIGNES
    ============================================================ */
 
 function rowsFromTable(table) {
@@ -218,7 +193,7 @@ function rowsFromTable(table) {
 
 
 /* ============================================================
-   LISTES DE RÉFÉRENCES GRIST
+   RÉFÉRENCES GRIST
    ============================================================ */
 
 function listIds(value) {
@@ -227,33 +202,19 @@ function listIds(value) {
     Array.isArray(value)
   ) {
 
-    let list =
-      value;
-
-
-    /*
-     * Les listes Grist sont généralement :
-     *
-     * ["L", 1, 2, 3]
-     */
-
-    if (
-      value[0] === 'L' ||
-      value[0] === 'l'
-    ) {
-
-      list =
-        value.slice(1);
-
-    }
+    const list =
+      (
+        value[0] === 'L' ||
+        value[0] === 'l'
+      )
+        ? value.slice(1)
+        : value;
 
 
     return list
       .flat()
       .map(Number)
-      .filter(
-        Number.isFinite
-      );
+      .filter(Number.isFinite);
 
   }
 
@@ -267,9 +228,7 @@ function listIds(value) {
     number !== 0
   ) {
 
-    return [
-      number
-    ];
+    return [number];
 
   }
 
@@ -278,10 +237,6 @@ function listIds(value) {
 
 }
 
-
-/* ============================================================
-   PREMIÈRE RÉFÉRENCE
-   ============================================================ */
 
 function firstId(value) {
 
@@ -294,17 +249,13 @@ function firstId(value) {
 }
 
 
-/* ============================================================
-   INDEX PAR ID
-   ============================================================ */
-
 function byId(rows) {
 
   return new Map(
 
     rows.map(
       row => [
-        row.id,
+        Number(row.id),
         row
       ]
     )
@@ -338,32 +289,18 @@ function minutes(value) {
 
 
   return (
-
-    Number(
-      match[1]
-    )
-    *
-    60
-
+    Number(match[1]) * 60
     +
-
-    Number(
-      match[2]
-    )
-
+    Number(match[2])
   );
 
 }
 
 
-/* ============================================================
-   TEXTE D'UNE RÉFÉRENCE
-   ============================================================ */
-
 function referenceText(
   value,
   rows,
-  columns
+  names
 ) {
 
   const id =
@@ -378,8 +315,7 @@ function referenceText(
 
 
   const row =
-    byId(rows)
-      .get(id);
+    byId(rows).get(id);
 
 
   if (!row) {
@@ -390,119 +326,36 @@ function referenceText(
 
 
   return normalize(
-
     get(
       row,
-      ...columns
+      ...names
     )
-
   );
 
 }
 
 
 /* ============================================================
-   HEURE D'UNE ACTIVITÉ
+   JOUR DE L'ACTIVITÉ
    ============================================================ */
 
-function activityHour(
-  activity,
-  start = true
-) {
-
-  const helper =
-    start
-      ? 'gristHelper_Display3'
-      : 'gristHelper_Display4';
-
-
-  const column =
-    start
-      ? 'Heure_debut'
-      : 'Heure_fin';
-
-
-  /*
-   * On essaie d'abord la colonne
-   * d'affichage Grist.
-   */
-
-  const helperValue =
-    normalize(
-      get(
-        activity,
-        helper
-      )
-    );
-
-
-  if (
-    helperValue
-  ) {
-
-    return helperValue;
-
-  }
-
-
-  /*
-   * Sinon on va directement
-   * rechercher dans Heures.
-   */
-
-  return referenceText(
-
-    get(
-      activity,
-      column
-    ),
-
-    state.hours,
-
-    [
-      'Heures'
-    ]
-
-  );
-
-}
-
-
-/* ============================================================
-   JOUR D'UNE ACTIVITÉ
-   ============================================================ */
-
-function activityDay(
-  activity
-) {
-
-  /*
-   * Colonne helper si disponible.
-   */
+function activityDay(activity) {
 
   const helper =
     normalize(
-
       get(
         activity,
         'gristHelper_Display2'
       )
-
     );
 
 
-  if (
-    helper
-  ) {
+  if (helper) {
 
     return helper;
 
   }
 
-
-  /*
-   * Sinon vraie référence Jour.
-   */
 
   return referenceText(
 
@@ -523,7 +376,62 @@ function activityDay(
 
 
 /* ============================================================
-   NOM COMPLET USAGER
+   HEURE DE L'ACTIVITÉ
+   ============================================================ */
+
+function activityHour(
+  activity,
+  start = true
+) {
+
+  const helper =
+    start
+      ? 'gristHelper_Display3'
+      : 'gristHelper_Display4';
+
+
+  const column =
+    start
+      ? 'Heure_debut'
+      : 'Heure_fin';
+
+
+  const displayed =
+    normalize(
+      get(
+        activity,
+        helper
+      )
+    );
+
+
+  if (displayed) {
+
+    return displayed;
+
+  }
+
+
+  return referenceText(
+
+    get(
+      activity,
+      column
+    ),
+
+    state.hours,
+
+    [
+      'Heures'
+    ]
+
+  );
+
+}
+
+
+/* ============================================================
+   NOM USAGER
    ============================================================ */
 
 function userName(user) {
@@ -535,97 +443,71 @@ function userName(user) {
   }
 
 
-  /*
-   * Ta table contient déjà
-   * une colonne Usager.
-   */
-
-  const displayName =
+  const display =
     normalize(
-
       get(
         user,
         'Usager'
       )
-
     );
 
 
-  if (
-    displayName
-  ) {
+  if (display) {
 
-    return displayName;
+    return display;
 
   }
 
 
   const prenom =
     normalize(
-
       get(
         user,
         'Prenom',
         'Prénom'
       )
-
     );
 
 
   const nom =
     normalize(
-
       get(
         user,
         'Nom'
       )
-
     );
 
 
   return (
-
     `${prenom} ${nom}`
-
   ).trim();
 
 }
 
 
-/* ============================================================
-   PRÉNOM
-   ============================================================ */
-
 function firstName(user) {
 
-  const prenom =
-    normalize(
+  return (
 
+    normalize(
       get(
         user,
         'Prenom',
         'Prénom'
       )
+    )
 
-    );
+    ||
 
+    userName(user)
 
-  if (
-    prenom
-  ) {
-
-    return prenom;
-
-  }
-
-
-  return userName(user);
+  );
 
 }
 
 
 /* ============================================================
-   INITIALES SI PHOTO ABSENTE
+   INITIALES
    ============================================================ */
 
 function initials(name) {
@@ -636,18 +518,13 @@ function initials(name) {
 
     .filter(Boolean)
 
-    .slice(
-      0,
-      2
-    )
+    .slice(0, 2)
 
     .map(
-
       word =>
         word
           .charAt(0)
           .toUpperCase()
-
     )
 
     .join('');
@@ -656,31 +533,21 @@ function initials(name) {
 
 
 /* ============================================================
-   URL SÉCURISÉE D'UNE PIÈCE JOINTE GRIST
+   IMAGES GRIST
    ============================================================ */
 
-async function attachmentUrl(
-  value
-) {
+async function attachmentUrl(value) {
 
   const id =
     listIds(value)[0];
 
 
-  if (
-    !id
-  ) {
+  if (!id) {
 
     return '';
 
   }
 
-
-  /*
-   * Cache :
-   * évite de demander plusieurs fois
-   * la même image.
-   */
 
   if (
     attachmentCache.has(id)
@@ -692,11 +559,6 @@ async function attachmentUrl(
 
 
   try {
-
-    /*
-     * On demande un token
-     * de lecture Grist.
-     */
 
     if (
       !attachmentTokenInfo
@@ -724,9 +586,7 @@ async function attachmentUrl(
       +
 
       `?auth=${encodeURIComponent(
-
         attachmentTokenInfo.token
-
       )}`;
 
 
@@ -740,18 +600,12 @@ async function attachmentUrl(
 
   }
 
-  catch (
-    error
-  ) {
+  catch (error) {
 
     console.error(
-
       'Impossible de charger la pièce jointe',
-
       id,
-
       error
-
     );
 
 
@@ -770,43 +624,27 @@ function participantsForActivity(
   activityId
 ) {
 
-  const participantIds =
+  const ids =
     new Set();
 
 
-  /*
-   * On parcourt Participations.
-   */
-
   state.participations
     .forEach(
-
       participation => {
 
-        /*
-         * Activité associée
-         * à cette ligne.
-         */
-
-        const participationActivityId =
+        const linkedActivity =
           firstId(
-
             get(
               participation,
               'Activites'
             )
-
           );
 
 
-        /*
-         * Ce n'est pas notre activité.
-         */
-
         if (
-          participationActivityId
+          Number(linkedActivity)
           !==
-          activityId
+          Number(activityId)
         ) {
 
           return;
@@ -814,94 +652,158 @@ function participantsForActivity(
         }
 
 
-        /*
-         * On récupère tous
-         * les participants.
-         */
-
-        const ids =
-          listIds(
-
-            get(
-              participation,
-              'Participants'
-            )
-
-          );
-
-
-        ids.forEach(
-
+        listIds(
+          get(
+            participation,
+            'Participants'
+          )
+        )
+        .forEach(
           id =>
-            participantIds.add(id)
-
+            ids.add(
+              Number(id)
+            )
         );
 
       }
-
     );
 
 
-  /*
-   * Conversion ID → ligne Usager.
-   */
-
-  const usersById =
+  const users =
     byId(
       state.users
     );
 
 
-  return (
-    [...participantIds]
+  return [...ids]
 
-      .map(
+    .map(
+      id =>
+        users.get(id)
+    )
 
-        id =>
-          usersById.get(id)
+    .filter(Boolean)
 
-      )
-
-      .filter(Boolean)
-
-      .sort(
-
-        (
-          a,
-          b
-        ) =>
-
-          firstName(a)
-            .localeCompare(
-
-              firstName(b),
-
-              'fr',
-
-              {
-                sensitivity:
-                  'base'
-              }
-
-            )
-
-      )
-  );
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        firstName(a)
+          .localeCompare(
+            firstName(b),
+            'fr'
+          )
+    );
 
 }
 
 
 /* ============================================================
-   CRÉATION D'UNE PERSONNE
+   ANIMATEURS
+   ============================================================ */
+
+function animateursForActivity(
+  activity
+) {
+
+  const value =
+    get(
+      activity,
+      'Animateur_s',
+      'Animateurs',
+      'Animateur'
+    );
+
+
+  const ids =
+    listIds(value);
+
+
+  if (!ids.length) {
+
+    return normalize(value);
+
+  }
+
+
+  const map =
+    byId(
+      state.animateurs
+    );
+
+
+  const names =
+    ids
+      .map(
+        id =>
+          map.get(
+            Number(id)
+          )
+      )
+
+      .filter(Boolean)
+
+      .map(
+        person => {
+
+          const display =
+            normalize(
+              get(
+                person,
+                'Nom2'
+              )
+            );
+
+
+          if (display) {
+
+            return display;
+
+          }
+
+
+          const prenom =
+            normalize(
+              get(
+                person,
+                'Prenom',
+                'Prénom'
+              )
+            );
+
+
+          const nom =
+            normalize(
+              get(
+                person,
+                'Nom'
+              )
+            );
+
+
+          return (
+            `${prenom} ${nom}`
+          ).trim();
+
+        }
+      )
+
+      .filter(Boolean);
+
+
+  return names.join(', ');
+
+}
+
+
+/* ============================================================
+   CRÉATION D'UN PARTICIPANT
    ============================================================ */
 
 async function createParticipant(
   user
 ) {
-
-  /*
-   * Bloc général.
-   */
 
   const person =
     document.createElement(
@@ -910,12 +812,8 @@ async function createParticipant(
 
 
   person.className =
-    'collective-person';
+    'participant';
 
-
-  /*
-   * Cercle photo.
-   */
 
   const portrait =
     document.createElement(
@@ -924,27 +822,19 @@ async function createParticipant(
 
 
   portrait.className =
-    'collective-person-photo';
+    'participant-photo';
 
-
-  /*
-   * Photo dans Usagers.Portrait.
-   */
 
   const url =
     await attachmentUrl(
-
       get(
         user,
         'Portrait'
       )
-
     );
 
 
-  if (
-    url
-  ) {
+  if (url) {
 
     const image =
       document.createElement(
@@ -959,11 +849,6 @@ async function createParticipant(
     image.alt =
       userName(user);
 
-
-    /*
-     * Si l'image ne charge pas :
-     * initiales.
-     */
 
     image.onerror =
       () => {
@@ -995,10 +880,6 @@ async function createParticipant(
   }
 
 
-  /*
-   * Prénom sous la photo.
-   */
-
   const name =
     document.createElement(
       'div'
@@ -1006,16 +887,12 @@ async function createParticipant(
 
 
   name.className =
-    'collective-person-name';
+    'participant-name';
 
 
   name.textContent =
     firstName(user);
 
-
-  /*
-   * Assemblage.
-   */
 
   person.appendChild(
     portrait
@@ -1033,12 +910,11 @@ async function createParticipant(
 
 
 /* ============================================================
-   CRÉATION CARTE ACTIVITÉ
+   CARTE ACTIVITÉ
    ============================================================ */
 
 async function createActivityCard(
-  activity,
-  day
+  activity
 ) {
 
   const card =
@@ -1048,131 +924,36 @@ async function createActivityCard(
 
 
   card.className =
-    'collective-activity';
-
-
-  /*
-   * Couleur du contour.
-   */
-
-  card.style.setProperty(
-
-    '--activity-color',
-
-    day.color
-
-  );
+    'activity-card';
 
 
   /* ========================================================
-     EN-TÊTE
+     HAUT
      ======================================================== */
 
-  const header =
+  const top =
     document.createElement(
       'div'
     );
 
 
-  header.className =
-    'collective-activity-header';
+  top.className =
+    'activity-top';
 
 
   /* ========================================================
-     PICTOGRAMME
+     TEXTE
      ======================================================== */
 
-  const visual =
+  const info =
     document.createElement(
       'div'
     );
 
 
-  visual.className =
-    'collective-activity-visual';
+  info.className =
+    'activity-info';
 
-
-  /*
-   * Pictogramme :
-   * Activites.Visuel
-   */
-
-  const visualUrl =
-    await attachmentUrl(
-
-      get(
-        activity,
-        'Visuel'
-      )
-
-    );
-
-
-  if (
-    visualUrl
-  ) {
-
-    const image =
-      document.createElement(
-        'img'
-      );
-
-
-    image.src =
-      visualUrl;
-
-
-    image.alt =
-      `Pictogramme ${
-        normalize(
-
-          get(
-            activity,
-            'Nom_activite'
-          )
-
-        )
-      }`;
-
-
-    /*
-     * Si pictogramme cassé,
-     * on vide simplement la zone.
-     */
-
-    image.onerror =
-      () => {
-
-        visual.innerHTML =
-          '';
-
-      };
-
-
-    visual.appendChild(
-      image
-    );
-
-  }
-
-
-  /* ========================================================
-     TEXTE ACTIVITÉ
-     ======================================================== */
-
-  const information =
-    document.createElement(
-      'div'
-    );
-
-
-  information.className =
-    'collective-activity-info';
-
-
-  /*
-   * Nom activité.
-   */
 
   const title =
     document.createElement(
@@ -1181,28 +962,19 @@ async function createActivityCard(
 
 
   title.className =
-    'collective-activity-title';
+    'activity-title';
 
 
   title.textContent =
-
     normalize(
-
       get(
         activity,
         'Nom_activite'
       )
-
     )
-
     ||
-
     'Activité';
 
-
-  /*
-   * Horaire.
-   */
 
   const time =
     document.createElement(
@@ -1211,7 +983,7 @@ async function createActivityCard(
 
 
   time.className =
-    'collective-activity-time';
+    'activity-time';
 
 
   const start =
@@ -1241,16 +1013,12 @@ async function createActivityCard(
   else {
 
     time.textContent =
-      start
-      ||
-      end
-      ||
-      '';
+      start || end || '';
 
   }
 
 
-  information.appendChild(
+  info.appendChild(
     title
   );
 
@@ -1259,26 +1027,123 @@ async function createActivityCard(
     time.textContent
   ) {
 
-    information.appendChild(
+    info.appendChild(
       time
     );
 
   }
 
 
-  header.appendChild(
-    visual
+  /* ========================================================
+     PICTOGRAMME
+     ======================================================== */
+
+  const pictogram =
+    document.createElement(
+      'div'
+    );
+
+
+  pictogram.className =
+    'activity-pictogram';
+
+
+  const visualUrl =
+    await attachmentUrl(
+      get(
+        activity,
+        'Visuel'
+      )
+    );
+
+
+  if (visualUrl) {
+
+    const image =
+      document.createElement(
+        'img'
+      );
+
+
+    image.src =
+      visualUrl;
+
+
+    image.alt =
+      title.textContent;
+
+
+    pictogram.appendChild(
+      image
+    );
+
+  }
+
+
+  top.appendChild(
+    info
   );
 
 
-  header.appendChild(
-    information
+  top.appendChild(
+    pictogram
   );
 
 
   card.appendChild(
-    header
+    top
   );
+
+
+  /* ========================================================
+     ANIMATEURS
+     ======================================================== */
+
+  const staff =
+    animateursForActivity(
+      activity
+    );
+
+
+  if (staff) {
+
+    const staffElement =
+      document.createElement(
+        'div'
+      );
+
+
+    staffElement.className =
+      'activity-staff';
+
+
+    const strong =
+      document.createElement(
+        'strong'
+      );
+
+
+    strong.textContent =
+      'Avec : ';
+
+
+    staffElement.appendChild(
+      strong
+    );
+
+
+    staffElement.appendChild(
+      document.createTextNode(
+        staff
+      )
+    );
+
+
+    card.appendChild(
+      staffElement
+    );
+
+  }
 
 
   /* ========================================================
@@ -1291,65 +1156,60 @@ async function createActivityCard(
     );
 
 
-  const participantArea =
-    document.createElement(
-      'div'
-    );
-
-
-  participantArea.className =
-    'collective-participants';
-
-
   if (
-    participants.length === 0
+    participants.length
   ) {
 
-    const empty =
+    const participantTitle =
       document.createElement(
         'div'
       );
 
 
-    empty.className =
-      'collective-no-participant';
+    participantTitle.className =
+      'participant-title';
 
 
-    empty.textContent =
-      'Aucun participant';
+    participantTitle.textContent =
+      participants.length === 1
+        ? 'Participant'
+        : 'Participants';
 
 
-    participantArea.appendChild(
-      empty
+    card.appendChild(
+      participantTitle
     );
 
-  }
 
-  else {
+    const grid =
+      document.createElement(
+        'div'
+      );
+
+
+    grid.className =
+      'participant-grid';
+
 
     for (
       const participant
       of participants
     ) {
 
-      const participantElement =
+      grid.appendChild(
         await createParticipant(
           participant
-        );
-
-
-      participantArea.appendChild(
-        participantElement
+        )
       );
 
     }
 
+
+    card.appendChild(
+      grid
+    );
+
   }
-
-
-  card.appendChild(
-    participantArea
-  );
 
 
   return card;
@@ -1358,64 +1218,105 @@ async function createActivityCard(
 
 
 /* ============================================================
-   CRÉATION MATIN / APRÈS-MIDI
+   ACTIVITÉS D'UN JOUR
    ============================================================ */
 
-async function createPeriod(
-  activities,
+function activitiesForDay(
+  day
+) {
+
+  return state.activities
+
+    .filter(
+      activity =>
+
+        normalize(
+          activityDay(activity)
+        ).toLowerCase()
+
+        ===
+
+        day.name.toLowerCase()
+
+    )
+
+    .sort(
+      (
+        a,
+        b
+      ) =>
+
+        minutes(
+          activityHour(
+            a,
+            true
+          )
+        )
+
+        -
+
+        minutes(
+          activityHour(
+            b,
+            true
+          )
+        )
+    );
+
+}
+
+
+/* ============================================================
+   CELLULE MATIN / APRÈS-MIDI
+   ============================================================ */
+
+async function createPeriodCell(
   day,
+  activities,
   label
 ) {
 
-  const period =
+  const cell =
     document.createElement(
       'section'
     );
 
 
-  period.className =
-    'collective-period';
+  cell.className =
+    `period-cell bg-${day.key}`;
 
 
-  /*
-   * Titre Matin / Après-midi.
-   */
-
-  const title =
+  const periodLabel =
     document.createElement(
       'div'
     );
 
 
-  title.className =
-    'collective-period-title';
+  periodLabel.className =
+    'period-label';
 
 
-  title.textContent =
+  periodLabel.textContent =
     label;
 
 
-  period.appendChild(
-    title
+  cell.appendChild(
+    periodLabel
   );
 
 
-  /*
-   * Liste activités.
-   */
-
-  const activitiesArea =
+  const list =
     document.createElement(
       'div'
     );
 
 
-  activitiesArea.className =
-    'collective-activity-list';
+  list.className =
+    'activity-list';
 
 
   if (
-    activities.length === 0
+    !activities.length
   ) {
 
     const empty =
@@ -1425,14 +1326,14 @@ async function createPeriod(
 
 
     empty.className =
-      'collective-empty';
+      'empty-period';
 
 
     empty.textContent =
-      'Aucune activité';
+      'Aucune activité renseignée';
 
 
-    activitiesArea.appendChild(
+    list.appendChild(
       empty
     );
 
@@ -1445,18 +1346,10 @@ async function createPeriod(
       of activities
     ) {
 
-      const card =
+      list.appendChild(
         await createActivityCard(
-
-          activity,
-
-          day
-
-        );
-
-
-      activitiesArea.appendChild(
-        card
+          activity
+        )
       );
 
     }
@@ -1464,196 +1357,231 @@ async function createPeriod(
   }
 
 
-  period.appendChild(
-    activitiesArea
+  cell.appendChild(
+    list
   );
 
 
-  return period;
+  return cell;
 
 }
 
 
 /* ============================================================
-   CRÉATION D'UNE JOURNÉE
+   RENDU
    ============================================================ */
 
-async function createDay(
-  day
-) {
+async function render() {
 
-  const section =
-    document.createElement(
-      'section'
+  const planning =
+    document.getElementById(
+      'planning'
     );
 
 
-  section.className =
-    'collective-day';
-
-
-  section.style.setProperty(
-
-    '--day-color',
-
-    day.color
-
-  );
+  planning.innerHTML =
+    '';
 
 
   /* ========================================================
-     NOM JOUR
+     ACTIVITÉS PAR JOUR
      ======================================================== */
 
-  const header =
-    document.createElement(
-      'header'
-    );
+  const dayData =
+    DAYS.map(
+      day => {
+
+        const activities =
+          activitiesForDay(
+            day
+          );
 
 
-  header.className =
-    'collective-day-header';
+        const morning =
+          activities.filter(
+            activity =>
+              minutes(
+                activityHour(
+                  activity,
+                  true
+                )
+              )
+              <
+              720
+          );
 
 
-  header.textContent =
-    day.name;
+        const afternoon =
+          activities.filter(
+            activity =>
+              minutes(
+                activityHour(
+                  activity,
+                  true
+                )
+              )
+              >=
+              720
+          );
 
 
-  section.appendChild(
-    header
-  );
+        return {
 
+          day,
+          activities,
+          morning,
+          afternoon
 
-  /* ========================================================
-     ACTIVITÉS DU JOUR
-     ======================================================== */
+        };
 
-  const activities =
-    state.activities
-
-      .filter(
-
-        activity =>
-
-          activityDay(activity)
-            .toLowerCase()
-
-          ===
-
-          day.name
-            .toLowerCase()
-
-      )
-
-      .sort(
-
-        (
-          a,
-          b
-        ) =>
-
-          minutes(
-            activityHour(
-              a,
-              true
-            )
-          )
-
-          -
-
-          minutes(
-            activityHour(
-              b,
-              true
-            )
-          )
-
-      );
-
-
-  /* ========================================================
-     MATIN
-     ======================================================== */
-
-  const morning =
-    activities.filter(
-
-      activity =>
-
-        minutes(
-
-          activityHour(
-            activity,
-            true
-          )
-
-        )
-
-        <
-
-        12 * 60
-
+      }
     );
 
 
   /* ========================================================
-     APRÈS-MIDI
+     BANDEAU VIOLET
      ======================================================== */
 
-  const afternoon =
-    activities.filter(
-
-      activity =>
-
-        minutes(
-
-          activityHour(
-            activity,
-            true
-          )
-
-        )
-
-        >=
-
-        12 * 60
-
-    );
-
-
-  const body =
+  const strip =
     document.createElement(
       'div'
     );
 
 
-  body.className =
-    'collective-day-body';
+  strip.className =
+    'week-strip';
 
 
-  /* ========================================================
-     MATIN
-     ======================================================== */
+  DAYS.forEach(
+    day => {
 
-  const morningSection =
-    await createPeriod(
-
-      morning,
-
-      day,
-
-      'Matin'
-
-    );
+      const item =
+        document.createElement(
+          'div'
+        );
 
 
-  body.appendChild(
-    morningSection
+      item.className =
+        'week-strip-day';
+
+
+      item.textContent =
+        day.name;
+
+
+      strip.appendChild(
+        item
+      );
+
+    }
+  );
+
+
+  planning.appendChild(
+    strip
   );
 
 
   /* ========================================================
-     REPAS
+     GRILLE
+     ======================================================== */
+
+  const grid =
+    document.createElement(
+      'div'
+    );
+
+
+  grid.className =
+    'planning-grid';
+
+
+  /* ========================================================
+     1 — EN-TÊTES DES JOURS
+     ======================================================== */
+
+  dayData.forEach(
+    data => {
+
+      const header =
+        document.createElement(
+          'div'
+        );
+
+
+      header.className =
+        `day-header day-${data.day.key}`;
+
+
+      const name =
+        document.createElement(
+          'span'
+        );
+
+
+      name.textContent =
+        data.day.name;
+
+
+      const count =
+        document.createElement(
+          'span'
+        );
+
+
+      count.className =
+        'day-header-count';
+
+
+      count.textContent =
+
+        `${data.activities.length} ${
+          data.activities.length > 1
+            ? 'activités'
+            : 'activité'
+        }`;
+
+
+      header.appendChild(
+        name
+      );
+
+
+      header.appendChild(
+        count
+      );
+
+
+      grid.appendChild(
+        header
+      );
+
+    }
+  );
+
+
+  /* ========================================================
+     2 — MATIN
+     ======================================================== */
+
+  for (
+    const data
+    of dayData
+  ) {
+
+    grid.appendChild(
+      await createPeriodCell(
+        data.day,
+        data.morning,
+        'MATIN'
+      )
+    );
+
+  }
+
+
+  /* ========================================================
+     3 — BANDEAU REPAS
      ======================================================== */
 
   const meal =
@@ -1663,151 +1591,74 @@ async function createDay(
 
 
   meal.className =
-    'collective-meal';
+    'meal-row';
 
 
   meal.textContent =
-    '12 h · Repas';
+    '12 h • Repas';
 
 
-  body.appendChild(
+  grid.appendChild(
     meal
   );
 
 
   /* ========================================================
-     APRÈS-MIDI
+     4 — APRÈS-MIDI
      ======================================================== */
 
-  const afternoonSection =
-    await createPeriod(
-
-      afternoon,
-
-      day,
-
-      'Après-midi'
-
-    );
-
-
-  body.appendChild(
-    afternoonSection
-  );
-
-
-  section.appendChild(
-    body
-  );
-
-
-  return section;
-
-}
-
-
-/* ============================================================
-   AFFICHAGE COMPLET
-   ============================================================ */
-
-async function render() {
-
-  const week =
-    document.getElementById(
-      'week'
-    );
-
-
-  /*
-   * On vide l'affichage.
-   */
-
-  week.innerHTML =
-    '';
-
-
-  /*
-   * Conteneur 5 jours.
-   */
-
-  const daysGrid =
-    document.createElement(
-      'div'
-    );
-
-
-  daysGrid.className =
-    'collective-days';
-
-
-  /*
-   * Lundi → vendredi.
-   */
-
   for (
-    const day
-    of DAYS
+    const data
+    of dayData
   ) {
 
-    const dayElement =
-      await createDay(day);
-
-
-    daysGrid.appendChild(
-      dayElement
+    grid.appendChild(
+      await createPeriodCell(
+        data.day,
+        data.afternoon,
+        'APRÈS-MIDI'
+      )
     );
 
   }
 
 
-  week.appendChild(
-    daysGrid
+  planning.appendChild(
+    grid
   );
 
 
-  /*
-   * Masquer message de chargement.
-   */
+  /* ========================================================
+     AFFICHAGE
+     ======================================================== */
 
-  const status =
-    document.getElementById(
+  document
+    .getElementById(
       'status'
+    )
+    .classList.add(
+      'hidden'
     );
 
 
-  status.classList.add(
-    'hidden'
-  );
-
-
-  /*
-   * Afficher planning.
-   */
-
-  const sheet =
-    document.getElementById(
+  document
+    .getElementById(
       'sheet'
+    )
+    .classList.remove(
+      'hidden'
     );
-
-
-  sheet.classList.remove(
-    'hidden'
-  );
 
 }
 
 
 /* ============================================================
-   CHARGEMENT DES TABLES
+   CHARGEMENT GRIST
    ============================================================ */
 
 async function load() {
 
   try {
-
-    /*
-     * Réinitialisation images.
-     */
 
     attachmentTokenInfo =
       null;
@@ -1816,18 +1667,12 @@ async function load() {
     attachmentCache.clear();
 
 
-    /*
-     * Lecture simultanée
-     * des tables Grist.
-     */
-
     const entries =
       await Promise.all(
 
         Object.entries(
           TABLES
         )
-
         .map(
 
           async (
@@ -1858,25 +1703,17 @@ async function load() {
 
             }
 
-            catch (
-              error
-            ) {
+            catch (error) {
 
               console.warn(
-
                 `Table ${tableName} inaccessible`,
-
                 error
-
               );
 
 
               return [
-
                 key,
-
                 []
-
               ];
 
             }
@@ -1888,48 +1725,41 @@ async function load() {
       );
 
 
-    /*
-     * Mise en mémoire.
-     */
-
     state =
       Object.fromEntries(
         entries
       );
 
 
-    /*
-     * Vérification essentielle.
-     */
-
     if (
-      state.activities.length === 0
+      !state.activities.length
     ) {
 
       throw new Error(
-
         'La table Activites est vide ou inaccessible.'
-
       );
 
     }
 
 
-    /*
-     * Génération planning.
-     */
-
     await render();
 
   }
 
-  catch (
-    error
-  ) {
+  catch (error) {
 
     console.error(
       error
     );
+
+
+    document
+      .getElementById(
+        'sheet'
+      )
+      .classList.add(
+        'hidden'
+      );
 
 
     const status =
@@ -1943,17 +1773,6 @@ async function load() {
 
 
     status.classList.remove(
-      'hidden'
-    );
-
-
-    const sheet =
-      document.getElementById(
-        'sheet'
-      );
-
-
-    sheet.classList.add(
       'hidden'
     );
 
@@ -1988,10 +1807,6 @@ document
    ============================================================ */
 
 grist.ready({
-
-  /*
-   * Le widget lit plusieurs tables.
-   */
 
   requiredAccess:
     'read table'

@@ -1,4 +1,30 @@
 /* ==========================================================
+   VARIABLES
+   ========================================================== */
+
+:root {
+
+  --purple: #6421a8;
+  --purple-dark: #51188e;
+
+  --monday: #1598e2;
+  --tuesday: #2bb447;
+  --wednesday: #c15bdf;
+  --thursday: #eda820;
+  --friday: #d65357;
+
+  --monday-bg: #eaf6fd;
+  --tuesday-bg: #edf9ef;
+  --wednesday-bg: #f8effc;
+  --thursday-bg: #fff8e8;
+  --friday-bg: #fdefef;
+
+  --border: #d8d8d8;
+
+}
+
+
+/* ==========================================================
    RESET
    ========================================================== */
 
@@ -8,19 +34,25 @@
 
 html,
 body {
+
   margin: 0;
   padding: 0;
 
-  min-height: 100%;
+  width: 100%;
+
+  background: #f4f4f4;
+
+  color: #222;
 
   font-family:
     Arial,
     Helvetica,
     sans-serif;
 
-  background: #f3f4f6;
+}
 
-  color: #222;
+body {
+  min-height: 100vh;
 }
 
 .hidden {
@@ -29,32 +61,45 @@ body {
 
 
 /* ==========================================================
+   APPLICATION
+   ========================================================== */
+
+#app {
+
+  width: 100%;
+
+  padding: 10px 12px 20px;
+
+}
+
+
+/* ==========================================================
    BOUTON IMPRESSION
    ========================================================== */
 
-.print-zone {
+.print-controls {
+
+  width: 100%;
+
   display: flex;
 
   justify-content: flex-end;
 
-  padding:
-    10px
-    16px
-    0;
+  margin-bottom: 8px;
+
 }
 
 #printButton {
-  border: 0;
 
-  border-radius: 8px;
+  border: none;
 
-  padding:
-    10px
-    18px;
+  border-radius: 6px;
 
-  background: #333;
+  background: var(--purple);
 
   color: white;
+
+  padding: 10px 18px;
 
   font-size: 14px;
 
@@ -62,17 +107,12 @@ body {
 
   cursor: pointer;
 
-  transition:
-    background 0.2s ease,
-    transform 0.1s ease;
 }
 
 #printButton:hover {
-  background: #111;
-}
 
-#printButton:active {
-  transform: scale(0.98);
+  background: var(--purple-dark);
+
 }
 
 
@@ -81,283 +121,382 @@ body {
    ========================================================== */
 
 #status {
-  margin: 30px;
 
-  padding: 24px;
+  padding: 30px;
 
   text-align: center;
 
-  background: white;
+  color: #666;
 
-  border-radius: 10px;
-
-  font-size: 16px;
-
-  color: #555;
 }
 
 
 /* ==========================================================
-   FEUILLE PRINCIPALE
+   FEUILLE
    ========================================================== */
 
-#sheet {
-  margin:
-    10px
-    16px
-    20px;
+.sheet {
 
-  padding: 16px;
+  width: 100%;
+
+  margin: 0 auto;
+
+  padding: 20px 24px 12px;
 
   background: white;
 
-  border-radius: 12px;
+  border-radius: 8px;
 
   box-shadow:
     0 2px 12px
     rgba(0, 0, 0, 0.08);
+
 }
 
 
 /* ==========================================================
-   TITRE PRINCIPAL
+   TITRE
    ========================================================== */
 
-.collective-main-title {
-  text-align: center;
+.planning-header {
 
-  margin-bottom: 16px;
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+  min-height: 78px;
+
+  margin-bottom: 12px;
+
 }
 
-.collective-main-title h1 {
+.planning-kicker {
+
+  margin-bottom: 5px;
+
+  color: var(--purple);
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+
+}
+
+.planning-header h1 {
+
   margin: 0;
 
   font-size: 28px;
 
+  line-height: 1;
+
   font-weight: 800;
 
-  color: #222;
-}
+  color: #252542;
 
-.collective-main-title div {
-  margin-top: 4px;
-
-  font-size: 14px;
-
-  color: #666;
 }
 
 
 /* ==========================================================
-   CONTENEUR GLOBAL
+   PLANNING GLOBAL
    ========================================================== */
 
-.collective-week {
+#planning {
+
   width: 100%;
+
 }
 
 
 /* ==========================================================
-   LES 5 JOURS
+   BANDEAU VIOLET DES 5 JOURS
    ========================================================== */
 
-.collective-days {
+.week-strip {
+
   display: grid;
 
   grid-template-columns:
-    repeat(
-      5,
-      minmax(0, 1fr)
-    );
+    repeat(5, minmax(0, 1fr));
 
-  gap: 10px;
+  width: 100%;
 
-  align-items: start;
-}
-
-
-/* ==========================================================
-   UNE JOURNÉE
-   ========================================================== */
-
-.collective-day {
-  min-width: 0;
+  margin-bottom: 10px;
 
   overflow: hidden;
 
-  border:
-    2px solid
-    var(--day-color);
+  border-radius: 3px;
 
-  border-radius: 12px;
+  background: var(--purple);
 
-  background: white;
 }
 
+.week-strip-day {
 
-/* ==========================================================
-   TITRE DU JOUR
-   ========================================================== */
+  padding: 6px 4px;
 
-.collective-day-header {
-  padding:
-    10px
-    6px;
-
-  background:
-    var(--day-color);
+  text-align: center;
 
   color: white;
 
-  text-align: center;
-
-  font-size: 19px;
-
-  font-weight: 800;
-}
-
-
-/* ==========================================================
-   CORPS DU JOUR
-   ========================================================== */
-
-.collective-day-body {
-  display: flex;
-
-  flex-direction: column;
-
-  height: auto;
-
-  min-height: 0;
-}
-
-
-/* ==========================================================
-   MATIN / APRÈS-MIDI
-   ========================================================== */
-
-.collective-period {
-  padding: 7px;
-
-  height: auto;
-
-  min-height: 0;
-}
-
-.collective-period-title {
-  margin-bottom: 7px;
-
-  text-align: center;
-
-  text-transform: uppercase;
-
   font-size: 13px;
 
   font-weight: 800;
 
-  letter-spacing: 0.3px;
+  border-right:
+    1px solid
+    rgba(255, 255, 255, 0.3);
 
-  color: #555;
+}
+
+.week-strip-day:last-child {
+
+  border-right: none;
+
 }
 
 
 /* ==========================================================
-   LISTE DES ACTIVITÉS
+   GRILLE PRINCIPALE
    ========================================================== */
 
-.collective-activity-list {
-  display: flex;
+.planning-grid {
 
-  flex-direction: column;
+  display: grid;
 
-  gap: 8px;
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
 
-  height: auto;
-}
-
-
-/* ==========================================================
-   BANDEAU REPAS
-   ========================================================== */
-
-.collective-meal {
   width: 100%;
 
-  height: auto;
+  column-gap: 10px;
 
-  padding:
-    8px
-    4px;
-
-  background: #eeeeee;
-
-  border-top:
-    1px solid #bbb;
-
-  border-bottom:
-    1px solid #bbb;
-
-  text-align: center;
-
-  font-size: 13px;
-
-  font-weight: 800;
-
-  color: #444;
 }
 
 
 /* ==========================================================
-   CARTE ACTIVITÉ
+   ENTÊTE DU JOUR
    ========================================================== */
 
-.collective-activity {
-  overflow: hidden;
+.day-header {
 
-  border:
-    2px solid
-    var(--activity-color);
+  height: 42px;
 
-  border-radius: 10px;
-
-  background: white;
-
-  break-inside: avoid;
-
-  page-break-inside: avoid;
-}
-
-
-/* ==========================================================
-   EN-TÊTE DE L'ACTIVITÉ
-   ========================================================== */
-
-.collective-activity-header {
   display: flex;
 
   align-items: center;
 
-  gap: 7px;
+  justify-content: space-between;
 
-  padding: 6px;
+  padding: 0 12px;
 
-  background: #f8f8f8;
+  color: white;
+
+  font-size: 15px;
+
+  font-weight: 800;
+
+}
+
+.day-header-count {
+
+  font-size: 9px;
+
+  font-weight: 500;
+
+  opacity: 0.95;
+
 }
 
 
 /* ==========================================================
-   PICTOGRAMME DE L'ACTIVITÉ
+   COULEURS JOUR
    ========================================================== */
 
-.collective-activity-visual {
-  width: 50px;
+.day-monday {
+  background: var(--monday);
+}
 
-  height: 50px;
+.day-tuesday {
+  background: var(--tuesday);
+}
+
+.day-wednesday {
+  background: var(--wednesday);
+}
+
+.day-thursday {
+  background: var(--thursday);
+}
+
+.day-friday {
+  background: var(--friday);
+}
+
+
+/* ==========================================================
+   FONDS DES COLONNES
+   ========================================================== */
+
+.bg-monday {
+  background: var(--monday-bg);
+}
+
+.bg-tuesday {
+  background: var(--tuesday-bg);
+}
+
+.bg-wednesday {
+  background: var(--wednesday-bg);
+}
+
+.bg-thursday {
+  background: var(--thursday-bg);
+}
+
+.bg-friday {
+  background: var(--friday-bg);
+}
+
+
+/* ==========================================================
+   ZONE MATIN / APRÈS-MIDI
+   ========================================================== */
+
+.period-cell {
+
+  min-width: 0;
+
+  height: auto;
+
+  min-height: 140px;
+
+  padding: 10px 10px 14px;
+
+}
+
+.period-label {
+
+  margin-bottom: 9px;
+
+  font-size: 11px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.5px;
+
+  color: #272727;
+
+}
+
+
+/* ==========================================================
+   LISTE ACTIVITÉS
+   ========================================================== */
+
+.activity-list {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+}
+
+
+/* ==========================================================
+   ACTIVITÉ
+   ========================================================== */
+
+.activity-card {
+
+  width: 100%;
+
+  padding: 9px;
+
+  background: rgba(255,255,255,0.92);
+
+  border:
+    1.5px solid
+    #7a6388;
+
+  border-radius: 3px;
+
+  break-inside: avoid;
+
+  page-break-inside: avoid;
+
+}
+
+.activity-top {
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 8px;
+
+}
+
+
+/* ==========================================================
+   TEXTE ACTIVITÉ
+   ========================================================== */
+
+.activity-info {
+
+  flex: 1;
+
+  min-width: 0;
+
+}
+
+.activity-title {
+
+  margin-bottom: 7px;
+
+  color: #252542;
+
+  font-size: 15px;
+
+  line-height: 1.15;
+
+  font-weight: 800;
+
+}
+
+.activity-time {
+
+  color: var(--purple);
+
+  font-size: 11px;
+
+  line-height: 1.2;
+
+  font-weight: 800;
+
+}
+
+
+/* ==========================================================
+   PICTOGRAMME
+   ========================================================== */
+
+.activity-pictogram {
+
+  width: 54px;
+
+  height: 54px;
 
   flex:
     0
     0
-    50px;
+    54px;
 
   display: flex;
 
@@ -367,73 +506,83 @@ body {
 
   overflow: hidden;
 
-  border-radius: 6px;
 }
 
-.collective-activity-visual img {
+.activity-pictogram img {
+
   display: block;
 
-  width: 100%;
+  width: 54px;
 
-  height: 100%;
+  height: 54px;
 
   object-fit: contain;
+
 }
 
 
 /* ==========================================================
-   INFORMATIONS DE L'ACTIVITÉ
+   PROFESSIONNELS
    ========================================================== */
 
-.collective-activity-info {
-  flex: 1;
+.activity-staff {
 
-  min-width: 0;
+  margin-top: 7px;
+
+  color: #555;
+
+  font-size: 9px;
+
+  line-height: 1.25;
+
 }
 
-.collective-activity-title {
-  font-size: 15px;
+.activity-staff strong {
 
-  line-height: 1.15;
+  color: #333;
+
+}
+
+
+/* ==========================================================
+   PARTICIPANTS
+   ========================================================== */
+
+.participant-title {
+
+  margin-top: 9px;
+
+  margin-bottom: 5px;
+
+  padding-top: 6px;
+
+  border-top:
+    1px solid
+    #dedede;
+
+  color: #555;
+
+  font-size: 9px;
 
   font-weight: 800;
 
-  color: #222;
-
-  overflow-wrap: anywhere;
-}
-
-.collective-activity-time {
-  margin-top: 4px;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  color: #666;
 }
 
 
 /* ==========================================================
-   ZONE DES PARTICIPANTS
+   GRILLE PHOTOS
    ========================================================== */
 
-.collective-participants {
-  display: grid;
+.participant-grid {
 
-  grid-template-columns:
-    repeat(
-      3,
-      minmax(0, 1fr)
-    );
+  display: flex;
 
-  gap: 8px;
+  flex-wrap: wrap;
 
-  padding: 8px;
+  align-items: flex-start;
 
-  justify-items: center;
+  gap: 8px 7px;
 
-  align-items: start;
 }
 
 
@@ -441,21 +590,27 @@ body {
    UNE PERSONNE
    ========================================================== */
 
-.collective-person {
-  width: 100%;
+.participant {
 
-  min-width: 0;
+  width: 64px;
+
+  flex:
+    0
+    0
+    64px;
 
   text-align: center;
+
 }
 
 
 /* ==========================================================
-   PHOTO D'UNE PERSONNE
-   60 × 60 PX
+   PHOTO PERSONNE
+   EXACTEMENT 60 × 60 PX
    ========================================================== */
 
-.collective-person-photo {
+.participant-photo {
+
   width: 60px;
 
   height: 60px;
@@ -468,9 +623,9 @@ body {
 
   max-height: 60px;
 
-  margin:
-    0
-    auto;
+  margin: 0 auto;
+
+  overflow: hidden;
 
   display: flex;
 
@@ -478,32 +633,24 @@ body {
 
   justify-content: center;
 
-  overflow: hidden;
-
   border-radius: 50%;
 
-  background: #e4e7eb;
+  background: #e5e5e5;
 
   border:
-    2px solid
-    white;
+    1px solid
+    #aaa;
 
-  box-shadow:
-    0 0 0 1px #aaa;
+  color: #555;
 
-  font-size: 14px;
+  font-size: 13px;
 
   font-weight: 800;
 
-  color: #555;
 }
 
+.participant-photo img {
 
-/* ==========================================================
-   IMAGE À L'INTÉRIEUR DU PORTRAIT
-   ========================================================== */
-
-.collective-person-photo img {
   display: block;
 
   width: 60px;
@@ -521,17 +668,19 @@ body {
   object-fit: cover;
 
   object-position: center;
+
 }
 
 
 /* ==========================================================
-   PRÉNOM SOUS LA PHOTO
+   PRÉNOM
    ========================================================== */
 
-.collective-person-name {
-  margin-top: 4px;
+.participant-name {
 
-  max-width: 100%;
+  width: 64px;
+
+  margin-top: 3px;
 
   overflow: hidden;
 
@@ -539,56 +688,100 @@ body {
 
   white-space: nowrap;
 
-  font-size: 10px;
+  color: #333;
+
+  font-size: 9px;
 
   font-weight: 700;
 
-  color: #333;
 }
 
 
 /* ==========================================================
-   ZONES VIDES
+   AUCUNE ACTIVITÉ
    ========================================================== */
 
-.collective-empty,
-.collective-no-participant {
-  padding: 10px;
+.empty-period {
 
-  text-align: center;
+  min-height: 80px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #a0a0a0;
 
   font-size: 10px;
 
+  text-align: center;
+
+}
+
+
+/* ==========================================================
+   BANDEAU REPAS
+   ========================================================== */
+
+.meal-row {
+
+  grid-column:
+    1 / -1;
+
+  height: 25px;
+
+  margin:
+    8px
+    0
+    9px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background: var(--purple);
+
+  color: white;
+
+  border-radius: 3px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+}
+
+
+/* ==========================================================
+   PIED DE PAGE
+   ========================================================== */
+
+.planning-footer {
+
+  margin-top: 13px;
+
+  text-align: center;
+
   color: #999;
-}
 
-
-/* ==========================================================
-   TABLETTES / ÉCRANS MOYENS
-   ========================================================== */
-
-@media screen and (max-width: 1200px) {
-
-  .collective-days {
-    grid-template-columns:
-      repeat(
-        3,
-        minmax(0, 1fr)
-      );
-  }
+  font-size: 7px;
 
 }
 
 
 /* ==========================================================
-   PETITS ÉCRANS
+   ÉCRAN PLUS PETIT
    ========================================================== */
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 1000px) {
 
-  .collective-days {
-    grid-template-columns:
-      1fr;
+  .sheet {
+
+    min-width: 1100px;
+
   }
 
 }
@@ -596,24 +789,22 @@ body {
 
 /* ==========================================================
    IMPRESSION
-   FORMAT A3 PAYSAGE
    ========================================================== */
 
 @media print {
 
   @page {
+
     size: A3 landscape;
 
     margin: 7mm;
+
   }
 
 
-  /* ========================================================
-     PAGE
-     ======================================================== */
-
   html,
   body {
+
     width: 100%;
 
     margin: 0;
@@ -621,219 +812,198 @@ body {
     padding: 0;
 
     background: white;
+
+    -webkit-print-color-adjust: exact !important;
+
+    print-color-adjust: exact !important;
+
   }
 
 
-  /* ========================================================
-     MASQUER LE BOUTON D'IMPRESSION
-     ======================================================== */
+  #app {
+
+    padding: 0;
+
+  }
+
 
   .no-print {
+
     display: none !important;
+
   }
 
 
-  /* ========================================================
-     FEUILLE
-     ======================================================== */
+  .sheet {
 
-  #sheet {
+    width: 100%;
+
     margin: 0;
 
     padding: 0;
 
-    border: 0;
-
     border-radius: 0;
 
     box-shadow: none;
+
   }
 
 
-  /* ========================================================
-     TITRE
-     ======================================================== */
+  .planning-header {
 
-  .collective-main-title {
+    min-height: 52px;
+
     margin-bottom: 7px;
+
   }
 
-  .collective-main-title h1 {
+
+  .planning-kicker {
+
+    font-size: 9px;
+
+  }
+
+
+  .planning-header h1 {
+
     font-size: 21px;
+
   }
 
-  .collective-main-title div {
+
+  .week-strip {
+
+    margin-bottom: 5px;
+
+  }
+
+
+  .week-strip-day {
+
+    padding: 4px;
+
     font-size: 10px;
+
   }
 
 
-  /* ========================================================
-     5 JOURS SUR LA MÊME PAGE
-     ======================================================== */
+  .planning-grid {
 
-  .collective-days {
-    display: grid;
+    column-gap: 5px;
 
-    grid-template-columns:
-      repeat(
-        5,
-        minmax(0, 1fr)
-      );
+  }
+
+
+  .day-header {
+
+    height: 30px;
+
+    padding:
+      0
+      7px;
+
+    font-size: 11px;
+
+  }
+
+
+  .day-header-count {
+
+    font-size: 7px;
+
+  }
+
+
+  .period-cell {
+
+    min-height: 100px;
+
+    padding:
+      6px
+      6px
+      8px;
+
+  }
+
+
+  .period-label {
+
+    margin-bottom: 5px;
+
+    font-size: 8px;
+
+  }
+
+
+  .activity-list {
 
     gap: 5px;
 
-    align-items: start;
   }
 
 
-  /* ========================================================
-     JOUR
-     ======================================================== */
+  .activity-card {
 
-  .collective-day {
-    min-width: 0;
+    padding: 6px;
 
-    height: auto;
-
-    border-width: 1.5px;
-
-    border-radius: 7px;
-  }
-
-  .collective-day-header {
-    padding:
-      5px
-      3px;
-
-    font-size: 15px;
-  }
-
-  .collective-day-body {
-    height: auto;
-
-    min-height: 0;
-  }
-
-
-  /* ========================================================
-     MATIN / APRÈS-MIDI
-     ======================================================== */
-
-  .collective-period {
-    padding: 4px;
-
-    height: auto;
-
-    min-height: 0;
-  }
-
-  .collective-period-title {
-    margin-bottom: 3px;
-
-    font-size: 10px;
-  }
-
-
-  /* ========================================================
-     LISTE ACTIVITÉS
-     ======================================================== */
-
-  .collective-activity-list {
-    gap: 4px;
-
-    height: auto;
-  }
-
-
-  /* ========================================================
-     ACTIVITÉ
-     ======================================================== */
-
-  .collective-activity {
     border-width: 1px;
 
-    border-radius: 6px;
-
-    break-inside: avoid;
-
-    page-break-inside: avoid;
-  }
-
-  .collective-activity-header {
-    gap: 4px;
-
-    padding: 3px;
   }
 
 
-  /* ========================================================
-     PICTOGRAMME ACTIVITÉ
-     ======================================================== */
+  .activity-title {
 
-  .collective-activity-visual {
-    width: 35px;
+    margin-bottom: 4px;
 
-    height: 35px;
-
-    flex:
-      0
-      0
-      35px;
-  }
-
-  .collective-activity-visual img {
-    width: 35px;
-
-    height: 35px;
-
-    object-fit: contain;
-  }
-
-
-  /* ========================================================
-     TEXTE ACTIVITÉ
-     ======================================================== */
-
-  .collective-activity-title {
     font-size: 10px;
+
   }
 
-  .collective-activity-time {
-    margin-top: 2px;
+
+  .activity-time {
 
     font-size: 8px;
+
   }
 
 
-  /* ========================================================
-     PARTICIPANTS
-     ======================================================== */
+  .activity-pictogram {
 
-  .collective-participants {
-    display: grid;
+    width: 40px;
 
-    grid-template-columns:
-      repeat(
-        3,
-        minmax(0, 1fr)
-      );
+    height: 40px;
 
-    gap: 4px;
+    flex-basis: 40px;
 
-    padding: 4px;
-
-    justify-items: center;
-
-    align-items: start;
   }
 
 
-  /* ========================================================
-     PHOTOS À L'IMPRESSION
-     TOUJOURS 60 × 60 PX
-     ======================================================== */
+  .activity-pictogram img {
 
-  .collective-person-photo {
+    width: 40px;
+
+    height: 40px;
+
+  }
+
+
+  .activity-staff {
+
+    margin-top: 4px;
+
+    font-size: 6.5px;
+
+  }
+
+
+  /*
+   * Les photos restent volontairement
+   * à 60 x 60 px comme demandé.
+   */
+
+  .participant-photo {
+
     width: 60px;
 
     height: 60px;
@@ -846,12 +1016,11 @@ body {
 
     max-height: 60px;
 
-    border-width: 1px;
-
-    font-size: 10px;
   }
 
-  .collective-person-photo img {
+
+  .participant-photo img {
+
     width: 60px;
 
     height: 60px;
@@ -864,47 +1033,75 @@ body {
 
     max-height: 60px;
 
-    object-fit: cover;
-
-    object-position: center;
   }
 
 
-  /* ========================================================
-     PRÉNOM
-     ======================================================== */
+  .participant {
 
-  .collective-person-name {
-    margin-top: 2px;
+    width: 64px;
 
-    font-size: 8px;
+    flex-basis: 64px;
+
   }
 
 
-  /* ========================================================
-     BANDEAU REPAS
-     ======================================================== */
+  .participant-name {
 
-  .collective-meal {
-    height: auto;
-
-    padding:
-      4px
-      2px;
-
-    font-size: 9px;
-  }
-
-
-  /* ========================================================
-     ZONES VIDES
-     ======================================================== */
-
-  .collective-empty,
-  .collective-no-participant {
-    padding: 5px;
+    width: 64px;
 
     font-size: 7px;
+
+  }
+
+
+  .participant-grid {
+
+    gap:
+      4px
+      4px;
+
+  }
+
+
+  .participant-title {
+
+    margin-top: 5px;
+
+    padding-top: 4px;
+
+    font-size: 7px;
+
+  }
+
+
+  .meal-row {
+
+    height: 20px;
+
+    margin:
+      5px
+      0;
+
+    font-size: 8px;
+
+  }
+
+
+  .empty-period {
+
+    min-height: 55px;
+
+    font-size: 7px;
+
+  }
+
+
+  .planning-footer {
+
+    margin-top: 7px;
+
+    font-size: 6px;
+
   }
 
 }
