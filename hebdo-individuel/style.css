@@ -599,6 +599,11 @@ body.print-a3 {
     padding: 6px;
   }
 
+  .period-matin {
+    min-height: auto !important;
+    height: auto !important;
+  }
+
   .meal-gap {
     height: 42px;
   }
