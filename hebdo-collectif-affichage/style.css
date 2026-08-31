@@ -1,0 +1,1259 @@
+/* ==========================================================
+   VARIABLES
+   ========================================================== */
+
+:root {
+
+  --ink: #183042;
+  --muted: #687883;
+  --line: #dbe5ea;
+
+  --paper: #ffffff;
+  --background: #eef3f6;
+
+  --purple: #6421a8;
+  --purple-soft: #f2eafb;
+
+  --meal: #6421a8;
+
+}
+
+
+/* ==========================================================
+   RESET
+   ========================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+
+  margin: 0;
+
+  padding: 0;
+
+  min-height: 100%;
+
+  font-family:
+    Inter,
+    Segoe UI,
+    Arial,
+    sans-serif;
+
+  color:
+    var(--ink);
+
+  background:
+    var(--background);
+
+}
+
+
+.hidden {
+  display: none !important;
+}
+
+
+/* ==========================================================
+   BARRE SUPÉRIEURE
+   ========================================================== */
+
+.toolbar {
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 100;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 20px;
+
+  padding:
+    12px
+    20px;
+
+  background: white;
+
+  border-bottom:
+    1px solid
+    var(--line);
+
+  box-shadow:
+    0 3px 12px
+    rgba(23, 48, 66, 0.08);
+
+}
+
+
+/* ==========================================================
+   LOGO SAJ
+   ========================================================== */
+
+.brand {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+}
+
+
+.brand-mark {
+
+  width: 46px;
+
+  height: 46px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 14px;
+
+  background:
+    var(--purple);
+
+  color: white;
+
+  font-weight: 800;
+
+}
+
+
+.brand h1 {
+
+  margin: 0;
+
+  font-size: 18px;
+
+}
+
+
+.brand p {
+
+  margin:
+    2px
+    0
+    0;
+
+  color:
+    var(--muted);
+
+  font-size: 12px;
+
+}
+
+
+/* ==========================================================
+   BOUTON IMPRESSION
+   ========================================================== */
+
+#printBtn {
+
+  min-height: 40px;
+
+  padding:
+    0
+    18px;
+
+  border: none;
+
+  border-radius: 9px;
+
+  background:
+    var(--purple);
+
+  color: white;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+}
+
+
+#printBtn:hover {
+
+  filter:
+    brightness(0.94);
+
+}
+
+
+/* ==========================================================
+   APPLICATION
+   ========================================================== */
+
+#app {
+
+  padding:
+    22px;
+
+}
+
+
+/* ==========================================================
+   CHARGEMENT
+   ========================================================== */
+
+.status {
+
+  max-width: 900px;
+
+  margin:
+    45px
+    auto;
+
+  padding: 28px;
+
+  text-align: center;
+
+  background: white;
+
+  border:
+    1px solid
+    var(--line);
+
+  border-radius: 16px;
+
+}
+
+
+.status.error {
+
+  color: #a43434;
+
+}
+
+
+/* ==========================================================
+   CONTENEUR DES 5 PAGES
+   ========================================================== */
+
+.pages {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 28px;
+
+  align-items: center;
+
+}
+
+
+/* ==========================================================
+   PAGE A3 D'UNE JOURNÉE
+   ========================================================== */
+
+.day-page {
+
+  /*
+   * Ratio A3 portrait :
+   * 297 × 420 mm
+   */
+
+  width: min(
+    100%,
+    1000px
+  );
+
+  min-height: 1414px;
+
+  position: relative;
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background:
+    var(--paper);
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 8px 30px
+    rgba(23, 48, 66, 0.12);
+
+}
+
+
+/* ==========================================================
+   BANDEAU JOUR
+   ========================================================== */
+
+.day-title {
+
+  flex:
+    0
+    0
+    auto;
+
+  min-height: 74px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding:
+    12px
+    20px;
+
+  background:
+    var(--day-color);
+
+  color: white;
+
+  font-size: 30px;
+
+  font-weight: 900;
+
+  text-align: center;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.08em;
+
+}
+
+
+/* ==========================================================
+   CONTENU PRINCIPAL
+   ========================================================== */
+
+.day-body {
+
+  flex: 1;
+
+  min-height: 0;
+
+  display: grid;
+
+  /*
+   * Matin :
+   * hauteur adaptée au contenu.
+   *
+   * Repas :
+   * hauteur fixe.
+   *
+   * Après-midi :
+   * prend l'espace restant.
+   */
+
+  grid-template-rows:
+    auto
+    42px
+    1fr;
+
+  background:
+    var(--day-background);
+
+}
+
+
+/* ==========================================================
+   MATIN / APRÈS-MIDI
+   ========================================================== */
+
+.period {
+
+  min-height: 0;
+
+  padding:
+    24px
+    34px;
+
+}
+
+
+/* ==========================================================
+   TITRE MATIN / APRÈS-MIDI
+   ========================================================== */
+
+.period-title {
+
+  margin-bottom: 18px;
+
+  font-size: 19px;
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.08em;
+
+  color:
+    #243442;
+
+}
+
+
+/* ==========================================================
+   LISTE DES ACTIVITÉS
+   ========================================================== */
+
+.activities-list {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 22px;
+
+}
+
+
+/* ==========================================================
+   ACTIVITÉ
+   ========================================================== */
+
+.activity-card {
+
+  position: relative;
+
+  padding:
+    18px
+    20px;
+
+  background:
+    rgba(255, 255, 255, 0.93);
+
+  border:
+    1px solid
+    var(--line);
+
+  border-left:
+    7px solid
+    var(--card-color);
+
+  border-radius: 12px;
+
+  break-inside: avoid;
+
+  page-break-inside: avoid;
+
+}
+
+
+/* ==========================================================
+   EN-TÊTE ACTIVITÉ
+   ========================================================== */
+
+.activity-header {
+
+  position: relative;
+
+  min-height: 92px;
+
+  padding-right: 120px;
+
+}
+
+
+/* ==========================================================
+   NOM DE L'ACTIVITÉ
+   ========================================================== */
+
+.activity-title {
+
+  margin:
+    0
+    0
+    10px;
+
+  font-size: 26px;
+
+  line-height: 1.1;
+
+  font-weight: 900;
+
+  color:
+    #252542;
+
+}
+
+
+/* ==========================================================
+   HORAIRE
+   ========================================================== */
+
+.activity-time {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  padding:
+    5px
+    10px;
+
+  border-radius: 99px;
+
+  background:
+    var(--purple-soft);
+
+  color:
+    var(--purple);
+
+  font-size: 17px;
+
+  line-height: 1.1;
+
+  font-weight: 900;
+
+}
+
+
+/* ==========================================================
+   PICTOGRAMME ACTIVITÉ
+   ========================================================== */
+
+.activity-logo {
+
+  position: absolute;
+
+  top: 0;
+
+  right: 0;
+
+  width: 95px;
+
+  height: 95px;
+
+  object-fit: contain;
+
+  object-position: center;
+
+  background: white;
+
+  border-radius: 10px;
+
+}
+
+
+/* ==========================================================
+   ANIMATEURS
+   ========================================================== */
+
+.activity-meta {
+
+  margin-top: 18px;
+
+  font-size: 16px;
+
+  line-height: 1.4;
+
+  color:
+    #4e626e;
+
+}
+
+
+.activity-meta strong {
+
+  color:
+    var(--ink);
+
+}
+
+
+/* ==========================================================
+   TITRE PARTICIPANTS
+   ========================================================== */
+
+.participants-title {
+
+  margin-top: 19px;
+
+  margin-bottom: 12px;
+
+  padding-top: 12px;
+
+  border-top:
+    1px solid
+    var(--line);
+
+  color:
+    #344957;
+
+  font-size: 17px;
+
+  font-weight: 900;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.05em;
+
+}
+
+
+/* ==========================================================
+   GRILLE DES PARTICIPANTS
+   ========================================================== */
+
+.participants-grid {
+
+  display: grid;
+
+  /*
+   * Ton dessin montre environ
+   * 3 participants par ligne.
+   */
+
+  grid-template-columns:
+    repeat(
+      3,
+      90px
+    );
+
+  gap:
+    14px
+    20px;
+
+  align-items: start;
+
+}
+
+
+/* ==========================================================
+   PARTICIPANT
+   ========================================================== */
+
+.participant {
+
+  width: 90px;
+
+  text-align: center;
+
+}
+
+
+/* ==========================================================
+   PHOTO PARTICIPANT
+   60 × 60 PX
+   ========================================================== */
+
+.participant-photo {
+
+  width: 60px;
+
+  height: 60px;
+
+  min-width: 60px;
+
+  min-height: 60px;
+
+  max-width: 60px;
+
+  max-height: 60px;
+
+  margin:
+    0
+    auto;
+
+  display: grid;
+
+  place-items: center;
+
+  overflow: hidden;
+
+  border-radius: 50%;
+
+  background:
+    #edf3f5;
+
+  border:
+    1px solid
+    #b8c6ce;
+
+  color:
+    var(--purple);
+
+  font-size: 14px;
+
+  font-weight: 900;
+
+}
+
+
+/* ==========================================================
+   IMAGE DU PARTICIPANT
+   ========================================================== */
+
+.participant-photo img {
+
+  display: block;
+
+  width: 60px;
+
+  height: 60px;
+
+  min-width: 60px;
+
+  min-height: 60px;
+
+  max-width: 60px;
+
+  max-height: 60px;
+
+  object-fit: cover;
+
+  object-position: center;
+
+}
+
+
+/* ==========================================================
+   PRÉNOM
+   ========================================================== */
+
+.participant-name {
+
+  width: 90px;
+
+  margin-top: 5px;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  color:
+    var(--ink);
+
+  font-size: 12px;
+
+  line-height: 1.2;
+
+  font-weight: 700;
+
+}
+
+
+/* ==========================================================
+   BANDEAU REPAS
+   ========================================================== */
+
+.meal-banner {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 100%;
+
+  height: 42px;
+
+  padding:
+    0
+    12px;
+
+  background:
+    var(--meal);
+
+  color: white;
+
+  font-size: 18px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.03em;
+
+}
+
+
+/* ==========================================================
+   AUCUNE ACTIVITÉ
+   ========================================================== */
+
+.empty-slot {
+
+  min-height: 90px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  border:
+    1px dashed
+    #b9c8d0;
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.40);
+
+  color:
+    #82949e;
+
+  font-size: 14px;
+
+  text-align: center;
+
+}
+
+
+/* ==========================================================
+   PIED DE PAGE
+   ========================================================== */
+
+.page-footer {
+
+  flex:
+    0
+    0
+    auto;
+
+  padding:
+    9px
+    20px;
+
+  border-top:
+    1px solid
+    var(--line);
+
+  background: white;
+
+  color:
+    #8b999f;
+
+  font-size: 9px;
+
+  text-align: center;
+
+}
+
+
+/* ==========================================================
+   DIALOGUE
+   ========================================================== */
+
+dialog {
+
+  border: none;
+
+  border-radius: 14px;
+
+  max-width: 620px;
+
+  box-shadow:
+    0 20px 60px
+    rgba(0, 0, 0, 0.2);
+
+}
+
+
+dialog pre {
+
+  white-space: pre-wrap;
+
+  background:
+    #f5f7f8;
+
+  padding: 12px;
+
+  border-radius: 8px;
+
+}
+
+
+dialog button {
+
+  float: right;
+
+}
+
+
+/* ==========================================================
+   IMPRESSION
+   UNE PAGE A3 PAR JOUR
+   ========================================================== */
+
+@page {
+
+  size:
+    A3 portrait;
+
+  margin: 8mm;
+
+}
+
+
+@media print {
+
+
+  html,
+  body {
+
+    margin: 0;
+
+    padding: 0;
+
+    background: white;
+
+    -webkit-print-color-adjust:
+      exact !important;
+
+    print-color-adjust:
+      exact !important;
+
+  }
+
+
+  .no-print,
+  .status {
+
+    display:
+      none !important;
+
+  }
+
+
+  #app {
+
+    padding: 0;
+
+  }
+
+
+  .pages {
+
+    display: block !important;
+
+  }
+
+
+  /* ========================================================
+     UNE JOURNÉE = UNE PAGE
+     ======================================================== */
+
+  .day-page {
+
+    width: 100%;
+
+    height:
+      calc(420mm - 16mm);
+
+    min-height:
+      calc(420mm - 16mm);
+
+    max-height:
+      calc(420mm - 16mm);
+
+    margin: 0;
+
+    padding: 0;
+
+    border-radius: 0;
+
+    box-shadow: none;
+
+    overflow: hidden;
+
+    page-break-after: always;
+
+    break-after: page;
+
+  }
+
+
+  .day-page:last-child {
+
+    page-break-after: auto;
+
+    break-after: auto;
+
+  }
+
+
+  /* ========================================================
+     TITRE JOUR
+     ======================================================== */
+
+  .day-title {
+
+    min-height: 16mm;
+
+    padding: 2mm 4mm;
+
+    font-size: 24px;
+
+  }
+
+
+  /* ========================================================
+     CORPS
+     ======================================================== */
+
+  .day-body {
+
+    /*
+     * Le matin s'adapte automatiquement.
+     * Le bandeau repas suit.
+     * L'après-midi prend le reste.
+     */
+
+    grid-template-rows:
+      auto
+      9mm
+      1fr;
+
+  }
+
+
+  /* ========================================================
+     PÉRIODES
+     ======================================================== */
+
+  .period {
+
+    padding:
+      5mm
+      7mm;
+
+  }
+
+
+  .period-title {
+
+    margin-bottom: 3mm;
+
+    font-size: 14px;
+
+  }
+
+
+  .activities-list {
+
+    gap: 4mm;
+
+  }
+
+
+  /* ========================================================
+     ACTIVITÉ
+     ======================================================== */
+
+  .activity-card {
+
+    padding: 4mm;
+
+    border-left-width: 1.5mm;
+
+    border-radius: 3mm;
+
+  }
+
+
+  .activity-header {
+
+    min-height: 22mm;
+
+    padding-right: 27mm;
+
+  }
+
+
+  .activity-title {
+
+    margin-bottom: 2mm;
+
+    font-size: 18px;
+
+  }
+
+
+  .activity-time {
+
+    padding:
+      1mm
+      2mm;
+
+    font-size: 12px;
+
+  }
+
+
+  /* ========================================================
+     PICTOGRAMME
+     ======================================================== */
+
+  .activity-logo {
+
+    width: 22mm;
+
+    height: 22mm;
+
+  }
+
+
+  /* ========================================================
+     ANIMATEURS
+     ======================================================== */
+
+  .activity-meta {
+
+    margin-top: 3mm;
+
+    font-size: 11px;
+
+  }
+
+
+  /* ========================================================
+     PARTICIPANTS
+     ======================================================== */
+
+  .participants-title {
+
+    margin-top: 3mm;
+
+    margin-bottom: 2mm;
+
+    padding-top: 2mm;
+
+    font-size: 11px;
+
+  }
+
+
+  .participants-grid {
+
+    grid-template-columns:
+      repeat(
+        3,
+        24mm
+      );
+
+    column-gap: 4mm;
+
+    row-gap: 3mm;
+
+  }
+
+
+  .participant {
+
+    width: 24mm;
+
+  }
+
+
+  /*
+   * La photo reste exactement
+   * en 60 × 60 pixels.
+   */
+
+  .participant-photo {
+
+    width: 60px;
+
+    height: 60px;
+
+    min-width: 60px;
+
+    min-height: 60px;
+
+    max-width: 60px;
+
+    max-height: 60px;
+
+  }
+
+
+  .participant-photo img {
+
+    width: 60px;
+
+    height: 60px;
+
+    min-width: 60px;
+
+    min-height: 60px;
+
+    max-width: 60px;
+
+    max-height: 60px;
+
+  }
+
+
+  .participant-name {
+
+    width: 24mm;
+
+    margin-top: 1mm;
+
+    font-size: 9px;
+
+  }
+
+
+  /* ========================================================
+     REPAS
+     ======================================================== */
+
+  .meal-banner {
+
+    height: 9mm;
+
+    font-size: 14px;
+
+  }
+
+
+  /* ========================================================
+     VIDE
+     ======================================================== */
+
+  .empty-slot {
+
+    min-height: 20mm;
+
+    padding: 3mm;
+
+    font-size: 10px;
+
+  }
+
+
+  /* ========================================================
+     PIED DE PAGE
+     ======================================================== */
+
+  .page-footer {
+
+    padding: 2mm;
+
+    font-size: 7px;
+
+  }
+
+}
