@@ -945,7 +945,27 @@ function buildModel() {
 
               ),
 
-            animators:
+            
+            remarks:
+              text(
+
+                activity.Remarques_planning
+
+                ||
+
+                activity.remarques_planning
+
+                ||
+
+                activity['Remarques planning']
+
+                ||
+
+                activity['remarques planning']
+
+              ),
+
+animators:
               animatorNames,
 
             visual:
@@ -1290,6 +1310,29 @@ async function activityCard(
 
 
   /* ========================================================
+     REMARQUES PLANNING
+     ======================================================== */
+
+  const remarksHtml =
+
+    activity.remarks
+
+      ?
+
+      `
+
+      <div class="activity-remarks">
+        ${esc(activity.remarks)}
+      </div>
+
+      `
+
+      :
+
+      '';
+
+
+  /* ========================================================
      ANIMATEURS
      ======================================================== */
 
@@ -1456,6 +1499,9 @@ async function activityCard(
       </div>
 
 
+      ${remarksHtml}
+
+
       ${animatorHtml}
 
 
@@ -1476,7 +1522,8 @@ async function activityCard(
 async function periodHtml(
   title,
   activities,
-  cssClass
+  cssClass,
+  dayName
 ) {
 
   let content;
@@ -1524,6 +1571,7 @@ async function periodHtml(
         period
         ${cssClass}
       "
+      data-day="${esc(dayName)}"
     >
 
 
@@ -1605,7 +1653,9 @@ async function dayPage(
 
       morning,
 
-      'period-morning'
+      'period-morning',
+
+      day.name
 
     );
 
@@ -1617,7 +1667,9 @@ async function dayPage(
 
       afternoon,
 
-      'period-afternoon'
+      'period-afternoon',
+
+      day.name
 
     );
 
