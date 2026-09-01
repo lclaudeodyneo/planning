@@ -688,12 +688,45 @@ function participantsForActivity(
       (
         a,
         b
-      ) =>
-        firstName(a)
+      ) => {
+        const nomA =
+          normalize(
+            get(
+              a,
+              'Nom'
+            )
+          );
+
+        const nomB =
+          normalize(
+            get(
+              b,
+              'Nom'
+            )
+          );
+
+        const comparaisonNom =
+          nomA.localeCompare(
+            nomB,
+            'fr',
+            {
+              sensitivity: 'base'
+            }
+          );
+
+        if (comparaisonNom !== 0) {
+          return comparaisonNom;
+        }
+
+        return firstName(a)
           .localeCompare(
             firstName(b),
-            'fr'
-          )
+            'fr',
+            {
+              sensitivity: 'base'
+            }
+          );
+      }
     );
 
 }
