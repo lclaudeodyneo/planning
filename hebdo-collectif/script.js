@@ -1035,6 +1035,47 @@ async function createActivityCard(
 
 
   /* ========================================================
+     REMARQUES PLANNING
+     Affichage du contenu uniquement, si renseigné.
+     ======================================================== */
+
+  const planningRemark =
+    normalize(
+      get(
+        activity,
+        'Remarques_planning',
+        'Remarques planning',
+        'remarques planning',
+        'remarques_planning'
+      )
+    );
+
+
+  if (planningRemark) {
+
+    const remarkElement =
+      document.createElement(
+        'div'
+      );
+
+
+    /* Même style typographique que les noms des professionnels. */
+    remarkElement.className =
+      'activity-staff activity-planning-remark';
+
+
+    remarkElement.textContent =
+      planningRemark;
+
+
+    info.appendChild(
+      remarkElement
+    );
+
+  }
+
+
+  /* ========================================================
      PICTOGRAMME
      ======================================================== */
 
@@ -1437,7 +1478,11 @@ function buildPrintPages() {
     const participants = card.querySelectorAll('.participant').length;
     const participantRows = Math.ceil(participants / 5);
 
-    const hasStaff = Boolean(card.querySelector('.activity-staff'));
+    const hasStaff = Boolean(
+      card.querySelector('.activity-staff:not(.activity-planning-remark)')
+    );
+    const remark = card.querySelector('.activity-planning-remark');
+    const remarkLength = remark ? remark.textContent.trim().length : 0;
     const title = card.querySelector('.activity-title');
     const titleLength = title ? title.textContent.trim().length : 0;
 
@@ -1450,6 +1495,14 @@ function buildPrintPages() {
 
     /* padding carte + haut + éventuel animateur */
     let height = 8 + topHeight;
+
+    if (remarkLength > 0) {
+      /* Même corps que les professionnels. La remarque peut revenir
+         sur plusieurs lignes dans une colonne de jour. */
+      height += 9;
+      if (remarkLength > 38) height += 7;
+      if (remarkLength > 78) height += 7;
+    }
 
     if (hasStaff) {
       height += 9;

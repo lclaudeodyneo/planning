@@ -1394,3 +1394,18 @@ body {
     line-height: 1;
   }
 }
+
+/* ============================================================
+   REMARQUES PLANNING
+   Contenu seul, sous l'heure et avant les professionnels.
+   Même typographie que .activity-staff.
+   ============================================================ */
+.activity-planning-remark {
+  margin-top: 4px;
+}
+
+@media print {
+  .activity-planning-remark {
+    margin-top: 2px;
+  }
+}
