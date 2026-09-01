@@ -1439,50 +1439,6 @@ async function render() {
 
 
   /* ========================================================
-     BANDEAU VIOLET
-     ======================================================== */
-
-  const strip =
-    document.createElement(
-      'div'
-    );
-
-
-  strip.className =
-    'week-strip';
-
-
-  DAYS.forEach(
-    day => {
-
-      const item =
-        document.createElement(
-          'div'
-        );
-
-
-      item.className =
-        'week-strip-day';
-
-
-      item.textContent =
-        day.name;
-
-
-      strip.appendChild(
-        item
-      );
-
-    }
-  );
-
-
-  planning.appendChild(
-    strip
-  );
-
-
-  /* ========================================================
      GRILLE
      ======================================================== */
 

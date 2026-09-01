@@ -855,6 +855,19 @@ body {
 
     margin-bottom: 7px;
 
+    break-after: avoid;
+
+    page-break-after: avoid;
+
+  }
+
+
+  #planning {
+
+    break-before: avoid;
+
+    page-break-before: avoid;
+
   }
 
 
@@ -904,6 +917,10 @@ body {
       7px;
 
     font-size: 11px;
+
+    break-after: avoid;
+
+    page-break-after: avoid;
 
   }
 
