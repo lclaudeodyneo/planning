@@ -1368,6 +1368,199 @@ async function createPeriodCell(
 
 
 /* ============================================================
+   IMPRESSION PAGINÉE
+   ============================================================ */
+
+function buildPrintPages() {
+
+  const sheet = document.getElementById('sheet');
+  const planning = document.getElementById('planning');
+
+  if (!sheet || !planning) {
+    return;
+  }
+
+  const oldPrintPages = document.getElementById('print-pages');
+
+  if (oldPrintPages) {
+    oldPrintPages.remove();
+  }
+
+  const headers = Array.from(
+    planning.querySelectorAll('.day-header')
+  ).slice(0, 5);
+
+  const periodCells = Array.from(
+    planning.querySelectorAll('.period-cell')
+  );
+
+  if (headers.length !== 5 || periodCells.length < 10) {
+    return;
+  }
+
+  const morningCells = periodCells.slice(0, 5);
+  const afternoonCells = periodCells.slice(5, 10);
+
+  const pagesRoot = document.createElement('div');
+  pagesRoot.id = 'print-pages';
+  pagesRoot.className = 'print-pages';
+
+  const cloneCards = cells =>
+    cells.map(cell =>
+      Array.from(cell.querySelectorAll('.activity-card'))
+    );
+
+  const morningCards = cloneCards(morningCells);
+  const afternoonCards = cloneCards(afternoonCells);
+
+  const headerNames = headers.map(header => ({
+    className: header.className,
+    html: header.innerHTML
+  }));
+
+  const FIRST_PAGE_CAPACITY = 760;
+  const OTHER_PAGE_CAPACITY = 910;
+  const CARD_GAP = 5;
+
+  function measuredHeight(card) {
+    const rect = card.getBoundingClientRect();
+    return Math.ceil(rect.height || card.offsetHeight || 100);
+  }
+
+  function createPage(showMainTitle, phaseLabel, showMeal) {
+    const page = document.createElement('section');
+    page.className = 'print-page';
+
+    if (showMainTitle) {
+      const mainHeader = document.createElement('header');
+      mainHeader.className = 'print-main-header';
+      mainHeader.innerHTML = `
+        <div class="planning-kicker">SAJ Anagallis</div>
+        <h1>Planning collectif</h1>
+      `;
+      page.appendChild(mainHeader);
+    }
+
+    if (showMeal) {
+      const meal = document.createElement('div');
+      meal.className = 'print-meal-row';
+      meal.textContent = '12 h • Repas';
+      page.appendChild(meal);
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'print-page-grid';
+
+    const lists = [];
+
+    headerNames.forEach((headerData, index) => {
+      const column = document.createElement('section');
+      column.className = 'print-day-column';
+
+      const header = document.createElement('div');
+      header.className = headerData.className;
+      header.innerHTML = headerData.html;
+      column.appendChild(header);
+
+      const period = document.createElement('div');
+      period.className = `print-period bg-${DAYS[index].key}`;
+
+      const label = document.createElement('div');
+      label.className = 'period-label';
+      label.textContent = phaseLabel;
+      period.appendChild(label);
+
+      const list = document.createElement('div');
+      list.className = 'activity-list';
+      period.appendChild(list);
+
+      column.appendChild(period);
+      grid.appendChild(column);
+      lists.push(list);
+    });
+
+    page.appendChild(grid);
+    pagesRoot.appendChild(page);
+
+    return { lists };
+  }
+
+  function appendPhase(cardColumns, phaseLabel, firstPhasePageHasMainTitle, showMealOnFirstPage) {
+    const positions = [0, 0, 0, 0, 0];
+    let firstPhasePage = true;
+
+    const hasRemaining = () =>
+      cardColumns.some((cards, i) => positions[i] < cards.length);
+
+    if (!hasRemaining()) {
+      return false;
+    }
+
+    while (hasRemaining()) {
+      const showTitle = firstPhasePage && firstPhasePageHasMainTitle;
+      const capacity = showTitle
+        ? FIRST_PAGE_CAPACITY
+        : OTHER_PAGE_CAPACITY;
+
+      const { lists } = createPage(
+        showTitle,
+        phaseLabel,
+        firstPhasePage && showMealOnFirstPage
+      );
+
+      for (let dayIndex = 0; dayIndex < 5; dayIndex += 1) {
+        const cards = cardColumns[dayIndex];
+        let used = 0;
+        let added = 0;
+
+        while (positions[dayIndex] < cards.length) {
+          const sourceCard = cards[positions[dayIndex]];
+          const cardHeight = measuredHeight(sourceCard);
+          const nextHeight = used + (added ? CARD_GAP : 0) + cardHeight;
+
+          if (added > 0 && nextHeight > capacity) {
+            break;
+          }
+
+          const clone = sourceCard.cloneNode(true);
+          lists[dayIndex].appendChild(clone);
+
+          used = nextHeight;
+          added += 1;
+          positions[dayIndex] += 1;
+
+          if (used >= capacity) {
+            break;
+          }
+        }
+      }
+
+      firstPhasePage = false;
+    }
+
+    return true;
+  }
+
+  const hasMorning = appendPhase(morningCards, 'MATIN', true, false);
+
+  if (!hasMorning) {
+    appendPhase(afternoonCards, 'APRÈS-MIDI', true, true);
+  }
+  else {
+    appendPhase(afternoonCards, 'APRÈS-MIDI', false, true);
+  }
+
+  /* Si aucune activité n'existe du tout, on conserve malgré tout
+     une première page avec les titres et les cinq jours. */
+  if (!pagesRoot.children.length) {
+    createPage(true, 'MATIN', false);
+  }
+
+  sheet.appendChild(pagesRoot);
+}
+
+
+/* ============================================================
    RENDU
    ============================================================ */
 
@@ -1584,6 +1777,9 @@ async function render() {
   );
 
 
+  buildPrintPages();
+
+
   /* ========================================================
      AFFICHAGE
      ======================================================== */
@@ -1751,11 +1947,18 @@ document
 
     () => {
 
+      buildPrintPages();
       window.print();
 
     }
 
   );
+
+
+window.addEventListener(
+  'beforeprint',
+  buildPrintPages
+);
 
 
 /* ============================================================
