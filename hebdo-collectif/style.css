@@ -1238,3 +1238,159 @@ body {
     page-break-after: avoid;
   }
 }
+
+/* ==========================================================
+   IMPRESSION V5 — DENSITÉ MAXIMALE FIREFOX / A3 PAYSAGE
+   Ces règles sont placées en dernier pour surcharger uniquement
+   l'impression, sans modifier l'affichage normal du widget.
+   ========================================================== */
+
+@media print {
+
+  @page {
+    size: A3 landscape;
+    margin: 5mm;
+  }
+
+  /* Hauteur réellement disponible : 297 mm - 2 × 5 mm. */
+  .print-page {
+    height: 287mm;
+  }
+
+  /* Titre compact : on conserve la lisibilité tout en récupérant
+     de la hauteur pour les activités. */
+  .print-main-header {
+    min-height: 42px;
+    margin-bottom: 4px;
+  }
+
+  .print-main-header .planning-kicker {
+    margin-bottom: 2px;
+    font-size: 8px;
+    line-height: 1;
+  }
+
+  .print-main-header h1 {
+    font-size: 19px;
+    line-height: 1;
+  }
+
+  .print-page-grid {
+    column-gap: 4px;
+  }
+
+  .print-day-column {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-day-column .day-header {
+    height: 26px;
+    padding: 0 5px;
+    font-size: 10px;
+  }
+
+  .day-header-count {
+    font-size: 6.5px;
+  }
+
+  .print-period {
+    padding: 4px 4px 5px;
+  }
+
+  .print-period .period-label {
+    margin-bottom: 3px;
+    font-size: 7.5px;
+    line-height: 1;
+  }
+
+  .print-period .activity-list {
+    gap: 3px;
+  }
+
+  .print-period .activity-card {
+    padding: 4px;
+    border-width: 1px;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .activity-top {
+    gap: 4px;
+  }
+
+  .activity-title {
+    margin-bottom: 2px;
+    font-size: 9px;
+    line-height: 1.05;
+  }
+
+  .activity-time {
+    font-size: 7px;
+    line-height: 1.05;
+  }
+
+  .activity-pictogram,
+  .activity-pictogram img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .activity-pictogram {
+    flex: 0 0 34px;
+  }
+
+  .activity-staff {
+    margin-top: 2px;
+    font-size: 6px;
+    line-height: 1.05;
+  }
+
+  .participant-title {
+    margin-top: 3px;
+    margin-bottom: 2px;
+    padding-top: 2px;
+    font-size: 6.5px;
+    line-height: 1;
+  }
+
+  /* Toujours exactement 5 participants par ligne. */
+  .participant-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    column-gap: 2px;
+    row-gap: 2px;
+    width: 100%;
+    align-items: start;
+  }
+
+  .participant {
+    width: auto;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .participant-photo,
+  .participant-photo img {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    max-width: 38px;
+    max-height: 38px;
+  }
+
+  .participant-name {
+    width: 100%;
+    margin-top: 1px;
+    font-size: 6px;
+    line-height: 1;
+  }
+
+  .print-meal-row {
+    height: 16px;
+    margin: 0 0 3px;
+    font-size: 7px;
+    line-height: 1;
+  }
+}

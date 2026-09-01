@@ -1418,13 +1418,54 @@ function buildPrintPages() {
     html: header.innerHTML
   }));
 
-  const FIRST_PAGE_CAPACITY = 760;
-  const OTHER_PAGE_CAPACITY = 910;
-  const CARD_GAP = 5;
+  /*
+   * Pagination impression : on ne mesure PAS la hauteur écran.
+   * À l'écran les portraits font 60 px, alors qu'à l'impression ils
+   * sont volontairement plus petits. Une mesure écran ferait donc
+   * croire qu'une carte est plus haute qu'elle ne le sera réellement
+   * dans Firefox et provoquerait des sauts de page prématurés.
+   *
+   * Les capacités ci-dessous correspondent à la hauteur utile réelle
+   * d'une page A3 paysage avec les règles @media print de style.css.
+   */
+  const FIRST_PAGE_CAPACITY = 965;
+  const OTHER_PAGE_CAPACITY = 1020;
+  const CARD_GAP = 3;
+  const MEAL_HEIGHT = 19;
 
   function measuredHeight(card) {
-    const rect = card.getBoundingClientRect();
-    return Math.ceil(rect.height || card.offsetHeight || 100);
+    const participants = card.querySelectorAll('.participant').length;
+    const participantRows = Math.ceil(participants / 5);
+
+    const hasStaff = Boolean(card.querySelector('.activity-staff'));
+    const title = card.querySelector('.activity-title');
+    const titleLength = title ? title.textContent.trim().length : 0;
+
+    /* Hauteur du bloc supérieur : pictogramme 34 px minimum.
+       On ajoute une petite marge pour les titres longs qui passent
+       sur deux ou trois lignes dans une colonne de jour. */
+    let topHeight = 34;
+    if (titleLength > 28) topHeight += 8;
+    if (titleLength > 55) topHeight += 8;
+
+    /* padding carte + haut + éventuel animateur */
+    let height = 8 + topHeight;
+
+    if (hasStaff) {
+      height += 9;
+    }
+
+    if (participants > 0) {
+      /* titre Participants + grille : portrait 38 px, prénom et espacements */
+      height += 10;
+      height += participantRows * 47;
+      if (participantRows > 1) {
+        height += (participantRows - 1) * 2;
+      }
+    }
+
+    /* petite sécurité pour bordures / arrondis / métriques Firefox */
+    return Math.ceil(height + 3);
   }
 
   function createPage(showMainTitle, phaseLabel, showMeal) {
@@ -1498,14 +1539,20 @@ function buildPrintPages() {
 
     while (hasRemaining()) {
       const showTitle = firstPhasePage && firstPhasePageHasMainTitle;
-      const capacity = showTitle
+      const showMeal = firstPhasePage && showMealOnFirstPage;
+
+      let capacity = showTitle
         ? FIRST_PAGE_CAPACITY
         : OTHER_PAGE_CAPACITY;
+
+      if (showMeal) {
+        capacity -= MEAL_HEIGHT;
+      }
 
       const { lists } = createPage(
         showTitle,
         phaseLabel,
-        firstPhasePage && showMealOnFirstPage
+        showMeal
       );
 
       for (let dayIndex = 0; dayIndex < 5; dayIndex += 1) {
