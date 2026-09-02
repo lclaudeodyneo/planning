@@ -1124,6 +1124,14 @@ dialog pre {
 
 }
 
+
+.period-fit {
+
+  width: 100%;
+
+}
+
+
 @media print {
 
 
@@ -1222,6 +1230,9 @@ dialog pre {
 
   .period {
 
+    --print-fit-scale:
+      1;
+
     /*
      * Taille standard d'impression.
      * Les variantes plus denses sont définies plus bas.
@@ -1304,6 +1315,34 @@ dialog pre {
 
     page-break-inside:
       avoid;
+
+  }
+
+
+
+  /*
+   * Le contenu interne peut être réduit dynamiquement par JavaScript
+   * pour garantir UNE page A3 maximum par demi-journée.
+   *
+   * La largeur est compensée avant la transformation :
+   * visuellement, le contenu continue donc d'utiliser toute la largeur.
+   */
+  .period-fit {
+
+    width:
+      calc(
+        100%
+        /
+        var(--print-fit-scale)
+      );
+
+    transform:
+      scale(
+        var(--print-fit-scale)
+      );
+
+    transform-origin:
+      top left;
 
   }
 

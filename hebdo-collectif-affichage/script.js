@@ -1683,16 +1683,22 @@ async function periodHtml(
     >
 
 
-      <div class="period-title">
-
-        ${esc(title)}
-
-      </div>
+      <div class="period-fit">
 
 
-      <div class="activities-list">
+        <div class="period-title">
 
-        ${content}
+          ${esc(title)}
+
+        </div>
+
+
+        <div class="activities-list">
+
+          ${content}
+
+        </div>
+
 
       </div>
 
@@ -1965,6 +1971,284 @@ ${Object.values(TABLES).join('\n')}`;
 }
 
 
+
+/* ============================================================
+   AJUSTEMENT STRICT A3 À L'IMPRESSION
+   ============================================================ */
+
+/*
+ * Chaque demi-journée doit tenir sur UNE SEULE page A3.
+ *
+ * On conserve d'abord les tailles prévues par le CSS.
+ * Si une période dépasse, on réduit uniquement son contenu,
+ * juste assez pour qu'il entre dans la hauteur imprimable.
+ *
+ * La largeur compensée de .period-fit permet de garder
+ * toute la largeur de la feuille malgré la réduction.
+ */
+function fitPeriodsToA3() {
+
+  const periods =
+    Array.from(
+      document.querySelectorAll(
+        '.period'
+      )
+    );
+
+
+  periods.forEach(
+
+    period => {
+
+      const fit =
+        period.querySelector(
+          '.period-fit'
+        );
+
+
+      if (
+        !fit
+      ) {
+
+        return;
+
+      }
+
+
+      /*
+       * Réinitialisation avant mesure.
+       */
+      period.style.setProperty(
+        '--print-fit-scale',
+        '1'
+      );
+
+
+      /*
+       * Force le recalcul de mise en page après la remise à 1.
+       */
+      void fit.offsetHeight;
+
+
+      const periodStyle =
+        window.getComputedStyle(
+          period
+        );
+
+
+      const paddingBottom =
+        parseFloat(
+          periodStyle.paddingBottom
+        )
+        ||
+        0;
+
+
+      const availableHeight =
+        Math.max(
+          1,
+          period.clientHeight
+          -
+          fit.offsetTop
+          -
+          paddingBottom
+        );
+
+
+      const fitsAt = scale => {
+
+        period.style.setProperty(
+          '--print-fit-scale',
+          String(scale)
+        );
+
+
+        /*
+         * La largeur de .period-fit dépend elle aussi du facteur,
+         * donc il faut remesurer sa hauteur naturelle à chaque essai.
+         */
+        void fit.offsetHeight;
+
+
+        const naturalHeight =
+          fit.scrollHeight;
+
+
+        const visualHeight =
+          naturalHeight
+          *
+          scale;
+
+
+        return visualHeight
+          <=
+          availableHeight;
+
+      };
+
+
+      /*
+       * Si l'échelle 1 tient déjà, aucune réduction.
+       */
+      if (
+        fitsAt(1)
+      ) {
+
+        return;
+
+      }
+
+
+      /*
+       * Recherche du plus grand facteur qui tient.
+       * On autorise une forte réduction uniquement si nécessaire :
+       * la priorité absolue est de ne jamais dépasser une feuille A3.
+       */
+      let low =
+        0.10;
+
+      let high =
+        1;
+
+
+      /*
+       * Si même 10 % ne tient pas, on calcule directement
+       * un facteur encore plus petit.
+       */
+      if (
+        !fitsAt(low)
+      ) {
+
+        const naturalHeight =
+          Math.max(
+            1,
+            fit.scrollHeight
+          );
+
+
+        const emergencyScale =
+          Math.max(
+            0.02,
+            Math.min(
+              low,
+              availableHeight
+              /
+              naturalHeight
+              *
+              0.98
+            )
+          );
+
+
+        period.style.setProperty(
+          '--print-fit-scale',
+          String(
+            emergencyScale
+          )
+        );
+
+
+        return;
+
+      }
+
+
+      for (
+        let i = 0;
+        i < 18;
+        i += 1
+      ) {
+
+        const mid =
+          (
+            low
+            +
+            high
+          )
+          /
+          2;
+
+
+        if (
+          fitsAt(mid)
+        ) {
+
+          low =
+            mid;
+
+        }
+
+
+        else {
+
+          high =
+            mid;
+
+        }
+
+      }
+
+
+      /*
+       * Marge de sécurité de 1 % pour les différences de rendu
+       * entre l'aperçu et le moteur d'impression.
+       */
+      const safeScale =
+        Math.max(
+          0.02,
+          low
+          *
+          0.99
+        );
+
+
+      period.style.setProperty(
+        '--print-fit-scale',
+        String(
+          safeScale
+        )
+      );
+
+    }
+
+  );
+
+}
+
+
+function resetPrintFit() {
+
+  document
+    .querySelectorAll(
+      '.period'
+    )
+    .forEach(
+
+      period => {
+
+        period.style.removeProperty(
+          '--print-fit-scale'
+        );
+
+      }
+
+    );
+
+}
+
+
+window.addEventListener(
+  'beforeprint',
+  fitPeriodsToA3
+);
+
+
+window.addEventListener(
+  'afterprint',
+  resetPrintFit
+);
+
+
 /* ============================================================
    IMPRESSION
    ============================================================ */
@@ -1975,6 +2259,8 @@ $('printBtn')
     'click',
 
     () => {
+
+      fitPeriodsToA3();
 
       window.print();
 
