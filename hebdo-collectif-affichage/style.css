@@ -1124,14 +1124,6 @@ dialog pre {
 
 }
 
-
-.period-fit {
-
-  width: 100%;
-
-}
-
-
 @media print {
 
 
@@ -1230,7 +1222,12 @@ dialog pre {
 
   .period {
 
-    --print-fit-scale:
+    /*
+     * Facteur réel de redimensionnement à l'impression.
+     * Contrairement à transform: scale(), il modifie réellement
+     * la taille des éléments et donc la pagination Firefox.
+     */
+    --print-fit-factor:
       1;
 
     /*
@@ -1315,34 +1312,6 @@ dialog pre {
 
     page-break-inside:
       avoid;
-
-  }
-
-
-
-  /*
-   * Le contenu interne peut être réduit dynamiquement par JavaScript
-   * pour garantir UNE page A3 maximum par demi-journée.
-   *
-   * La largeur est compensée avant la transformation :
-   * visuellement, le contenu continue donc d'utiliser toute la largeur.
-   */
-  .period-fit {
-
-    width:
-      calc(
-        100%
-        /
-        var(--print-fit-scale)
-      );
-
-    transform:
-      scale(
-        var(--print-fit-scale)
-      );
-
-    transform-origin:
-      top left;
 
   }
 
@@ -1560,10 +1529,10 @@ dialog pre {
   .period-title {
 
     margin-bottom:
-      10px;
+      calc(10px * var(--print-fit-factor));
 
     font-size:
-      18px;
+      calc(18px * var(--print-fit-factor));
 
     line-height:
       1.05;
@@ -1583,7 +1552,7 @@ dialog pre {
       );
 
     gap:
-      var(--print-card-gap);
+      calc(var(--print-card-gap) * var(--print-fit-factor));
 
     align-items:
       start;
@@ -1616,13 +1585,13 @@ dialog pre {
   .activity-card {
 
     padding:
-      var(--print-card-padding);
+      calc(var(--print-card-padding) * var(--print-fit-factor));
 
     border-left-width:
-      5px;
+      calc(5px * var(--print-fit-factor));
 
     border-radius:
-      8px;
+      calc(8px * var(--print-fit-factor));
 
     break-inside:
       avoid;
@@ -1636,13 +1605,17 @@ dialog pre {
   .activity-header {
 
     min-height:
-      var(--print-header);
+      calc(var(--print-header) * var(--print-fit-factor));
 
     padding-right:
       calc(
-        var(--print-logo)
-        +
-        10px
+        (
+          calc(var(--print-logo) * var(--print-fit-factor))
+          +
+          10px
+        )
+        *
+        var(--print-fit-factor)
       );
 
   }
@@ -1651,10 +1624,10 @@ dialog pre {
   .activity-title {
 
     margin-bottom:
-      5px;
+      calc(5px * var(--print-fit-factor));
 
     font-size:
-      var(--print-title);
+      calc(var(--print-title) * var(--print-fit-factor));
 
     line-height:
       1.05;
@@ -1665,11 +1638,11 @@ dialog pre {
   .activity-time {
 
     padding:
-      3px
-      7px;
+      calc(3px * var(--print-fit-factor))
+      calc(7px * var(--print-fit-factor));
 
     font-size:
-      var(--print-time);
+      calc(var(--print-time) * var(--print-fit-factor));
 
   }
 
@@ -1677,10 +1650,10 @@ dialog pre {
   .activity-logo {
 
     width:
-      var(--print-logo);
+      calc(var(--print-logo) * var(--print-fit-factor));
 
     height:
-      var(--print-logo);
+      calc(var(--print-logo) * var(--print-fit-factor));
 
     border-radius:
       7px;
@@ -1696,10 +1669,10 @@ dialog pre {
   .activity-meta {
 
     margin-top:
-      6px;
+      calc(6px * var(--print-fit-factor));
 
     font-size:
-      var(--print-meta);
+      calc(var(--print-meta) * var(--print-fit-factor));
 
     line-height:
       1.2;
@@ -1710,16 +1683,16 @@ dialog pre {
   .participants-title {
 
     margin-top:
-      8px;
+      calc(8px * var(--print-fit-factor));
 
     margin-bottom:
-      6px;
+      calc(6px * var(--print-fit-factor));
 
     padding-top:
-      5px;
+      calc(5px * var(--print-fit-factor));
 
     font-size:
-      var(--print-people-title);
+      calc(var(--print-people-title) * var(--print-fit-factor));
 
     line-height:
       1.05;
@@ -1739,7 +1712,7 @@ dialog pre {
     grid-template-columns:
       repeat(
         auto-fill,
-        var(--print-person-width)
+        calc(var(--print-person-width) * var(--print-fit-factor))
       );
 
     justify-content:
@@ -1752,10 +1725,10 @@ dialog pre {
       start;
 
     column-gap:
-      var(--print-people-gap-x);
+      calc(var(--print-people-gap-x) * var(--print-fit-factor));
 
     row-gap:
-      var(--print-people-gap-y);
+      calc(var(--print-people-gap-y) * var(--print-fit-factor));
 
   }
 
@@ -1763,7 +1736,7 @@ dialog pre {
   .participant {
 
     width:
-      var(--print-person-width);
+      calc(var(--print-person-width) * var(--print-fit-factor));
 
     align-items:
       flex-start;
@@ -1781,22 +1754,22 @@ dialog pre {
   .participant-photo img {
 
     width:
-      var(--print-photo);
+      calc(var(--print-photo) * var(--print-fit-factor));
 
     height:
-      var(--print-photo);
+      calc(var(--print-photo) * var(--print-fit-factor));
 
     min-width:
-      var(--print-photo);
+      calc(var(--print-photo) * var(--print-fit-factor));
 
     min-height:
-      var(--print-photo);
+      calc(var(--print-photo) * var(--print-fit-factor));
 
     max-width:
-      var(--print-photo);
+      calc(var(--print-photo) * var(--print-fit-factor));
 
     max-height:
-      var(--print-photo);
+      calc(var(--print-photo) * var(--print-fit-factor));
 
     border-radius:
       5px;
@@ -1817,6 +1790,8 @@ dialog pre {
       calc(
         var(--print-photo)
         *
+        var(--print-fit-factor)
+        *
         .22
       );
 
@@ -1826,14 +1801,14 @@ dialog pre {
   .participant-name {
 
     margin-top:
-      4px;
+      calc(4px * var(--print-fit-factor));
 
     padding:
       0
-      2px;
+      calc(2px * var(--print-fit-factor));
 
     font-size:
-      var(--print-name);
+      calc(var(--print-name) * var(--print-fit-factor));
 
     line-height:
       1.05;

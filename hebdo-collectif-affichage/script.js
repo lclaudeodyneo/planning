@@ -1683,22 +1683,16 @@ async function periodHtml(
     >
 
 
-      <div class="period-fit">
+      <div class="period-title">
+
+        ${esc(title)}
+
+      </div>
 
 
-        <div class="period-title">
+      <div class="activities-list">
 
-          ${esc(title)}
-
-        </div>
-
-
-        <div class="activities-list">
-
-          ${content}
-
-        </div>
-
+        ${content}
 
       </div>
 
@@ -1973,19 +1967,36 @@ ${Object.values(TABLES).join('\n')}`;
 
 
 /* ============================================================
-   AJUSTEMENT STRICT A3 À L'IMPRESSION
+   AJUSTEMENT RÉEL POUR TENIR SUR UNE PAGE A3
    ============================================================ */
 
 /*
- * Chaque demi-journée doit tenir sur UNE SEULE page A3.
- *
- * On conserve d'abord les tailles prévues par le CSS.
- * Si une période dépasse, on réduit uniquement son contenu,
- * juste assez pour qu'il entre dans la hauteur imprimable.
- *
- * La largeur compensée de .period-fit permet de garder
- * toute la largeur de la feuille malgré la réduction.
+ * Aucun transform/zoom n'est utilisé ici.
+ * On réduit réellement les dimensions CSS via --print-fit-factor.
+ * Cela évite le défaut de pagination observé dans Firefox
+ * sur les pages suivant la première.
  */
+function resetPrintFit() {
+
+  document
+    .querySelectorAll(
+      '.period'
+    )
+    .forEach(
+
+      period => {
+
+        period.style.removeProperty(
+          '--print-fit-factor'
+        );
+
+      }
+
+    );
+
+}
+
+
 function fitPeriodsToA3() {
 
   const periods =
@@ -2000,121 +2011,42 @@ function fitPeriodsToA3() {
 
     period => {
 
-      const fit =
-        period.querySelector(
-          '.period-fit'
-        );
-
-
-      if (
-        !fit
-      ) {
-
-        return;
-
-      }
-
-
-      /*
-       * Réinitialisation avant mesure.
-       */
       period.style.setProperty(
-        '--print-fit-scale',
+        '--print-fit-factor',
         '1'
       );
 
 
       /*
-       * Force le recalcul de mise en page après la remise à 1.
+       * Force le recalcul après remise à la taille normale.
        */
-      void fit.offsetHeight;
+      void period.offsetHeight;
 
 
-      const periodStyle =
-        window.getComputedStyle(
-          period
-        );
-
-
-      const paddingBottom =
-        parseFloat(
-          periodStyle.paddingBottom
-        )
-        ||
-        0;
-
-
-      /*
-       * IMPORTANT :
-       * fit.offsetTop peut être relatif à un ancêtre différent
-       * et devenir énorme sur les pages 2, 3, 4...
-       *
-       * On mesure donc la position du contenu par rapport à
-       * SA PROPRE demi-journée avec getBoundingClientRect().
-       */
-      const periodRect =
-        period.getBoundingClientRect();
-
-
-      const fitRect =
-        fit.getBoundingClientRect();
-
-
-      const contentTop =
-        Math.max(
-          0,
-          fitRect.top
-          -
-          periodRect.top
-        );
-
-
-      const availableHeight =
-        Math.max(
-          1,
-          period.clientHeight
-          -
-          contentTop
-          -
-          paddingBottom
-        );
-
-
-      const fitsAt = scale => {
+      const fitsAt = factor => {
 
         period.style.setProperty(
-          '--print-fit-scale',
-          String(scale)
+          '--print-fit-factor',
+          String(factor)
         );
+
+
+        void period.offsetHeight;
 
 
         /*
-         * La largeur de .period-fit dépend elle aussi du facteur,
-         * donc il faut remesurer sa hauteur naturelle à chaque essai.
+         * scrollHeight reste supérieur à clientHeight si le contenu
+         * dépasse réellement de la page, même avec overflow:hidden.
          */
-        void fit.offsetHeight;
-
-
-        const naturalHeight =
-          fit.scrollHeight;
-
-
-        const visualHeight =
-          naturalHeight
-          *
-          scale;
-
-
-        return visualHeight
+        return period.scrollHeight
           <=
-          availableHeight;
+          period.clientHeight
+          +
+          2;
 
       };
 
 
-      /*
-       * Si l'échelle 1 tient déjà, aucune réduction.
-       */
       if (
         fitsAt(1)
       ) {
@@ -2125,50 +2057,47 @@ function fitPeriodsToA3() {
 
 
       /*
-       * Recherche du plus grand facteur qui tient.
-       * On autorise une forte réduction uniquement si nécessaire :
-       * la priorité absolue est de ne jamais dépasser une feuille A3.
+       * Recherche du plus grand facteur qui tient réellement.
+       * On descend seulement autant que nécessaire.
        */
       let low =
-        0.10;
+        0.42;
 
       let high =
         1;
 
 
-      /*
-       * Si même 10 % ne tient pas, on calcule directement
-       * un facteur encore plus petit.
-       */
       if (
         !fitsAt(low)
       ) {
 
-        const naturalHeight =
-          Math.max(
-            1,
-            fit.scrollHeight
-          );
+        /*
+         * Cas exceptionnel de demi-journée extrêmement chargée.
+         * La priorité reste : une seule page A3.
+         */
+        let emergency =
+          low;
 
 
-        const emergencyScale =
-          Math.max(
-            0.02,
-            Math.min(
-              low,
-              availableHeight
-              /
-              naturalHeight
-              *
-              0.98
-            )
-          );
+        while (
+          emergency > 0.18
+          &&
+          !fitsAt(emergency)
+        ) {
+
+          emergency -=
+            0.03;
+
+        }
 
 
         period.style.setProperty(
-          '--print-fit-scale',
+          '--print-fit-factor',
           String(
-            emergencyScale
+            Math.max(
+              0.18,
+              emergency
+            )
           )
         );
 
@@ -2180,7 +2109,7 @@ function fitPeriodsToA3() {
 
       for (
         let i = 0;
-        i < 18;
+        i < 16;
         i += 1
       ) {
 
@@ -2215,49 +2144,20 @@ function fitPeriodsToA3() {
 
 
       /*
-       * Marge de sécurité de 1 % pour les différences de rendu
-       * entre l'aperçu et le moteur d'impression.
+       * Petite marge de sécurité pour l'impression réelle.
        */
-      const safeScale =
-        Math.max(
-          0.02,
+      period.style.setProperty(
+        '--print-fit-factor',
+        String(
           low
           *
-          0.99
-        );
-
-
-      period.style.setProperty(
-        '--print-fit-scale',
-        String(
-          safeScale
+          0.985
         )
       );
 
     }
 
   );
-
-}
-
-
-function resetPrintFit() {
-
-  document
-    .querySelectorAll(
-      '.period'
-    )
-    .forEach(
-
-      period => {
-
-        period.style.removeProperty(
-          '--print-fit-scale'
-        );
-
-      }
-
-    );
 
 }
 
@@ -2294,29 +2194,7 @@ $('printBtn')
 
     () => {
 
-      resetPrintFit();
-
-
-      requestAnimationFrame(
-
-        () => {
-
-          fitPeriodsToA3();
-
-
-          requestAnimationFrame(
-
-            () => {
-
-              window.print();
-
-            }
-
-          );
-
-        }
-
-      );
+      window.print();
 
     }
 
