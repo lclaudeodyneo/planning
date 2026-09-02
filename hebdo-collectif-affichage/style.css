@@ -1379,43 +1379,43 @@ dialog pre {
   ) {
 
     --print-photo:
-      72px;
+      64px;
 
     --print-person-width:
-      84px;
+      75px;
 
     --print-logo:
-      72px;
+      64px;
 
     --print-header:
-      72px;
+      64px;
 
     --print-title:
-      19px;
+      17.5px;
 
     --print-time:
-      12.5px;
+      11.5px;
 
     --print-meta:
-      11.5px;
+      10.5px;
 
     --print-people-title:
-      11.5px;
+      10.5px;
 
     --print-name:
-      10px;
-
-    --print-card-padding:
       9px;
 
-    --print-card-gap:
+    --print-card-padding:
       7px;
+
+    --print-card-gap:
+      5px;
 
     --print-people-gap-x:
-      6px;
+      5px;
 
     --print-people-gap-y:
-      7px;
+      5px;
 
   }
 
@@ -1432,43 +1432,43 @@ dialog pre {
   ) {
 
     --print-photo:
-      62px;
+      56px;
 
     --print-person-width:
-      73px;
+      66px;
 
     --print-logo:
-      62px;
+      56px;
 
     --print-header:
-      62px;
+      56px;
 
     --print-title:
-      17px;
+      16px;
 
     --print-time:
-      11px;
+      10.5px;
 
     --print-meta:
-      10.5px;
+      9.5px;
 
     --print-people-title:
-      10.5px;
+      9.5px;
 
     --print-name:
-      9px;
+      8.5px;
 
     --print-card-padding:
-      8px;
+      6px;
 
     --print-card-gap:
-      6px;
+      4px;
 
     --print-people-gap-x:
-      5px;
+      4px;
 
     --print-people-gap-y:
-      6px;
+      4px;
 
   }
 
