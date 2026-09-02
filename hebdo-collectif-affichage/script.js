@@ -2044,12 +2044,37 @@ function fitPeriodsToA3() {
         0;
 
 
+      /*
+       * IMPORTANT :
+       * fit.offsetTop peut être relatif à un ancêtre différent
+       * et devenir énorme sur les pages 2, 3, 4...
+       *
+       * On mesure donc la position du contenu par rapport à
+       * SA PROPRE demi-journée avec getBoundingClientRect().
+       */
+      const periodRect =
+        period.getBoundingClientRect();
+
+
+      const fitRect =
+        fit.getBoundingClientRect();
+
+
+      const contentTop =
+        Math.max(
+          0,
+          fitRect.top
+          -
+          periodRect.top
+        );
+
+
       const availableHeight =
         Math.max(
           1,
           period.clientHeight
           -
-          fit.offsetTop
+          contentTop
           -
           paddingBottom
         );
@@ -2238,8 +2263,17 @@ function resetPrintFit() {
 
 
 window.addEventListener(
+
   'beforeprint',
-  fitPeriodsToA3
+
+  () => {
+
+    resetPrintFit();
+
+    fitPeriodsToA3();
+
+  }
+
 );
 
 
@@ -2260,9 +2294,29 @@ $('printBtn')
 
     () => {
 
-      fitPeriodsToA3();
+      resetPrintFit();
 
-      window.print();
+
+      requestAnimationFrame(
+
+        () => {
+
+          fitPeriodsToA3();
+
+
+          requestAnimationFrame(
+
+            () => {
+
+              window.print();
+
+            }
+
+          );
+
+        }
+
+      );
 
     }
 
