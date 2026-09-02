@@ -1273,18 +1273,70 @@ async function activityCard(
           );
 
 
+      const firstLastName =
+        text(
+          first?.Nom
+        );
+
+
+      const secondLastName =
+        text(
+          second?.Nom
+        );
+
+
+      const lastNameComparison =
+        firstLastName
+          .localeCompare(
+
+            secondLastName,
+
+            'fr',
+
+            {
+              sensitivity: 'base'
+            }
+
+          );
+
+
+      if (
+        lastNameComparison !== 0
+      ) {
+
+        return lastNameComparison;
+
+      }
+
+
       return userFirstName(first)
         .localeCompare(
 
           userFirstName(second),
 
-          'fr'
+          'fr',
+
+          {
+            sensitivity: 'base'
+          }
 
         );
 
     }
 
   );
+
+
+  /* ========================================================
+     LARGEUR DE LA TUILE
+     Une activité de 1 à 3 participants peut occuper une demi-largeur.
+     Deux activités compactes consécutives peuvent donc partager une ligne.
+     ======================================================== */
+
+  const useHalfWidth =
+    participantIds.length >= 1
+    &&
+    participantIds.length <= 3;
 
 
   const participantElements =
@@ -1450,7 +1502,11 @@ async function activityCard(
 
     <article
 
-      class="activity-card"
+      class="activity-card${
+        useHalfWidth
+          ? ' activity-card--half'
+          : ''
+      }"
 
       style="
         --card-color:
