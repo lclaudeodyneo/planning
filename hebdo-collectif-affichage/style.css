@@ -469,8 +469,8 @@ body {
     rgba(255,255,255,.95);
 
   border:
-    1px solid
-    var(--line);
+    3px solid
+    var(--card-color);
 
   border-left:
     7px solid
