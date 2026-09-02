@@ -637,6 +637,7 @@ body.print-a3 {
   .activity-desc {
     font-size: 8px;
     margin-top: 4px;
+    width: 70%;
   }
 
   .activity-logo {
