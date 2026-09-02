@@ -520,6 +520,8 @@ body {
   color:
     #252542;
 
+  font-variant-caps: small-caps;
+
 }
 
 
@@ -666,7 +668,7 @@ body {
   width: 100%;
 
   display: grid;
-
+  font-variant-caps: small-caps;
 
   /*
    * IMPORTANT
