@@ -21,6 +21,7 @@ body {
   margin: 0;
   min-height: 100%;
   font-family: Inter, "Segoe UI", Arial, sans-serif;
+  font-variant-caps: small-caps;
   color: var(--ink);
   background: var(--bg);
 }
@@ -639,8 +640,8 @@ body.print-a3 {
   }
 
   .activity-logo {
-    width: 23px;
-    height: 23px;
+    width: 60px;
+    height: 60px;
   }
 
   .empty-slot {
