@@ -1120,7 +1120,7 @@ dialog pre {
   size:
     A3 portrait;
 
-  margin: 6mm;
+  margin: 5mm;
 
 }
 
@@ -1170,8 +1170,9 @@ dialog pre {
 
 
   /*
-   * La page "jour" devient transparente à l'impression.
-   * Chaque période (matin / après-midi) constitue sa propre page A3.
+   * Une demi-journée = une page A3.
+   * La taille des éléments s'adapte au nombre d'activités
+   * afin de conserver toute la demi-journée sur la feuille.
    */
   .day-page {
 
@@ -1221,19 +1222,64 @@ dialog pre {
 
   .period {
 
+    /*
+     * Taille standard d'impression.
+     * Les variantes plus denses sont définies plus bas.
+     */
+    --print-photo:
+      82px;
+
+    --print-person-width:
+      94px;
+
+    --print-logo:
+      82px;
+
+    --print-header:
+      82px;
+
+    --print-title:
+      21px;
+
+    --print-time:
+      14px;
+
+    --print-meta:
+      13px;
+
+    --print-people-title:
+      13px;
+
+    --print-name:
+      11px;
+
+    --print-card-padding:
+      11px;
+
+    --print-card-gap:
+      9px;
+
+    --print-people-gap-x:
+      8px;
+
+    --print-people-gap-y:
+      9px;
+
+
     box-sizing:
       border-box;
 
-    width: 100%;
+    width:
+      100%;
 
     height:
-      calc(420mm - 12mm);
+      calc(420mm - 10mm);
 
     min-height:
-      calc(420mm - 12mm);
+      calc(420mm - 10mm);
 
     max-height:
-      calc(420mm - 12mm);
+      calc(420mm - 10mm);
 
     overflow:
       hidden;
@@ -1241,8 +1287,8 @@ dialog pre {
     margin: 0;
 
     padding:
-      24px
-      30px;
+      14px
+      18px;
 
     background:
       white;
@@ -1262,6 +1308,163 @@ dialog pre {
   }
 
 
+  /*
+   * 5 activités ou plus :
+   * réduction modérée pour garder de grandes photos.
+   */
+  .period:has(
+    .activities-list
+    >
+    .activity-card:nth-child(5)
+  ) {
+
+    --print-photo:
+      72px;
+
+    --print-person-width:
+      84px;
+
+    --print-logo:
+      72px;
+
+    --print-header:
+      72px;
+
+    --print-title:
+      19px;
+
+    --print-time:
+      12px;
+
+    --print-meta:
+      11.5px;
+
+    --print-people-title:
+      11.5px;
+
+    --print-name:
+      10px;
+
+    --print-card-padding:
+      9px;
+
+    --print-card-gap:
+      7px;
+
+    --print-people-gap-x:
+      6px;
+
+    --print-people-gap-y:
+      7px;
+
+  }
+
+
+  /*
+   * 7 activités ou plus :
+   * mode compact.
+   */
+  .period:has(
+    .activities-list
+    >
+    .activity-card:nth-child(7)
+  ) {
+
+    --print-photo:
+      62px;
+
+    --print-person-width:
+      73px;
+
+    --print-logo:
+      62px;
+
+    --print-header:
+      62px;
+
+    --print-title:
+      17px;
+
+    --print-time:
+      11px;
+
+    --print-meta:
+      10.5px;
+
+    --print-people-title:
+      10.5px;
+
+    --print-name:
+      9px;
+
+    --print-card-padding:
+      8px;
+
+    --print-card-gap:
+      6px;
+
+    --print-people-gap-x:
+      5px;
+
+    --print-people-gap-y:
+      6px;
+
+  }
+
+
+  /*
+   * 9 activités ou plus :
+   * mode très dense pour éviter qu'une demi-journée
+   * déborde de la page A3.
+   */
+  .period:has(
+    .activities-list
+    >
+    .activity-card:nth-child(9)
+  ) {
+
+    --print-photo:
+      54px;
+
+    --print-person-width:
+      64px;
+
+    --print-logo:
+      54px;
+
+    --print-header:
+      54px;
+
+    --print-title:
+      15px;
+
+    --print-time:
+      10px;
+
+    --print-meta:
+      9.5px;
+
+    --print-people-title:
+      9.5px;
+
+    --print-name:
+      8.5px;
+
+    --print-card-padding:
+      7px;
+
+    --print-card-gap:
+      5px;
+
+    --print-people-gap-x:
+      4px;
+
+    --print-people-gap-y:
+      5px;
+
+  }
+
+
   .period::before {
 
     content:
@@ -1271,13 +1474,13 @@ dialog pre {
       block;
 
     margin:
-      -24px
-      -30px
-      16px;
+      -14px
+      -18px
+      9px;
 
     padding:
-      14px
-      20px;
+      9px
+      14px;
 
     background:
       var(--day-color);
@@ -1295,7 +1498,7 @@ dialog pre {
       .08em;
 
     font-size:
-      22px;
+      19px;
 
     font-weight:
       900;
@@ -1318,13 +1521,13 @@ dialog pre {
   .period-title {
 
     margin-bottom:
-      16px;
+      8px;
 
     font-size:
-      21px;
+      16px;
 
     line-height:
-      normal;
+      1.05;
 
   }
 
@@ -1341,7 +1544,7 @@ dialog pre {
       );
 
     gap:
-      20px;
+      var(--print-card-gap);
 
     align-items:
       start;
@@ -1349,7 +1552,8 @@ dialog pre {
   }
 
 
-  .activities-list .activity-card {
+  .activities-list
+  .activity-card {
 
     grid-column:
       1 / -1;
@@ -1357,7 +1561,8 @@ dialog pre {
   }
 
 
-  .activities-list .activity-card--half {
+  .activities-list
+  .activity-card--half {
 
     grid-column:
       span 1;
@@ -1366,19 +1571,19 @@ dialog pre {
 
 
   /* ========================================================
-     TUILES D'ACTIVITÉ COMPACTES
+     TUILES D'ACTIVITÉ
      ======================================================== */
 
   .activity-card {
 
     padding:
-      20px;
+      var(--print-card-padding);
 
     border-left-width:
-      7px;
+      5px;
 
     border-radius:
-      12px;
+      8px;
 
     break-inside:
       avoid;
@@ -1392,10 +1597,14 @@ dialog pre {
   .activity-header {
 
     min-height:
-      110px;
+      var(--print-header);
 
     padding-right:
-      135px;
+      calc(
+        var(--print-logo)
+        +
+        10px
+      );
 
   }
 
@@ -1403,13 +1612,13 @@ dialog pre {
   .activity-title {
 
     margin-bottom:
-      10px;
+      5px;
 
     font-size:
-      29px;
+      var(--print-title);
 
     line-height:
-      1.08;
+      1.05;
 
   }
 
@@ -1417,11 +1626,11 @@ dialog pre {
   .activity-time {
 
     padding:
-      6px
-      12px;
+      3px
+      7px;
 
     font-size:
-      19px;
+      var(--print-time);
 
   }
 
@@ -1429,13 +1638,13 @@ dialog pre {
   .activity-logo {
 
     width:
-      110px;
+      var(--print-logo);
 
     height:
-      110px;
+      var(--print-logo);
 
     border-radius:
-      10px;
+      7px;
 
   }
 
@@ -1448,13 +1657,13 @@ dialog pre {
   .activity-meta {
 
     margin-top:
-      15px;
+      6px;
 
     font-size:
-      18px;
+      var(--print-meta);
 
     line-height:
-      1.4;
+      1.2;
 
   }
 
@@ -1462,22 +1671,22 @@ dialog pre {
   .participants-title {
 
     margin-top:
-      20px;
+      8px;
 
     margin-bottom:
-      14px;
+      6px;
 
     padding-top:
-      12px;
+      5px;
 
     font-size:
-      18px;
+      var(--print-people-title);
 
     line-height:
-      normal;
+      1.05;
 
     border-top-width:
-      2px;
+      1px;
 
   }
 
@@ -1491,7 +1700,7 @@ dialog pre {
     grid-template-columns:
       repeat(
         auto-fill,
-        125px
+        var(--print-person-width)
       );
 
     justify-content:
@@ -1504,10 +1713,10 @@ dialog pre {
       start;
 
     column-gap:
-      12px;
+      var(--print-people-gap-x);
 
     row-gap:
-      18px;
+      var(--print-people-gap-y);
 
   }
 
@@ -1515,7 +1724,7 @@ dialog pre {
   .participant {
 
     width:
-      125px;
+      var(--print-person-width);
 
     align-items:
       flex-start;
@@ -1533,22 +1742,22 @@ dialog pre {
   .participant-photo img {
 
     width:
-      110px;
+      var(--print-photo);
 
     height:
-      110px;
+      var(--print-photo);
 
     min-width:
-      110px;
+      var(--print-photo);
 
     min-height:
-      110px;
+      var(--print-photo);
 
     max-width:
-      110px;
+      var(--print-photo);
 
     max-height:
-      110px;
+      var(--print-photo);
 
     border-radius:
       5px;
@@ -1559,14 +1768,18 @@ dialog pre {
   .participant-photo {
 
     border-width:
-      3px;
+      2px;
 
     box-shadow:
-      0 0 0 2px
+      0 0 0 1px
       #b7c5cc;
 
     font-size:
-      24px;
+      calc(
+        var(--print-photo)
+        *
+        .22
+      );
 
   }
 
@@ -1574,17 +1787,17 @@ dialog pre {
   .participant-name {
 
     margin-top:
-      8px;
+      4px;
 
     padding:
       0
-      3px;
+      2px;
 
     font-size:
-      15px;
+      var(--print-name);
 
     line-height:
-      normal;
+      1.05;
 
   }
 
@@ -1592,13 +1805,13 @@ dialog pre {
   .empty-slot {
 
     min-height:
-      60px;
+      36px;
 
     padding:
-      18px;
+      10px;
 
     font-size:
-      15px;
+      11px;
 
   }
 
