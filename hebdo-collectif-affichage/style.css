@@ -1241,8 +1241,8 @@ dialog pre {
     margin: 0;
 
     padding:
-      4mm
-      5mm;
+      24px
+      30px;
 
     background:
       white;
@@ -1271,13 +1271,13 @@ dialog pre {
       block;
 
     margin:
-      -4mm
-      -5mm
-      3mm;
+      -24px
+      -30px
+      16px;
 
     padding:
-      2.5mm
-      4mm;
+      14px
+      20px;
 
     background:
       var(--day-color);
@@ -1318,13 +1318,13 @@ dialog pre {
   .period-title {
 
     margin-bottom:
-      2mm;
+      16px;
 
     font-size:
-      15px;
+      21px;
 
     line-height:
-      1.1;
+      normal;
 
   }
 
@@ -1341,7 +1341,7 @@ dialog pre {
       );
 
     gap:
-      2mm;
+      20px;
 
     align-items:
       start;
@@ -1372,14 +1372,13 @@ dialog pre {
   .activity-card {
 
     padding:
-      2.4mm
-      3mm;
+      20px;
 
     border-left-width:
-      1.2mm;
+      7px;
 
     border-radius:
-      2mm;
+      12px;
 
     break-inside:
       avoid;
@@ -1393,10 +1392,10 @@ dialog pre {
   .activity-header {
 
     min-height:
-      18mm;
+      110px;
 
     padding-right:
-      21mm;
+      135px;
 
   }
 
@@ -1404,13 +1403,13 @@ dialog pre {
   .activity-title {
 
     margin-bottom:
-      1mm;
+      10px;
 
     font-size:
-      16px;
+      29px;
 
     line-height:
-      1.05;
+      1.08;
 
   }
 
@@ -1418,11 +1417,11 @@ dialog pre {
   .activity-time {
 
     padding:
-      .6mm
-      1.5mm;
+      6px
+      12px;
 
     font-size:
-      10px;
+      19px;
 
   }
 
@@ -1430,13 +1429,13 @@ dialog pre {
   .activity-logo {
 
     width:
-      18mm;
+      110px;
 
     height:
-      18mm;
+      110px;
 
     border-radius:
-      5px;
+      10px;
 
   }
 
@@ -1449,13 +1448,13 @@ dialog pre {
   .activity-meta {
 
     margin-top:
-      1.2mm;
+      15px;
 
     font-size:
-      9.5px;
+      18px;
 
     line-height:
-      1.2;
+      1.4;
 
   }
 
@@ -1463,22 +1462,22 @@ dialog pre {
   .participants-title {
 
     margin-top:
-      1.6mm;
+      20px;
 
     margin-bottom:
-      1.4mm;
+      14px;
 
     padding-top:
-      1.2mm;
+      12px;
 
     font-size:
-      9.5px;
+      18px;
 
     line-height:
-      1.1;
+      normal;
 
     border-top-width:
-      1px;
+      2px;
 
   }
 
@@ -1492,7 +1491,7 @@ dialog pre {
     grid-template-columns:
       repeat(
         auto-fill,
-        17mm
+        125px
       );
 
     justify-content:
@@ -1505,10 +1504,10 @@ dialog pre {
       start;
 
     column-gap:
-      1.5mm;
+      12px;
 
     row-gap:
-      1.5mm;
+      18px;
 
   }
 
@@ -1516,7 +1515,7 @@ dialog pre {
   .participant {
 
     width:
-      17mm;
+      125px;
 
     align-items:
       flex-start;
@@ -1534,22 +1533,22 @@ dialog pre {
   .participant-photo img {
 
     width:
-      14mm;
+      110px;
 
     height:
-      14mm;
+      110px;
 
     min-width:
-      14mm;
+      110px;
 
     min-height:
-      14mm;
+      110px;
 
     max-width:
-      14mm;
+      110px;
 
     max-height:
-      14mm;
+      110px;
 
     border-radius:
       5px;
@@ -1560,14 +1559,14 @@ dialog pre {
   .participant-photo {
 
     border-width:
-      1px;
+      3px;
 
     box-shadow:
-      0 0 0 .4mm
-      #aaa;
+      0 0 0 2px
+      #b7c5cc;
 
     font-size:
-      12px;
+      24px;
 
   }
 
@@ -1575,13 +1574,17 @@ dialog pre {
   .participant-name {
 
     margin-top:
-      .7mm;
+      8px;
+
+    padding:
+      0
+      3px;
 
     font-size:
-      7.5px;
+      15px;
 
     line-height:
-      1.05;
+      normal;
 
   }
 
@@ -1589,13 +1592,13 @@ dialog pre {
   .empty-slot {
 
     min-height:
-      10mm;
+      60px;
 
     padding:
-      2mm;
+      18px;
 
     font-size:
-      9px;
+      15px;
 
   }
 
