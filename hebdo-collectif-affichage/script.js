@@ -1601,16 +1601,16 @@ async function activityCard(
         }
 
 
-        ${pictogramHtml}
+        ${animatorHtml}
+
+
+        ${remarksHtml}
 
 
       </div>
 
 
-      ${remarksHtml}
-
-
-      ${animatorHtml}
+      ${pictogramHtml}
 
 
       ${peopleHtml}

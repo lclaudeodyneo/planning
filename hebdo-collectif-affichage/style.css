@@ -499,6 +499,37 @@ body {
 
 }
 
+/* ==========================================================
+   PROFESSIONNELS + REMARQUES SOUS L’HORAIRE
+   Optimisation V15 conservée sur la base CSS personnalisée
+   ========================================================== */
+
+.activity-header
+.activity-meta,
+.activity-header
+.activity-remarks {
+
+  margin-top: 6px;
+
+  line-height: 1.25;
+
+}
+
+
+.activity-header
+.activity-time
++
+.activity-meta,
+.activity-header
+.activity-time
++
+.activity-remarks {
+
+  margin-top: 7px;
+
+}
+
+
 
 /* ==========================================================
    TITRE ACTIVITÉ
@@ -1682,6 +1713,20 @@ dialog pre {
 
     line-height:
       1.2;
+
+  }
+
+
+  .activity-header
+  .activity-meta,
+  .activity-header
+  .activity-remarks {
+
+    margin-top:
+      calc(3px * var(--print-fit-factor));
+
+    line-height:
+      1.15;
 
   }
 
