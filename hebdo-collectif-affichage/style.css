@@ -1227,43 +1227,43 @@ dialog pre {
      * Les variantes plus denses sont définies plus bas.
      */
     --print-photo:
-      82px;
+      96px;
 
     --print-person-width:
-      94px;
+      108px;
 
     --print-logo:
-      82px;
+      96px;
 
     --print-header:
-      82px;
+      96px;
 
     --print-title:
-      21px;
+      24px;
 
     --print-time:
-      14px;
+      16px;
 
     --print-meta:
-      13px;
+      15px;
 
     --print-people-title:
-      13px;
+      15px;
 
     --print-name:
-      11px;
+      13px;
 
     --print-card-padding:
-      11px;
+      14px;
 
     --print-card-gap:
-      9px;
+      12px;
 
     --print-people-gap-x:
-      8px;
+      10px;
 
     --print-people-gap-y:
-      9px;
+      12px;
 
 
     box-sizing:
@@ -1287,8 +1287,8 @@ dialog pre {
     margin: 0;
 
     padding:
-      14px
-      18px;
+      18px
+      22px;
 
     background:
       white;
@@ -1319,6 +1319,58 @@ dialog pre {
   ) {
 
     --print-photo:
+      84px;
+
+    --print-person-width:
+      96px;
+
+    --print-logo:
+      84px;
+
+    --print-header:
+      84px;
+
+    --print-title:
+      21px;
+
+    --print-time:
+      14px;
+
+    --print-meta:
+      13px;
+
+    --print-people-title:
+      13px;
+
+    --print-name:
+      11.5px;
+
+    --print-card-padding:
+      11px;
+
+    --print-card-gap:
+      9px;
+
+    --print-people-gap-x:
+      8px;
+
+    --print-people-gap-y:
+      9px;
+
+  }
+
+
+  /*
+   * 7 activités ou plus :
+   * mode compact.
+   */
+  .period:has(
+    .activities-list
+    >
+    .activity-card:nth-child(7)
+  ) {
+
+    --print-photo:
       72px;
 
     --print-person-width:
@@ -1334,7 +1386,7 @@ dialog pre {
       19px;
 
     --print-time:
-      12px;
+      12.5px;
 
     --print-meta:
       11.5px;
@@ -1361,13 +1413,14 @@ dialog pre {
 
 
   /*
-   * 7 activités ou plus :
-   * mode compact.
+   * 9 activités ou plus :
+   * mode très dense pour éviter qu'une demi-journée
+   * déborde de la page A3.
    */
   .period:has(
     .activities-list
     >
-    .activity-card:nth-child(7)
+    .activity-card:nth-child(9)
   ) {
 
     --print-photo:
@@ -1412,59 +1465,6 @@ dialog pre {
   }
 
 
-  /*
-   * 9 activités ou plus :
-   * mode très dense pour éviter qu'une demi-journée
-   * déborde de la page A3.
-   */
-  .period:has(
-    .activities-list
-    >
-    .activity-card:nth-child(9)
-  ) {
-
-    --print-photo:
-      54px;
-
-    --print-person-width:
-      64px;
-
-    --print-logo:
-      54px;
-
-    --print-header:
-      54px;
-
-    --print-title:
-      15px;
-
-    --print-time:
-      10px;
-
-    --print-meta:
-      9.5px;
-
-    --print-people-title:
-      9.5px;
-
-    --print-name:
-      8.5px;
-
-    --print-card-padding:
-      7px;
-
-    --print-card-gap:
-      5px;
-
-    --print-people-gap-x:
-      4px;
-
-    --print-people-gap-y:
-      5px;
-
-  }
-
-
   .period::before {
 
     content:
@@ -1474,13 +1474,13 @@ dialog pre {
       block;
 
     margin:
-      -14px
       -18px
-      9px;
+      -22px
+      12px;
 
     padding:
-      9px
-      14px;
+      12px
+      16px;
 
     background:
       var(--day-color);
@@ -1521,10 +1521,10 @@ dialog pre {
   .period-title {
 
     margin-bottom:
-      8px;
+      10px;
 
     font-size:
-      16px;
+      18px;
 
     line-height:
       1.05;
