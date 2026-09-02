@@ -633,11 +633,15 @@ body.print-a3 {
     padding: 2px 5px;
   }
 
-  .activity-meta,
-  .activity-desc {
+  .activity-meta {
     font-size: 8px;
     margin-top: 4px;
     width: 70%;
+  }
+  
+  .activity-desc {
+    font-size: 8px;
+    margin-top: 4px;
   }
 
   .activity-logo {
