@@ -515,8 +515,6 @@ body {
 
   line-height: 1.08;
 
-  font-weight: 900;
-
   color:
     #252542;
 
@@ -593,6 +591,8 @@ body {
 
   font-size: 18px;
 
+  font-variant-caps: small-caps;
+
   line-height: 1.4;
 
   color:
@@ -618,6 +618,8 @@ body {
   margin-top: 15px;
 
   font-size: 18px;
+  
+  font-variant-caps: small-caps;
 
   line-height: 1.4;
 
@@ -648,7 +650,7 @@ body {
 
   font-size: 18px;
 
-  font-weight: 900;
+  font-weight: 700;
 
   text-transform:
     uppercase;
@@ -831,7 +833,7 @@ body {
 
   font-size: 15px;
 
-  font-weight: 800;
+  font-weight: 600;
 
 }
 
@@ -863,6 +865,8 @@ body {
   font-size: 20px;
 
   font-weight: 900;
+
+  font-variant-caps: small-caps;
 
   letter-spacing:
     .04em;
