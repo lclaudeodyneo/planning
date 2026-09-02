@@ -1004,25 +1004,79 @@ function sortActivities(
   b
 ) {
 
-  return (
-
+  const dayComparison =
     a.dayOrder
     -
-    b.dayOrder
+    b.dayOrder;
 
-    ||
 
+  if (
+    dayComparison !== 0
+  ) {
+
+    return dayComparison;
+
+  }
+
+
+  const timeComparison =
     minutes(a.start)
     -
-    minutes(b.start)
+    minutes(b.start);
 
-    ||
 
-    a.name.localeCompare(
-      b.name,
-      'fr'
-    )
+  if (
+    timeComparison !== 0
+  ) {
 
+    return timeComparison;
+
+  }
+
+
+  /*
+   * À heure identique, on regroupe d'abord les activités
+   * qui peuvent s'afficher en demi-largeur.
+   * Elles se suivent donc dans la grille et se placent
+   * naturellement deux par deux sur la même ligne.
+   */
+  const aParticipantCount =
+    a.participants
+      ? a.participants.size
+      : 0;
+
+
+  const bParticipantCount =
+    b.participants
+      ? b.participants.size
+      : 0;
+
+
+  const aHalfWidth =
+    aParticipantCount <= 3;
+
+
+  const bHalfWidth =
+    bParticipantCount <= 3;
+
+
+  if (
+    aHalfWidth !== bHalfWidth
+  ) {
+
+    return aHalfWidth
+      ? -1
+      : 1;
+
+  }
+
+
+  return a.name.localeCompare(
+    b.name,
+    'fr',
+    {
+      sensitivity: 'base'
+    }
   );
 
 }
@@ -1334,8 +1388,6 @@ async function activityCard(
      ======================================================== */
 
   const useHalfWidth =
-    participantIds.length >= 1
-    &&
     participantIds.length <= 3;
 
 
