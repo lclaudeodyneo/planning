@@ -251,6 +251,11 @@ function buildModel() {
         capacity: activity.Capacite,
         description: text(activity.Remarques_planning).slice(0, 100),
         visual: activity.Visuel,
+
+        alwaysDisplay:
+          activity.toujours_afficher === true ||
+          activity.toujours_afficher === 1,
+
         participants: participantsByActivity.get(activity.id) || new Set()
       };
     })
@@ -394,8 +399,13 @@ async function render() {
 
 async function renderDay(person, day) {
   const regularActivities = state.activities.filter((activity) => (
-    activity.day === day && activity.participants.has(person.id)
+    activity.day === day &&
+    (
+      activity.alwaysDisplay ||
+      activity.participants.has(person.id)
+    )
   ));
+
 
   const otherActivities = state.otherActivities.filter((activity) => (
     activity.day === day && activity.participants.has(person.id)
