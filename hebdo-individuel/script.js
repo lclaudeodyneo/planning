@@ -253,8 +253,8 @@ function buildModel() {
         visual: activity.Visuel,
 
         alwaysDisplay:
-          activity.toujours_afficher === true ||
-          activity.toujours_afficher === 1,
+          activity.Toujours_afficher === true ||
+          activity.Toujours_afficher === 1,
 
         participants: participantsByActivity.get(activity.id) || new Set()
       };
@@ -405,7 +405,6 @@ async function renderDay(person, day) {
       activity.participants.has(person.id)
     )
   ));
-
 
   const otherActivities = state.otherActivities.filter((activity) => (
     activity.day === day && activity.participants.has(person.id)
