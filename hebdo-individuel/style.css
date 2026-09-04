@@ -600,8 +600,15 @@ body.print-a3 {
     padding: 6px;
   }
 
+  /* Moins d'espace sous la dernière activité du matin */
+  .period-matin {
+    padding-bottom: 2px;
+  }
+
+  /* Le bandeau repas fait 24px :
+    28px laisse juste une petite marge */
   .meal-gap {
-    height: 42px;
+    height: 28px;
   }
 
   .meal-banner {
