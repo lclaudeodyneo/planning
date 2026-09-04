@@ -253,8 +253,8 @@ function buildModel() {
         visual: activity.Visuel,
 
         alwaysDisplay:
-          activity.Toujours_afficher === true ||
-          activity.Toujours_afficher === 1,
+          activity.Groupe_ouvert === true ||
+          activity.Groupe_ouvert === 1,
 
         participants: participantsByActivity.get(activity.id) || new Set()
       };
