@@ -33,6 +33,7 @@ const state = {
 
 const $ = (id) => document.getElementById(id);
 
+
 /* =========================================================
    OUTILS
    ========================================================= */
@@ -42,13 +43,16 @@ function rowsFromTable(table) {
     return [];
   }
 
-  return table.id.map((id, index) => Object.fromEntries(
-    Object.entries(table).map(([key, value]) => [
-      key,
-      Array.isArray(value) ? value[index] : value
-    ])
-  ));
+  return table.id.map((id, index) =>
+    Object.fromEntries(
+      Object.entries(table).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value[index] : value
+      ])
+    )
+  );
 }
+
 
 function refIds(value) {
   if (value == null) {
@@ -61,12 +65,18 @@ function refIds(value) {
       : value.filter(Number.isFinite);
   }
 
-  return Number.isFinite(value) ? [value] : [];
+  return Number.isFinite(value)
+    ? [value]
+    : [];
 }
 
+
 function byId(rows) {
-  return new Map(rows.map((row) => [row.id, row]));
+  return new Map(
+    rows.map((row) => [row.id, row])
+  );
 }
+
 
 function text(value, fallback = '') {
   return value == null || value === ''
@@ -74,22 +84,33 @@ function text(value, fallback = '') {
     : String(value);
 }
 
+
 function normalizeDay(value) {
-  const normalized = text(value).trim().toLowerCase();
+  const normalized =
+    text(value).trim().toLowerCase();
 
   return (
-    DAYS.find((day) => day.toLowerCase() === normalized) ||
+    DAYS.find(
+      (day) =>
+        day.toLowerCase() === normalized
+    ) ||
     text(value, 'Jour')
   );
 }
 
+
 function minutes(value) {
-  const match = text(value).match(/(\d{1,2})\D(\d{2})/);
+  const match =
+    text(value).match(
+      /(\d{1,2})\D(\d{2})/
+    );
 
   return match
-    ? Number(match[1]) * 60 + Number(match[2])
+    ? Number(match[1]) * 60 +
+        Number(match[2])
     : 9999;
 }
+
 
 function initials(name) {
   return text(name, '?')
@@ -101,27 +122,40 @@ function initials(name) {
     .toUpperCase();
 }
 
+
 function colorFor(name) {
   let hue = 0;
 
   for (const character of text(name)) {
-    hue = (hue * 31 + character.charCodeAt(0)) % 360;
+    hue =
+      (hue * 31 +
+        character.charCodeAt(0)) %
+      360;
   }
 
   return `hsl(${hue} 48% 48%)`;
 }
 
+
 function esc(value) {
-  return text(value).replace(/[&<>"']/g, (character) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  })[character]);
+  return text(value).replace(
+    /[&<>"']/g,
+    (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    })[character]
+  );
 }
 
-function firstDefined(row, columnNames, fallback = '') {
+
+function firstDefined(
+  row,
+  columnNames,
+  fallback = ''
+) {
   for (const columnName of columnNames) {
     if (
       row &&
@@ -135,24 +169,22 @@ function firstDefined(row, columnNames, fallback = '') {
   return fallback;
 }
 
+
 /*
- * Permet de reconnaître correctement une colonne booléenne Grist.
- *
- * Accepte notamment :
- * true
- * 1
- * "1"
- * "true"
- * "oui"
- * "yes"
+ * Lecture robuste des colonnes Oui / Non de Grist.
  */
 function isTrue(value) {
-  if (value === true || value === 1 || value === '1') {
+  if (
+    value === true ||
+    value === 1 ||
+    value === '1'
+  ) {
     return true;
   }
 
   if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
+    const normalized =
+      value.trim().toLowerCase();
 
     return [
       'true',
@@ -171,6 +203,7 @@ function isTrue(value) {
    ========================================================= */
 
 let attachmentTokenInfo = null;
+
 
 async function attachmentUrl(value) {
   const ids = refIds(value);
@@ -195,9 +228,14 @@ async function attachmentUrl(value) {
 
     const url =
       `${attachmentTokenInfo.baseUrl}/attachments/${id}/download` +
-      `?auth=${encodeURIComponent(attachmentTokenInfo.token)}`;
+      `?auth=${encodeURIComponent(
+        attachmentTokenInfo.token
+      )}`;
 
-    state.attachmentUrls.set(id, url);
+    state.attachmentUrls.set(
+      id,
+      url
+    );
 
     return url;
 
@@ -217,31 +255,39 @@ async function attachmentUrl(value) {
    ========================================================= */
 
 async function fetchAll() {
-  showStatus('Lecture des tables Grist…');
-
-  const entries = await Promise.all(
-    Object.entries(TABLES).map(
-      async ([key, name]) => [
-        key,
-        await grist.docApi.fetchTable(name)
-      ]
-    )
+  showStatus(
+    'Lecture des tables Grist…'
   );
 
-  state.tables = Object.fromEntries(
-    entries.map(([key, table]) => [
-      key,
-      rowsFromTable(table)
-    ])
-  );
+  const entries =
+    await Promise.all(
+      Object.entries(TABLES).map(
+        async ([key, name]) => [
+          key,
+          await grist.docApi.fetchTable(name)
+        ]
+      )
+    );
+
+  state.tables =
+    Object.fromEntries(
+      entries.map(
+        ([key, table]) => [
+          key,
+          rowsFromTable(table)
+        ]
+      )
+    );
 
   buildModel();
   populatePeople();
 
-  const first = state.people[0];
+  const first =
+    state.people[0];
 
   if (first) {
-    state.selectedId = first.id;
+    state.selectedId =
+      first.id;
 
     $('personSelect').value =
       String(first.id);
@@ -262,13 +308,23 @@ async function fetchAll() {
    ========================================================= */
 
 function buildModel() {
-  const users = state.tables.usagers;
-  const activities = state.tables.activites;
-  const participations = state.tables.participations;
+  const users =
+    state.tables.usagers;
 
-  const days = byId(state.tables.jours);
-  const hours = byId(state.tables.heures);
-  const animators = byId(state.tables.animateurs);
+  const activities =
+    state.tables.activites;
+
+  const participations =
+    state.tables.participations;
+
+  const days =
+    byId(state.tables.jours);
+
+  const hours =
+    byId(state.tables.heures);
+
+  const animators =
+    byId(state.tables.animateurs);
 
   const otherActivityTypes =
     byId(state.tables.activitesAutres);
@@ -281,25 +337,35 @@ function buildModel() {
      PARTICIPANTS PAR ACTIVITÉ
      --------------------------------------------------------- */
 
-  const participantsByActivity = new Map();
+  const participantsByActivity =
+    new Map();
 
   for (const participation of participations) {
 
     const activityId =
-      refIds(participation.Activites)[0];
+      refIds(
+        participation.Activites
+      )[0];
 
     if (!activityId) {
       continue;
     }
 
     const participantSet =
-      participantsByActivity.get(activityId) ||
+      participantsByActivity.get(
+        activityId
+      ) ||
       new Set();
 
-    refIds(participation.Participants)
-      .forEach((participantId) => {
-        participantSet.add(participantId);
-      });
+    refIds(
+      participation.Participants
+    ).forEach(
+      (participantId) => {
+        participantSet.add(
+          participantId
+        );
+      }
+    );
 
     participantsByActivity.set(
       activityId,
@@ -312,221 +378,252 @@ function buildModel() {
      USAGERS
      --------------------------------------------------------- */
 
-  state.people = users
-    .map((user) => ({
-      id: user.id,
+  state.people =
+    users
+      .map((user) => ({
+        id: user.id,
 
-      name: text(
-        user.Usager,
-        `${text(user.Prenom)} ${text(user.Nom)}`.trim()
-      ),
-
-      portrait: user.Portrait,
-
-      presence: refIds(user.Presence)
-        .map((id) =>
-          normalizeDay(days.get(id)?.Jour)
+        name: text(
+          user.Usager,
+          `${text(user.Prenom)} ${text(
+            user.Nom
+          )}`.trim()
         ),
 
-      flags: {
-        Lundi: user.Lu,
-        Mardi: user.Ma,
-        Mercredi: user.Me,
-        Jeudi: user.Je,
-        Vendredi: user.Ve
-      }
-    }))
+        portrait:
+          user.Portrait,
 
-    .sort(
-      (a, b) =>
-        a.name.localeCompare(
-          b.name,
-          'fr'
-        )
-    );
+        presence:
+          refIds(user.Presence)
+            .map(
+              (id) =>
+                normalizeDay(
+                  days.get(id)?.Jour
+                )
+            ),
+
+        flags: {
+          Lundi: user.Lu,
+          Mardi: user.Ma,
+          Mercredi: user.Me,
+          Jeudi: user.Je,
+          Vendredi: user.Ve
+        }
+      }))
+
+      .sort(
+        (a, b) =>
+          a.name.localeCompare(
+            b.name,
+            'fr'
+          )
+      );
 
 
   /* ---------------------------------------------------------
-     ACTIVITÉS ORDINAIRES
+     ACTIVITÉS
      --------------------------------------------------------- */
 
-  state.activities = activities
-    .map((activity) => {
+  state.activities =
+    activities
+      .map((activity) => {
 
-      const dayRow =
-        days.get(
-          refIds(activity.Jour)[0]
-        );
+        const dayRow =
+          days.get(
+            refIds(
+              activity.Jour
+            )[0]
+          );
 
-      const startRow =
-        hours.get(
-          refIds(activity.Heure_debut)[0]
-        );
+        const startRow =
+          hours.get(
+            refIds(
+              activity.Heure_debut
+            )[0]
+          );
 
-      const endRow =
-        hours.get(
-          refIds(activity.Heure_fin)[0]
-        );
-
-
-      /* Animateurs */
-
-      const animatorNames =
-        refIds(activity.Animateur_s)
-
-          .map((id) =>
-            animators.get(id)
-          )
-
-          .filter(Boolean)
-
-          .map((animator) =>
-            text(
-              animator.Nom2,
-              `${text(animator.Prenom)} ${text(animator.Nom)}`.trim()
-            )
+        const endRow =
+          hours.get(
+            refIds(
+              activity.Heure_fin
+            )[0]
           );
 
 
-      /*
-       * NOUVELLES COLONNES
-       *
-       * Groupe ouvert
-       * Année complète
-       *
-       * Plusieurs identifiants sont testés pour être
-       * plus tolérant vis-à-vis du nom réel de colonne
-       * utilisé par Grist.
-       */
-
-      const groupOpenValue = firstDefined(
-        activity,
-        [
-          'Groupe_ouvert',
-          'Groupe_Ouvert'
-        ],
-        false
-      );
-
-      const fullYearValue = firstDefined(
-        activity,
-        [
-          'Annee_complete',
-          'Annee_Complete',
-          'Annee_complete_'
-        ],
-        false
-      );
-
-
-      return {
-        id: activity.id,
-
-        kind: 'regular',
-
-        name: text(
-          activity.Nom_activite,
-          'Activité'
-        ),
-
-        day: normalizeDay(
-          dayRow?.Jour ||
-          activity.gristHelper_Display2
-        ),
-
-        dayOrder: Number(
-          activity.Jour_Num_jour ||
-          dayRow?.Num_jour ||
-          99
-        ),
-
-        start: text(
-          startRow?.Heures ||
-          activity.gristHelper_Display3
-        ),
-
-        end: text(
-          endRow?.Heures ||
-          activity.gristHelper_Display4
-        ),
-
-        animators: animatorNames,
-
-        capacity: activity.Capacite,
-
-        description:
-          text(activity.Remarques_planning)
-            .slice(0, 100),
-
-        visual: activity.Visuel,
+        const animatorNames =
+          refIds(
+            activity.Animateur_s
+          )
+            .map(
+              (id) =>
+                animators.get(id)
+            )
+            .filter(Boolean)
+            .map(
+              (animator) =>
+                text(
+                  animator.Nom2,
+                  `${text(
+                    animator.Prenom
+                  )} ${text(
+                    animator.Nom
+                  )}`.trim()
+                )
+            );
 
 
         /*
-         * NOUVELLE LOGIQUE
+         * Nouvelles colonnes :
+         *
+         * Groupe ouvert
+         * Année complète
          */
 
-        groupOpen:
-          isTrue(groupOpenValue),
+        const groupOpenValue =
+          firstDefined(
+            activity,
+            [
+              'Groupe_ouvert',
+              'Groupe_Ouvert'
+            ],
+            false
+          );
 
-        fullYear:
-          isTrue(fullYearValue),
+        const fullYearValue =
+          firstDefined(
+            activity,
+            [
+              'Annee_complete',
+              'Annee_Complete',
+              'Annee_complete_'
+            ],
+            false
+          );
 
 
-        participants:
-          participantsByActivity.get(
-            activity.id
-          ) || new Set()
-      };
-    })
+        return {
+          id:
+            activity.id,
 
-    .sort(sortActivities);
+          kind:
+            'regular',
+
+          name:
+            text(
+              activity.Nom_activite,
+              'Activité'
+            ),
+
+          day:
+            normalizeDay(
+              dayRow?.Jour ||
+              activity.gristHelper_Display2
+            ),
+
+          dayOrder:
+            Number(
+              activity.Jour_Num_jour ||
+              dayRow?.Num_jour ||
+              99
+            ),
+
+          start:
+            text(
+              startRow?.Heures ||
+              activity.gristHelper_Display3
+            ),
+
+          end:
+            text(
+              endRow?.Heures ||
+              activity.gristHelper_Display4
+            ),
+
+          animators:
+            animatorNames,
+
+          capacity:
+            activity.Capacite,
+
+          description:
+            text(
+              activity.Remarques_planning
+            ).slice(0, 100),
+
+          visual:
+            activity.Visuel,
+
+          groupOpen:
+            isTrue(
+              groupOpenValue
+            ),
+
+          fullYear:
+            isTrue(
+              fullYearValue
+            ),
+
+          participants:
+            participantsByActivity.get(
+              activity.id
+            ) ||
+            new Set()
+        };
+      })
+
+      .sort(sortActivities);
 
 
   /* ---------------------------------------------------------
-     RÉÉDUCATIONS / ACTIVITÉS AUTRES
+     ACTIVITÉS AUTRES / RÉÉDUCATIONS
      --------------------------------------------------------- */
 
   state.otherActivities =
     state.tables.reeducations
-
       .map((otherActivity) => {
 
         const typeRow =
           otherActivityTypes.get(
-            refIds(otherActivity.Type)[0]
+            refIds(
+              otherActivity.Type
+            )[0]
           );
 
         const dayRow =
           days.get(
-            refIds(otherActivity.Jour)[0]
+            refIds(
+              otherActivity.Jour
+            )[0]
           );
 
         const partnerRow =
           partners.get(
-            refIds(otherActivity.Partenaire)[0]
+            refIds(
+              otherActivity.Partenaire
+            )[0]
           );
 
         const userIds =
-          refIds(otherActivity.Usagers);
+          refIds(
+            otherActivity.Usagers
+          );
 
 
-        const typeName = text(
-          typeRow?.Type ||
-          otherActivity.gristHelper_Display,
-          'Activité autre'
-        );
+        const typeName =
+          text(
+            typeRow?.Type ||
+            otherActivity.gristHelper_Display,
+            'Activité autre'
+          );
 
 
-        const partnerName = text(
-
-          partnerRow?.Partenaire ||
-
-          partnerRow?.Organisation ||
-
-          otherActivity.gristHelper_Display4 ||
-
-          otherActivity.gristHelper_Display6
-        );
+        const partnerName =
+          text(
+            partnerRow?.Partenaire ||
+            partnerRow?.Organisation ||
+            otherActivity.gristHelper_Display4 ||
+            otherActivity.gristHelper_Display6
+          );
 
 
         const hourRow =
@@ -543,40 +640,42 @@ function buildModel() {
           );
 
 
-        const rawSchedule = text(
-
-          hourRow?.Heures ||
-
-          firstDefined(
-            otherActivity,
-            [
-              'Horaire',
-              'gristHelper_Display3'
-            ]
-          )
-        );
+        const rawSchedule =
+          text(
+            hourRow?.Heures ||
+            firstDefined(
+              otherActivity,
+              [
+                'Horaire',
+                'gristHelper_Display3'
+              ]
+            )
+          );
 
 
         const scheduleParts =
           rawSchedule
-
-            .split(/\s*[–—-]\s*/)
-
+            .split(
+              /\s*[–—-]\s*/
+            )
             .filter(Boolean);
 
 
         return {
+          id:
+            otherActivity.id,
 
-          id: otherActivity.id,
+          kind:
+            'other',
 
-          kind: 'other',
+          name:
+            typeName,
 
-          name: typeName,
-
-          day: normalizeDay(
-            dayRow?.Jour ||
-            otherActivity.gristHelper_Display2
-          ),
+          day:
+            normalizeDay(
+              dayRow?.Jour ||
+              otherActivity.gristHelper_Display2
+            ),
 
           dayOrder:
             Number(
@@ -599,9 +698,12 @@ function buildModel() {
             partnerName,
 
           place:
-            text(otherActivity.Lieu),
+            text(
+              otherActivity.Lieu
+            ),
 
-          description: '',
+          description:
+            '',
 
           visual:
             typeRow?.Visuel_act_autre,
@@ -616,15 +718,16 @@ function buildModel() {
 
 
 /* =========================================================
-   TRI DES ACTIVITÉS
+   TRI
    ========================================================= */
 
 function sortActivities(a, b) {
   return (
-    a.dayOrder - b.dayOrder ||
+    a.dayOrder -
+      b.dayOrder ||
 
     minutes(a.start) -
-    minutes(b.start) ||
+      minutes(b.start) ||
 
     a.name.localeCompare(
       b.name,
@@ -641,24 +744,24 @@ function sortActivities(a, b) {
 function populatePeople() {
   $('personSelect').innerHTML =
     state.people
-
       .map(
         (person) =>
           `<option value="${person.id}">
             ${esc(person.name)}
           </option>`
       )
-
       .join('');
 }
 
 
 /* =========================================================
-   MESSAGES
+   MESSAGE D'ÉTAT
    ========================================================= */
 
-function showStatus(message, error = false) {
-
+function showStatus(
+  message,
+  error = false
+) {
   $('status').textContent =
     message;
 
@@ -682,19 +785,18 @@ function showStatus(message, error = false) {
    ========================================================= */
 
 function periodOf(activity) {
-
-  return minutes(activity.start) < 13 * 60
+  return minutes(activity.start) <
+    13 * 60
     ? 'Matin'
     : 'Après-midi';
 }
 
 
 /* =========================================================
-   PRÉSENCE DE L'USAGER
+   PRÉSENCE
    ========================================================= */
 
 function isPresent(person, day) {
-
   return (
     person.presence.includes(day) ||
 
@@ -706,11 +808,10 @@ function isPresent(person, day) {
 
 
 /* =========================================================
-   OPACITÉ DES JOURNÉES
+   OPACITÉ
    ========================================================= */
 
 function opacityFor(day) {
-
   const input =
     $(`opacity${day}`);
 
@@ -722,18 +823,23 @@ function opacityFor(day) {
   return (
     Math.min(
       100,
-      Math.max(0, value)
+      Math.max(
+        0,
+        value
+      )
     ) / 100
   );
 }
 
 
 /* =========================================================
-   CONVERSION COULEURS
+   COULEURS
    ========================================================= */
 
-function hexToRgba(hex, opacity) {
-
+function hexToRgba(
+  hex,
+  opacity
+) {
   const normalized =
     hex.replace('#', '');
 
@@ -757,16 +863,17 @@ function hexToRgba(hex, opacity) {
 
 
 /* =========================================================
-   AFFICHAGE GLOBAL
+   AFFICHAGE DU PLANNING
    ========================================================= */
 
 async function render() {
-
   const person =
     state.people.find(
       (item) =>
         item.id ===
-        Number(state.selectedId)
+        Number(
+          state.selectedId
+        )
     );
 
   if (!person) {
@@ -782,6 +889,7 @@ async function render() {
     'hidden'
   );
 
+
   $('personName').textContent =
     person.name;
 
@@ -789,15 +897,16 @@ async function render() {
   const presentDays =
     DAYS.filter(
       (day) =>
-        isPresent(person, day)
+        isPresent(
+          person,
+          day
+        )
     );
 
 
   $('presenceText').textContent =
     presentDays.length
-
       ? presentDays.join(', ')
-
       : 'Présence habituelle non renseignée';
 
 
@@ -809,15 +918,23 @@ async function render() {
 
   $('portrait').innerHTML =
     portraitUrl
-
-      ? `<img
+      ? `
+        <img
           src="${portraitUrl}"
-          alt="Portrait de ${esc(person.name)}"
-        >`
-
-      : `<span>
-          ${esc(initials(person.name))}
-        </span>`;
+          alt="Portrait de ${esc(
+            person.name
+          )}"
+        >
+      `
+      : `
+        <span>
+          ${esc(
+            initials(
+              person.name
+            )
+          )}
+        </span>
+      `;
 
 
   const cards =
@@ -839,7 +956,9 @@ async function render() {
       class="meal-banner"
       aria-label="Repas de 12 heures"
     >
-      <span>12 h · Repas</span>
+      <span>
+        12 h · Repas
+      </span>
     </div>
   `;
 
@@ -851,23 +970,42 @@ async function render() {
 /* =========================================================
    AFFICHAGE D'UNE JOURNÉE
 
-   RÈGLE GROUPE OUVERT :
+   ORDRE DE PRIORITÉ :
 
-   1. Activité inscrite Année complète :
-      → groupe ouvert NON affiché
+   1. USAGER ABSENT
+      → aucune activité affichée.
 
-   2. Activité inscrite mais PAS Année complète :
-      → groupe ouvert affiché
+   2. USAGER PRÉSENT + activité Année complète
+      → activité inscrite affichée.
+      → groupes ouverts masqués sur cette demi-journée.
 
-   3. Aucune inscription :
-      → groupe ouvert affiché
+   3. USAGER PRÉSENT + activité non Année complète
+      → activité inscrite affichée.
+      → groupes ouverts affichés.
 
-   La règle est calculée séparément :
-   - pour le matin
-   - pour l'après-midi
+   4. USAGER PRÉSENT + aucune inscription
+      → groupes ouverts affichés.
+
+   La logique est indépendante entre :
+   - matin
+   - après-midi
    ========================================================= */
 
-async function renderDay(person, day) {
+async function renderDay(
+  person,
+  day
+) {
+
+  /*
+   * On détermine immédiatement
+   * si l'usager est présent.
+   */
+
+  const present =
+    isPresent(
+      person,
+      day
+    );
 
 
   /* ---------------------------------------------------------
@@ -875,32 +1013,45 @@ async function renderDay(person, day) {
      --------------------------------------------------------- */
 
   const enrolledActivities =
-    state.activities.filter(
-      (activity) => (
-
-        activity.day === day &&
-
-        activity.participants.has(
-          person.id
+    present
+      ? state.activities.filter(
+          (activity) => (
+            activity.day === day &&
+            activity.participants.has(
+              person.id
+            )
+          )
         )
-
-      )
-    );
+      : [];
 
 
   /* ---------------------------------------------------------
-     DÉTERMINE SI UN GROUPE OUVERT DOIT ÊTRE AFFICHÉ
+     GROUPE OUVERT
      --------------------------------------------------------- */
 
-  function shouldShowOpenGroup(openActivity) {
+  function shouldShowOpenGroup(
+    openActivity
+  ) {
+
+    /*
+     * Si l'usager est absent :
+     * aucun groupe ouvert.
+     */
+
+    if (!present) {
+      return false;
+    }
+
 
     const openPeriod =
-      periodOf(openActivity);
+      periodOf(
+        openActivity
+      );
 
 
     /*
-     * On cherche uniquement les inscriptions
-     * de la même demi-journée.
+     * Inscriptions de l'usager
+     * sur la même demi-journée.
      */
 
     const enrolledSamePeriod =
@@ -912,49 +1063,45 @@ async function renderDay(person, day) {
 
 
     /*
-     * CAS 1
-     *
-     * L'usager n'est inscrit à aucune activité
-     * sur cette demi-journée.
-     *
-     * → les groupes ouverts sont affichés.
+     * Aucune activité inscrite :
+     * groupes ouverts proposés.
      */
 
     if (
-      enrolledSamePeriod.length === 0
+      enrolledSamePeriod.length ===
+      0
     ) {
       return true;
     }
 
 
     /*
-     * CAS 2
+     * Présence d'une activité
+     * Année complète :
      *
-     * L'usager possède au moins une activité
-     * "Année complète" sur cette demi-journée.
-     *
-     * → les groupes ouverts ne sont PAS affichés.
+     * groupes ouverts masqués.
      */
 
     const hasFullYearActivity =
       enrolledSamePeriod.some(
         (activity) =>
-          activity.fullYear === true
+          activity.fullYear ===
+          true
       );
 
 
-    if (hasFullYearActivity) {
+    if (
+      hasFullYearActivity
+    ) {
       return false;
     }
 
 
     /*
-     * CAS 3
+     * Activité inscrite,
+     * mais pas Année complète :
      *
-     * L'usager est inscrit à une activité,
-     * mais celle-ci n'est PAS "Année complète".
-     *
-     * → les groupes ouverts sont affichés.
+     * groupes ouverts affichés.
      */
 
     return true;
@@ -962,16 +1109,27 @@ async function renderDay(person, day) {
 
 
   /* ---------------------------------------------------------
-     ACTIVITÉS À AFFICHER
+     ACTIVITÉS ORDINAIRES
      --------------------------------------------------------- */
 
   const regularActivities =
     state.activities.filter(
       (activity) => {
 
+        /*
+         * PRIORITÉ ABSOLUE :
+         *
+         * usager absent =
+         * aucune activité.
+         */
+
+        if (!present) {
+          return false;
+        }
+
 
         /*
-         * Pas le bon jour.
+         * Mauvais jour.
          */
 
         if (
@@ -982,8 +1140,8 @@ async function renderDay(person, day) {
 
 
         /*
-         * L'usager est réellement inscrit :
-         * on affiche toujours son activité.
+         * L'usager est inscrit :
+         * activité toujours affichée.
          */
 
         if (
@@ -996,10 +1154,10 @@ async function renderDay(person, day) {
 
 
         /*
-         * Activité non ouverte et
-         * usager non inscrit :
+         * Pas inscrit
+         * + groupe fermé :
          *
-         * → on ne l'affiche pas.
+         * activité masquée.
          */
 
         if (
@@ -1010,9 +1168,9 @@ async function renderDay(person, day) {
 
 
         /*
-         * Activité Groupe ouvert :
-         *
-         * application de la nouvelle règle.
+         * Groupe ouvert :
+         * application de la règle
+         * Année complète.
          */
 
         return shouldShowOpenGroup(
@@ -1023,19 +1181,17 @@ async function renderDay(person, day) {
 
 
   /* ---------------------------------------------------------
-     ACTIVITÉS AUTRES / RÉÉDUCATIONS
+     RÉÉDUCATIONS / ACTIVITÉS AUTRES
      --------------------------------------------------------- */
 
   const otherActivities =
     state.otherActivities.filter(
       (activity) => (
-
+        present &&
         activity.day === day &&
-
         activity.participants.has(
           person.id
         )
-
       )
     );
 
@@ -1055,7 +1211,6 @@ async function renderDay(person, day) {
      --------------------------------------------------------- */
 
   const groups = {
-
     Matin:
       activities.filter(
         (activity) =>
@@ -1075,17 +1230,11 @@ async function renderDay(person, day) {
   const showEmpty =
     $('showEmpty').checked;
 
-  const present =
-    isPresent(
-      person,
-      day
-    );
-
   const sections = [];
 
 
   /* ---------------------------------------------------------
-     CONSTRUCTION DES DEUX DEMI-JOURNÉES
+     CONSTRUCTION DES DEMI-JOURNÉES
      --------------------------------------------------------- */
 
   for (
@@ -1098,6 +1247,12 @@ async function renderDay(person, day) {
     const list =
       groups[label];
 
+
+    /*
+     * Si aucune activité et
+     * que les créneaux vides
+     * sont masqués.
+     */
 
     if (
       !list.length &&
@@ -1116,12 +1271,17 @@ async function renderDay(person, day) {
     }
 
 
+    /*
+     * Contenu de la demi-journée.
+     */
+
     const inner =
       list.length
-
         ? (
             await Promise.all(
-              list.map(activityCard)
+              list.map(
+                activityCard
+              )
             )
           ).join('')
 
@@ -1130,7 +1290,7 @@ async function renderDay(person, day) {
             ${
               present
                 ? 'Aucune activité renseignée'
-                : 'Non présent'
+                : 'Absent'
             }
           </div>
         `;
@@ -1154,7 +1314,6 @@ async function renderDay(person, day) {
     if (
       label === 'Matin'
     ) {
-
       sections.push(
         '<div class="meal-gap" aria-hidden="true"></div>'
       );
@@ -1163,7 +1322,7 @@ async function renderDay(person, day) {
 
 
   /* ---------------------------------------------------------
-     COULEUR DU JOUR
+     COULEUR DE LA JOURNÉE
      --------------------------------------------------------- */
 
   const dayColor =
@@ -1182,7 +1341,7 @@ async function renderDay(person, day) {
 
 
   /* ---------------------------------------------------------
-     HTML DE LA JOURNÉE
+     HTML DU JOUR
      --------------------------------------------------------- */
 
   return `
@@ -1203,7 +1362,11 @@ async function renderDay(person, day) {
         <span>
           ${
             present
-              ? `${activities.length} activité${activities.length > 1 ? 's' : ''}`
+              ? `${activities.length} activité${
+                  activities.length > 1
+                    ? 's'
+                    : ''
+                }`
               : 'ABSENT·E'
           }
         </span>
@@ -1226,7 +1389,6 @@ async function renderDay(person, day) {
    ========================================================= */
 
 function alignMealBanner() {
-
   const grid =
     $('weekGrid');
 
@@ -1252,7 +1414,6 @@ function alignMealBanner() {
 
   morningSections.forEach(
     (section) => {
-
       section.style.minHeight =
         '';
     }
@@ -1272,7 +1433,6 @@ function alignMealBanner() {
 
   morningSections.forEach(
     (section) => {
-
       section.style.minHeight =
         `${maxMorningHeight}px`;
     }
@@ -1298,16 +1458,20 @@ function alignMealBanner() {
 
 
   banner.style.top =
-    `${gapRect.top - gridRect.top}px`;
+    `${
+      gapRect.top -
+      gridRect.top
+    }px`;
 }
 
 
 /* =========================================================
-   CARTE D'UNE ACTIVITÉ
+   CARTE ACTIVITÉ
    ========================================================= */
 
-async function activityCard(activity) {
-
+async function activityCard(
+  activity
+) {
   const logo =
     await attachmentUrl(
       activity.visual
@@ -1333,50 +1497,50 @@ async function activityCard(activity) {
   const regularMeta =
     activity.kind === 'regular' &&
     activity.animators.length
-
       ? `
         <div>
           <strong>Avec :</strong>
-          ${esc(activity.animators.join(', '))}
+          ${esc(
+            activity.animators.join(
+              ', '
+            )
+          )}
         </div>
       `
-
       : '';
 
 
   const otherMeta =
     activity.kind === 'other'
-
       ? `
         ${
           activity.partner &&
           activity.partner.trim()
-
             ? `
               <div>
                 <strong>Avec :</strong>
-                ${esc(activity.partner)}
+                ${esc(
+                  activity.partner
+                )}
               </div>
             `
-
             : ''
         }
 
         ${
           activity.place &&
           activity.place.trim()
-
             ? `
               <div>
                 <strong>Lieu :</strong>
-                ${esc(activity.place)}
+                ${esc(
+                  activity.place
+                )}
               </div>
             `
-
             : ''
         }
       `
-
       : '';
 
 
@@ -1408,7 +1572,9 @@ async function activityCard(activity) {
       }
 
       <h4 class="activity-title">
-        ${esc(activity.name)}
+        ${esc(
+          activity.name
+        )}
       </h4>
 
       ${
@@ -1454,7 +1620,6 @@ async function activityCard(activity) {
    ========================================================= */
 
 function showError(error) {
-
   console.error(error);
 
   showStatus(
@@ -1464,11 +1629,8 @@ function showError(error) {
 
 
   $('errorText').textContent =
-
     `${error?.message || error}\n\n` +
-
     'Vérifiez que les tables portent exactement ces noms :\n' +
-
     Object.values(TABLES)
       .join('\n');
 
@@ -1501,7 +1663,6 @@ $('showEmpty')
   .addEventListener(
     'change',
     () => {
-
       render()
         .catch(showError);
     }
@@ -1522,12 +1683,10 @@ $('formatSelect')
 
 
 for (const day of DAYS) {
-
   $(`opacity${day}`)
     .addEventListener(
       'input',
       () => {
-
         render()
           .catch(showError);
       }
@@ -1539,7 +1698,6 @@ $('printBtn')
   .addEventListener(
     'click',
     () => {
-
       window.print();
     }
   );
@@ -1549,7 +1707,6 @@ $('reloadBtn')
   .addEventListener(
     'click',
     () => {
-
       fetchAll()
         .catch(showError);
     }
@@ -1570,7 +1727,8 @@ grist.onOptions(
 
     if (
       interaction?.access_level &&
-      interaction.access_level !== 'full'
+      interaction.access_level !==
+        'full'
     ) {
 
       showStatus(
