@@ -252,9 +252,13 @@ function buildModel() {
         description: text(activity.Remarques_planning).slice(0, 100),
         visual: activity.Visuel,
 
-        alwaysDisplay:
+        groupOpen:
           activity.Groupe_ouvert === true ||
           activity.Groupe_ouvert === 1,
+
+        fullYear:
+          activity.Annee_complete === true ||
+          activity.Annee_complete === 1,
 
         participants: participantsByActivity.get(activity.id) || new Set()
       };
@@ -398,13 +402,124 @@ async function render() {
 }
 
 async function renderDay(person, day) {
-  const regularActivities = state.activities.filter((activity) => (
+
+  // Activités auxquelles l'usager est réellement inscrit ce jour-là
+  const enrolledActivities = state.activities.filter((activity) => (
     activity.day === day &&
-    (
-      activity.alwaysDisplay ||
-      activity.participants.has(person.id)
-    )
+    activity.participants.has(person.id)
   ));
+
+  // Détermine si un groupe ouvert doit être proposé.
+  //
+  // Règle :
+  // - aucune activité inscrite sur la demi-journée → groupes ouverts visibles
+  // - activité inscrite mais NON "Année complète" → groupes ouverts visibles
+  // - activité inscrite "Année complète" → groupes ouverts masqués
+  function shouldShowOpenGroup(openActivity) {
+
+    const openPeriod = periodOf(openActivity);
+
+    const enrolledSamePeriod = enrolledActivities.filter(
+      (activity) => periodOf(activity) === openPeriod
+    );
+
+    // Aucun groupe prévu pour cet usager :
+    // les groupes ouverts sont proposés.
+    if (enrolledSamePeriod.length === 0) {
+      return true;
+    }
+
+    // Une inscription "Année complète" bloque
+    // les propositions de groupes ouverts.
+    const hasFullYearActivity = enrolledSamePeriod.some(
+      (activity) => activity.fullYear
+    );
+
+    return !hasFullYearActivity;
+  }
+
+  const regularActivities = state.activities.filter((activity) => {
+
+    if (activity.day !== day) {
+      return false;
+    }
+
+    // Toujours afficher une activité à laquelle
+    // l'usager est inscrit.
+    if (activity.participants.has(person.id)) {
+      return true;
+    }
+
+    // Les autres activités fermées ne sont jamais proposées.
+    if (!activity.groupOpen) {
+      return false;
+    }
+
+    // Pour un groupe ouvert, appliquer la nouvelle règle.
+    return shouldShowOpenGroup(activity);
+  });
+
+  const otherActivities = state.otherActivities.filter((activity) => (
+    activity.day === day && activity.participants.has(person.id)
+  ));
+
+  const activities = [...regularActivities, ...otherActivities].sort(sortActivities);
+
+  const groups = {
+    Matin: activities.filter((activity) => periodOf(activity) === 'Matin'),
+    'Après-midi': activities.filter((activity) => periodOf(activity) === 'Après-midi')
+  };
+
+  const showEmpty = $('showEmpty').checked;
+  const present = isPresent(person, day);
+  const sections = [];
+
+  for (const label of ['Matin', 'Après-midi']) {
+    const list = groups[label];
+
+    if (!list.length && !showEmpty) {
+      if (label === 'Matin') {
+        sections.push('<div class="meal-gap" aria-hidden="true"></div>');
+      }
+      continue;
+    }
+
+    const inner = list.length
+      ? (await Promise.all(list.map(activityCard))).join('')
+      : `<div class="empty-slot">${present ? 'Aucune activité renseignée' : 'Non présent'}</div>`;
+
+    sections.push(`
+      <section class="period period-${label.toLowerCase()}">
+        <div class="period-title">${label}</div>
+        ${inner}
+      </section>
+    `);
+
+    if (label === 'Matin') {
+      sections.push('<div class="meal-gap" aria-hidden="true"></div>');
+    }
+  }
+
+  const dayColor = DAY_COLORS[day];
+  const dayBackground = hexToRgba(dayColor, opacityFor(day));
+  const absenceClass = present ? '' : ' day-absent';
+
+  return `
+    <article
+      class="day${absenceClass}"
+      style="--day-color: ${dayColor}; --day-background: ${dayBackground};"
+    >
+      <div class="day-head">
+        <h3>${day}</h3>
+        <span>${present ? `${activities.length} activité${activities.length > 1 ? 's' : ''}` : 'ABSENT·E'}</span>
+      </div>
+
+      <div class="day-content">
+        ${sections.join('')}
+      </div>
+    </article>
+  `;
+}
 
   const otherActivities = state.otherActivities.filter((activity) => (
     activity.day === day && activity.participants.has(person.id)
