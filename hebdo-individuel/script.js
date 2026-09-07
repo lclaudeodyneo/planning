@@ -53,6 +53,14 @@ function rowsFromTable(table) {
   );
 }
 
+function isTrue(value) {
+  return (
+    value === true ||
+    value === 1 ||
+    value === 'true' ||
+    value === 'TRUE'
+  );
+}
 
 function refIds(value) {
   if (value == null) {
@@ -379,6 +387,7 @@ function buildModel() {
      --------------------------------------------------------- */
 
   state.people = users
+    .filter((user) => !isTrue(user.parties))
     .map((user) => ({
       id: user.id,
       name: text(
@@ -388,7 +397,9 @@ function buildModel() {
       lastName: text(user.Nom).trim(),
       firstName: text(user.Prenom).trim(),
       portrait: user.Portrait,
-      presence: refIds(user.Presence).map((id) => normalizeDay(days.get(id)?.Jour)),
+      presence: refIds(user.Presence).map((id) =>
+        normalizeDay(days.get(id)?.Jour)
+      ),
       flags: {
         Lundi: user.Lu,
         Mardi: user.Ma,
@@ -397,6 +408,7 @@ function buildModel() {
         Vendredi: user.Ve
       }
     }))
+
     .sort((a, b) => {
       const lastNameComparison = a.lastName.localeCompare(
         b.lastName,
