@@ -808,6 +808,24 @@ function isPresent(person, day) {
 
 
 /* =========================================================
+   Date d'impression
+   ========================================================= */
+function updatePrintDate() {
+  const printDate = $('printDate');
+
+  if (!printDate) {
+    return;
+  }
+
+  const formattedDate = new Intl.DateTimeFormat('fr-FR', {
+    dateStyle: 'long'
+  }).format(new Date());
+
+  printDate.textContent = `Imprimé le ${formattedDate}`;
+}
+
+
+/* =========================================================
    OPACITÉ
    ========================================================= */
 
@@ -1707,6 +1725,7 @@ $('reloadBtn')
   .addEventListener(
     'click',
     () => {
+      window.addEventListener('beforeprint', updatePrintDate);
       fetchAll()
         .catch(showError);
     }
