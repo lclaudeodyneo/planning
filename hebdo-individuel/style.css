@@ -631,7 +631,7 @@ body.print-a3 {
   /* Le bandeau repas fait 24px :
     28px laisse juste une petite marge */
   .meal-gap {
-    height: 24px !important;
+    height: 34px !important;
   }
 
   .meal-banner {
