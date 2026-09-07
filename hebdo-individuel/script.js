@@ -387,7 +387,7 @@ function buildModel() {
      --------------------------------------------------------- */
 
   state.people = users
-    .filter((user) => !isTrue(user.Parti_e))
+    .filter((user) => !isTrue(user.parties))
     .map((user) => ({
       id: user.id,
       name: text(
