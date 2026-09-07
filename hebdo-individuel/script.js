@@ -882,87 +882,45 @@ function hexToRgba(
    ========================================================= */
 
 async function render() {
-  const person =
-    state.people.find(
-      (item) =>
-        item.id ===
-        Number(
-          state.selectedId
-        )
-    );
+  const person = state.people.find(
+    (item) => item.id === Number(state.selectedId)
+  );
 
   if (!person) {
     return;
   }
 
+  $('status').classList.add('hidden');
+  $('sheet').classList.remove('hidden');
 
-  $('status').classList.add(
-    'hidden'
+  $('personName').textContent = person.name;
+
+  const presentDays = DAYS.filter(
+    (day) => isPresent(person, day)
   );
 
-  $('sheet').classList.remove(
-    'hidden'
+  $('presenceText').textContent = presentDays.length
+    ? presentDays.join(', ')
+    : 'Présence habituelle non renseignée';
+
+  const portraitUrl = await attachmentUrl(person.portrait);
+
+  $('portrait').innerHTML = portraitUrl
+    ? `
+      <img
+        src="${portraitUrl}"
+        alt="Portrait de ${esc(person.name)}"
+      >
+    `
+    : `
+      <span>
+        ${esc(initials(person.name))}
+      </span>
+    `;
+
+  const cards = await Promise.all(
+    DAYS.map((day) => renderDay(person, day))
   );
-
-
-  $('personName').textContent =
-    person.name;
-
-
-  const presentDays =
-    DAYS.filter(
-      (day) =>
-        isPresent(
-          person,
-          day
-        )
-    );
-
-
-  $('presenceText').textContent =
-    presentDays.length
-      ? presentDays.join(', ')
-      : 'Présence habituelle non renseignée';
-
-
-  const portraitUrl =
-    await attachmentUrl(
-      person.portrait
-    );
-
-
-  $('portrait').innerHTML =
-    portraitUrl
-      ? `
-        <img
-          src="${portraitUrl}"
-          alt="Portrait de ${esc(
-            person.name
-          )}"
-        >
-      `
-      : `
-        <span>
-          ${esc(
-            initials(
-              person.name
-            )
-          )}
-        </span>
-      `;
-
-
-  const cards =
-    await Promise.all(
-      DAYS.map(
-        (day) =>
-          renderDay(
-            person,
-            day
-          )
-      )
-    );
-
 
   $('weekGrid').innerHTML = `
     ${cards.join('')}
@@ -977,9 +935,10 @@ async function render() {
     </div>
   `;
 
-
   alignMealBanner();
+  updatePrintDate();
 }
+
 
 
 /* =========================================================
