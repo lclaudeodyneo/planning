@@ -586,8 +586,20 @@ body.print-a3 {
   }
 
   .print-date {
-    display: block;
+    display: inline;
+    margin-left: 8px;
   }
+
+  #presenceText,
+  .print-date {
+    display: inline;
+    margin-top: 0;
+  }
+
+  .print-date::before {
+    content: " - ";
+  }
+
 
   .week-banner span {
     padding: 5px 4px;
