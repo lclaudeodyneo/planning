@@ -378,46 +378,43 @@ function buildModel() {
      USAGERS
      --------------------------------------------------------- */
 
-  state.people =
-    users
-      .map((user) => ({
-        id: user.id,
-
-        name: text(
-          user.Usager,
-          `${text(user.Prenom)} ${text(
-            user.Nom
-          )}`.trim()
-        ),
-
-        portrait:
-          user.Portrait,
-
-        presence:
-          refIds(user.Presence)
-            .map(
-              (id) =>
-                normalizeDay(
-                  days.get(id)?.Jour
-                )
-            ),
-
-        flags: {
-          Lundi: user.Lu,
-          Mardi: user.Ma,
-          Mercredi: user.Me,
-          Jeudi: user.Je,
-          Vendredi: user.Ve
-        }
-      }))
-
-      .sort(
-        (a, b) =>
-          a.name.localeCompare(
-            b.name,
-            'fr'
-          )
+  state.people = users
+    .map((user) => ({
+      id: user.id,
+      name: text(
+        user.Usager,
+        `${text(user.Prenom)} ${text(user.Nom)}`.trim()
+      ),
+      lastName: text(user.Nom).trim(),
+      firstName: text(user.Prenom).trim(),
+      portrait: user.Portrait,
+      presence: refIds(user.Presence).map((id) => normalizeDay(days.get(id)?.Jour)),
+      flags: {
+        Lundi: user.Lu,
+        Mardi: user.Ma,
+        Mercredi: user.Me,
+        Jeudi: user.Je,
+        Vendredi: user.Ve
+      }
+    }))
+    .sort((a, b) => {
+      const lastNameComparison = a.lastName.localeCompare(
+        b.lastName,
+        'fr',
+        { sensitivity: 'base' }
       );
+
+      if (lastNameComparison !== 0) {
+        return lastNameComparison;
+      }
+
+      return a.firstName.localeCompare(
+        b.firstName,
+        'fr',
+        { sensitivity: 'base' }
+      );
+    });
+
 
 
   /* ---------------------------------------------------------
