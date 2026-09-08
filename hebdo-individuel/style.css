@@ -600,9 +600,8 @@ body.print-a3 {
     content: " - ";
   }
 
-
   .week-banner span {
-    padding: 5px 4px;
+    padding: 4px 4px;
     font-size: 10px;
   }
 
@@ -612,7 +611,7 @@ body.print-a3 {
   }
 
   .day-head {
-    padding: 7px 8px;
+    padding: 6px 8px;
   }
 
   .day-head h3 {
@@ -620,7 +619,7 @@ body.print-a3 {
   }
 
   .period {
-    padding: 6px;
+    padding: 5px;
   }
 
   /* Moins d'espace sous la dernière activité du matin */
@@ -631,7 +630,7 @@ body.print-a3 {
   /* Le bandeau repas fait 24px :
     28px laisse juste une petite marge */
   .meal-gap {
-    height: 32px !important;
+    height: 30px !important;
   }
 
   .meal-banner {
@@ -658,7 +657,7 @@ body.print-a3 {
   .activity-title {
     font-size: 11px;
     margin-bottom: 2px;
-    padding-right: 28px;
+    padding-right: 30px;
   }
 
   .activity-time {
@@ -668,7 +667,7 @@ body.print-a3 {
 
   .activity-meta {
     font-size: 8px;
-    margin-top: 4px;
+    margin-top: 3px;
     width: 70%;
   }
   
@@ -683,7 +682,7 @@ body.print-a3 {
   }
 
   .empty-slot {
-    padding: 8px;
+    padding: 4px 8px 4px 8px;
     font-size: 8px;
     border-radius: 9px;
     /* garder le style screen via les variables/couleurs du CSS */
@@ -691,6 +690,6 @@ body.print-a3 {
   }
 
   .sheet-foot {
-    margin-top: 6px;
+    margin-top: 5px;
   }
 }
