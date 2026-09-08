@@ -839,20 +839,24 @@ function updatePrintDate() {
    ========================================================= */
 
 function opacityFor(day) {
-  const input = $(`opacity${day}`);
+  const input =
+    $(`opacity${day}`);
 
-  if (!input) {
-    return 0.18;
-  }
+  const value =
+    input
+      ? Number(input.value)
+      : 18;
 
-  const value = Number(input.value);
-
-  return Math.min(
-    100,
-    Math.max(0, value)
-  ) / 100;
+  return (
+    Math.min(
+      100,
+      Math.max(
+        0,
+        value
+      )
+    ) / 100
+  );
 }
-
 
 
 /* =========================================================
@@ -1209,8 +1213,8 @@ async function renderDay(
   };
 
 
-  const showEmpty = true;
-
+  const showEmpty =
+    $('showEmpty').checked;
 
   const sections = [];
 
