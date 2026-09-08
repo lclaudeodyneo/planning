@@ -1,696 +1,1735 @@
-/* ==================== VARIABLES ==================== */
-:root {
-  --ink: #183042;
-  --muted: #687883;
-  --line: #dbe5ea;
-  --paper: #fff;
-  --bg: #eef3f6;
-  --accent: #711aa2;
-  --soft: #e9f4f5;
-  --danger: #a43434;
-  --week-orange: #e98524;
-}
+'use strict';
 
-/* ==================== RÈGLES GÉNÉRALES ==================== */
-* {
-  box-sizing: border-box;
-}
+const TABLES = {
+  participations: 'Participations',
+  activites: 'Activites',
+  usagers: 'Usagers',
+  jours: 'Jours_de_la_semaine',
+  heures: 'Heures',
+  animateurs: 'Animateurs',
+  activitesAutres: 'Activites_autres',
+  reeducations: 'Reeducations',
+  reeducateurs: 'Reeducateurs'
+};
 
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
-  font-variant-caps: small-caps;
-  color: var(--ink);
-  background: var(--bg);
-}
+const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
 
-/* ==================== TOOLBAR ==================== */
-.toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  padding: 12px 20px;
-  background: #fff;
-  border-bottom: 1px solid var(--line);
-  box-shadow: 0 3px 12px rgba(23, 48, 66, 0.12);
-}
+const DAY_COLORS = {
+  Lundi: '#5b8def',
+  Mardi: '#55a868',
+  Mercredi: '#c77cff',
+  Jeudi: '#e6a23c',
+  Vendredi: '#e66b6b'
+};
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+const state = {
+  tables: {},
+  people: [],
+  activities: [],
+  otherActivities: [],
+  selectedId: null,
+  attachmentUrls: new Map()
+};
 
-.brand-mark {
-  width: 46px;
-  height: 46px;
-  border-radius: 5px;
-  display: grid;
-  place-items: center;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 800;
-}
+const $ = (id) => document.getElementById(id);
 
-.brand h1 {
-  font-size: 18px;
-  margin: 0;
-}
 
-.brand p {
-  font-size: 12px;
-  margin: 2px 0 0;
-  color: var(--muted);
-}
+/* =========================================================
+   OUTILS
+   ========================================================= */
 
-.controls {
-  display: flex;
-  align-items: end;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+function rowsFromTable(table) {
+  if (!table || !Array.isArray(table.id)) {
+    return [];
+  }
 
-.controls label {
-  display: grid;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted);
-}
-
-select,
-button {
-  min-height: 38px;
-  border: 1px solid #c8d5db;
-  border-radius: 5px;
-  background: #fff;
-  padding: 0 11px;
-  color: var(--ink);
-}
-
-button {
-  border: none;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.secondary {
-  background: #e8eff2;
-  color: var(--ink);
-}
-
-.toggle {
-  display: flex !important;
-  grid-template-columns: auto 1fr !important;
-  align-items: center;
-  padding: 0 4px 8px;
-}
-
-.toggle input {
-  width: 16px;
-  height: 16px;
-}
-
-.opacity-settings {
-  position: relative;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.opacity-settings summary {
-  min-height: 38px;
-  display: flex;
-  align-items: center;
-  padding: 0 11px;
-  border: 1px solid #c8d5db;
-  border-radius: 5px;
-  background: #fff;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.opacity-controls {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
-  z-index: 30;
-  width: 220px;
-  padding: 10px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  box-shadow: 0 8px 24px rgba(23, 48, 66, 0.18);
-}
-
-.opacity-controls label {
-  display: grid;
-  grid-template-columns: 70px 1fr;
-  align-items: center;
-  gap: 8px;
-  margin: 5px 0;
-}
-
-/* ==================== CONTENU PRINCIPAL ==================== */
-#app {
-  padding: 22px;
-}
-
-.status {
-  max-width: 900px;
-  margin: 45px auto;
-  padding: 28px;
-  text-align: center;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-}
-
-.status.error {
-  color: var(--danger);
-}
-
-.hidden {
-  display: none !important;
-}
-
-.sheet {
-  max-width: 1500px;
-  margin: 0 auto;
-  background: var(--paper);
-  border-radius: 10px;
-  box-shadow: 0 8px 30px rgba(23, 48, 66, 0.17);
-  padding: 24px;
-}
-
-.sheet-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 15px;
-  margin-bottom: 16px;
-}
-
-.identity {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.portrait {
-  width: 74px;
-  height: 74px;
-  border-radius: 5px;
-  background: var(--soft);
-  border: 2px solid #cfe2e5;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--accent);
-}
-
-.portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  font-weight: 800;
-  color: var(--accent);
-  margin: 0 0 5px;
-}
-
-.sheet h2 {
-  font-size: 27px;
-  margin: 0;
-}
-
-.muted {
-  color: var(--muted);
-  font-size: 12px;
-  margin: 5px 0 0;
-}
-
-.print-date {
-  display: none;
-  color: var(--muted);
-  font-size: 11px;
-  margin: 4px 0 0;
-}
-
-.site-logo {
-  width: 120px;
-  max-height: 80px;
-  object-fit: contain;
-  object-position: right center;
-}
-
-/* ==================== BANDEAU SEMAINE ==================== */
-.week-banner {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(190px, 1fr));
-  background: var(--accent);
-  color: #fff;
-  border-radius: 5px 5px 0 0;
-  overflow: hidden;
-}
-
-.week-banner span {
-  padding: 5px 8px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 800;
-  border-right: 1px solid rgba(255, 255, 255, 0.45);
-}
-
-.week-banner span:last-child {
-  border-right: 0;
-}
-
-/* ==================== GRILLE SEMAINE ==================== */
-.week-grid {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(190px, 1fr));
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.day {
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  overflow: hidden;
-  background: var(--day-background, #fbfcfd);
-}
-
-.day-head {
-  padding: 11px 12px;
-  background: var(--day-color, var(--accent));
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.day-head h3 {
-  margin: 0;
-  font-size: 16px;
-}
-
-.day-head span {
-  font-size: 10px;
-  opacity: 0.92;
-}
-
-.day-content {
-  min-height: 100%;
-}
-
-.day-absent {
-  position: relative;
-  filter: grayscale(0.28);
-}
-
-.day-absent::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(120, 120, 120, 0.13),
-    rgba(120, 120, 120, 0.13) 8px,
-    rgba(255, 255, 255, 0.08) 8px,
-    rgba(255, 255, 255, 0.08) 16px
+  return table.id.map((id, index) =>
+    Object.fromEntries(
+      Object.entries(table).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value[index] : value
+      ])
+    )
   );
 }
 
-.day-absent .day-head {
-  background: #777;
+function isTrue(value) {
+  return (
+    value === true ||
+    value === 1 ||
+    value === 'true' ||
+    value === 'TRUE'
+  );
 }
 
-.period {
-  padding: 10px;
+function refIds(value) {
+  if (value == null) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value[0] === 'L'
+      ? value.slice(1).filter(Number.isFinite)
+      : value.filter(Number.isFinite);
+  }
+
+  return Number.isFinite(value)
+    ? [value]
+    : [];
 }
 
-.period-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 8px;
+
+function byId(rows) {
+  return new Map(
+    rows.map((row) => [row.id, row])
+  );
 }
 
-.meal-gap {
-  height: 34px;
+
+function text(value, fallback = '') {
+  return value == null || value === ''
+    ? fallback
+    : String(value);
 }
 
-.meal-banner {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 26px;
-  padding: 7px 12px;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: 800;
-  text-align: center;
-  pointer-events: none;
+
+function normalizeDay(value) {
+  const normalized =
+    text(value).trim().toLowerCase();
+
+  return (
+    DAYS.find(
+      (day) =>
+        day.toLowerCase() === normalized
+    ) ||
+    text(value, 'Jour')
+  );
 }
 
-.activity-card {
-  position: relative;
-  background: #fff;
-  border: 2px solid var(--card-color, var(--accent));
-  border-radius: 4px;
-  padding: 10px;
-  margin: 0 0 8px;
-  break-inside: avoid;
+
+function minutes(value) {
+  const match =
+    text(value).match(
+      /(\d{1,2})\D(\d{2})/
+    );
+
+  return match
+    ? Number(match[1]) * 60 +
+        Number(match[2])
+    : 9999;
 }
 
-.activity-card:last-child {
-  margin-bottom: 0;
+
+function initials(name) {
+  return text(name, '?')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
 }
 
-.activity-card-other {
-  border-style: solid;
-}
 
-.activity-title {
-  font-weight: 800;
-  font-size: 14px;
-  margin: 0 0 6px;
-  padding-right: 60px;
-}
+function colorFor(name) {
+  let hue = 0;
 
-.activity-time {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--accent);
-  background: var(--soft);
-  padding: 3px 7px;
-  border-radius: 5px;
-}
-
-.activity-meta {
-  font-size: 11px;
-  line-height: 1.45;
-  color: #4e626e;
-  margin-top: 7px;
-}
-
-.activity-meta strong {
-  color: var(--ink);
-}
-
-.activity-desc {
-  font-size: 10px;
-  line-height: 1.35;
-  color: var(--muted);
-  margin: 7px 0 0;
-}
-
-.activity-logo {
-  position: absolute;
-  right: 1px;
-  top: 1px;
-  width: 60px;
-  height: 60px;
-  border-radius: 4px;
-  object-fit: cover;
-  background: #edf3f5;
-}
-
-.empty-slot {
-  border: 1px dashed #cad6dc;
-  border-radius: 9px;
-  color: #94a2aa;
-  text-align: center;
-  font-size: 11px;
-  padding: 12px;
-}
-
-.sheet-foot {
-  text-align: center;
-  color: #86959d;
-  font-size: 9px;
-  margin-top: 14px;
-  padding-top: 9px;
-  border-top: 1px solid var(--line);
-}
-
-/* ==================== MODAL / DIALOG ==================== */
-dialog {
-  border: 0;
-  border-radius: 5px;
-  max-width: 620px;
-  box-shadow: 0 20px 60px #0003;
-}
-
-dialog pre {
-  white-space: pre-wrap;
-  background: #f5f7f8;
-  padding: 12px;
-  border-radius: 4px;
-}
-
-dialog button {
-  float: right;
-}
-
-/* ==================== RESPONSIVE DESKTOP ==================== */
-@media (max-width: 1050px) {
-  .toolbar {
-    align-items: flex-start;
-    flex-direction: column;
+  for (const character of text(name)) {
+    hue =
+      (hue * 31 +
+        character.charCodeAt(0)) %
+      360;
   }
 
-  .week-banner,
-  .week-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .week-banner {
-    display: none;
-  }
+  return `hsl(${hue} 48% 48%)`;
 }
 
-@media (max-width: 620px) {
-  #app {
-    padding: 8px;
-  }
 
-  .sheet {
-    padding: 12px;
-  }
-
-  .week-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sheet-head {
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .site-logo {
-    width: 80px;
-    max-height: 60px;
-  }
+function esc(value) {
+  return text(value).replace(
+    /[&<>"']/g,
+    (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    })[character]
+  );
 }
 
-/* ==================== IMPRESSION ==================== */
-@page {
-  size: A4 landscape;
-  margin: 8mm;
+
+function firstDefined(
+  row,
+  columnNames,
+  fallback = ''
+) {
+  for (const columnName of columnNames) {
+    if (
+      row &&
+      row[columnName] != null &&
+      row[columnName] !== ''
+    ) {
+      return row[columnName];
+    }
+  }
+
+  return fallback;
 }
 
-body.print-a3 {
-  @page {
-    size: A3 landscape;
-    margin: 9mm;
+
+/*
+ * Lecture robuste des colonnes Oui / Non de Grist.
+ */
+function isTrue(value) {
+  if (
+    value === true ||
+    value === 1 ||
+    value === '1'
+  ) {
+    return true;
+  }
+
+  if (typeof value === 'string') {
+    const normalized =
+      value.trim().toLowerCase();
+
+    return [
+      'true',
+      'oui',
+      'yes',
+      'vrai'
+    ].includes(normalized);
+  }
+
+  return false;
+}
+
+
+/* =========================================================
+   PIÈCES JOINTES GRIST
+   ========================================================= */
+
+let attachmentTokenInfo = null;
+
+
+async function attachmentUrl(value) {
+  const ids = refIds(value);
+
+  if (!ids.length) {
+    return '';
+  }
+
+  const id = ids[0];
+
+  if (state.attachmentUrls.has(id)) {
+    return state.attachmentUrls.get(id);
+  }
+
+  try {
+    if (!attachmentTokenInfo) {
+      attachmentTokenInfo =
+        await grist.docApi.getAccessToken({
+          readOnly: true
+        });
+    }
+
+    const url =
+      `${attachmentTokenInfo.baseUrl}/attachments/${id}/download` +
+      `?auth=${encodeURIComponent(
+        attachmentTokenInfo.token
+      )}`;
+
+    state.attachmentUrls.set(
+      id,
+      url
+    );
+
+    return url;
+
+  } catch (error) {
+    console.error(
+      `Impossible de charger la pièce jointe ${id}`,
+      error
+    );
+
+    return '';
   }
 }
 
-@media print {
-  html,
-  body {
-    background: #fff; /* impression : fond blanc */
-  }
 
-  .no-print,
-  .status {
-    display: none !important;
-  }
+/* =========================================================
+   CHARGEMENT DES TABLES
+   ========================================================= */
 
-  #app {
-    padding: 0;
-  }
+async function fetchAll() {
+  showStatus(
+    'Lecture des tables Grist…'
+  );
 
-  .sheet {
-    display: block !important;
-    max-width: none;
-    box-shadow: none;
-    border-radius: 0;
-    padding: 0;
-    background: var(--paper);
-  }
+  const entries =
+    await Promise.all(
+      Object.entries(TABLES).map(
+        async ([key, name]) => [
+          key,
+          await grist.docApi.fetchTable(name)
+        ]
+      )
+    );
 
-  .sheet-head {
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-  }
+  state.tables =
+    Object.fromEntries(
+      entries.map(
+        ([key, table]) => [
+          key,
+          rowsFromTable(table)
+        ]
+      )
+    );
 
-  .portrait {
-    width: 58px;
-    height: 58px;
-  }
+  buildModel();
+  populatePeople();
 
-  .site-logo {
-    width: 100px;
-    max-height: 60px;
-  }
+  const first =
+    state.people[0];
 
-  .sheet h2 {
-    font-size: 21px;
-  }
+  if (first) {
+    state.selectedId =
+      first.id;
 
-  /* conserver la grille identique au screen (5 colonnes) */
-  .week-banner,
-  .week-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
+    $('personSelect').value =
+      String(first.id);
 
-  .print-date {
-    display: inline;
-    margin-left: 8px;
-  }
+    await render();
 
-  #presenceText,
-  .print-date {
-    display: inline;
-    margin-top: 0;
-  }
-
-  .print-date::before {
-    content: " - ";
-  }
-
-
-  .week-banner span {
-    padding: 5px 4px;
-    font-size: 10px;
-  }
-
-  .week-grid {
-    gap: 6px;
-    margin-top: 5px;
-  }
-
-  .day-head {
-    padding: 7px 8px;
-  }
-
-  .day-head h3 {
-    font-size: 13px;
-  }
-
-  .period {
-    padding: 6px;
-  }
-
-  /* Moins d'espace sous la dernière activité du matin */
-  .period-matin {
-    padding-bottom: 2px !important;
-  }
-
-  /* Le bandeau repas fait 24px :
-    28px laisse juste une petite marge */
-  .meal-gap {
-    height: 24px !important;
-  }
-
-  .meal-banner {
-    height: 24px;
-    padding: 4px 8px;
-    font-size: 9px;
-  }
-
-  .activity-card {
-    padding: 6px;
-    margin-bottom: 5px;
-
-    /* réduire plutôt que casser le style */
-    border-left-width: 4px;
-    break-inside: avoid;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: none;
-  }
-  
-  .activity-card:last-child {
-    margin-bottom: 0 !important;
-  }
-  .activity-title {
-    font-size: 11px;
-    margin-bottom: 4px;
-    padding-right: 28px;
-  }
-
-  .activity-time {
-    font-size: 9px;
-    padding: 2px 5px;
-  }
-
-  .activity-meta {
-    font-size: 8px;
-    margin-top: 4px;
-    width: 70%;
-  }
-  
-  .activity-desc {
-    font-size: 8px;
-    margin-top: 4px;
-  }
-
-  .activity-logo {
-    width: 60px;
-    height: 60px;
-  }
-
-  .empty-slot {
-    padding: 8px;
-    font-size: 8px;
-    border-radius: 9px;
-    /* garder le style screen via les variables/couleurs du CSS */
-    border: 1px dashed #cad6dc;
-  }
-
-  .sheet-foot {
-    margin-top: 6px;
+  } else {
+    showStatus(
+      'Aucun usager trouvé dans la table Usagers.',
+      true
+    );
   }
 }
+
+
+/* =========================================================
+   CONSTRUCTION DU MODÈLE
+   ========================================================= */
+
+function buildModel() {
+  const users =
+    state.tables.usagers;
+
+  const activities =
+    state.tables.activites;
+
+  const participations =
+    state.tables.participations;
+
+  const days =
+    byId(state.tables.jours);
+
+  const hours =
+    byId(state.tables.heures);
+
+  const animators =
+    byId(state.tables.animateurs);
+
+  const otherActivityTypes =
+    byId(state.tables.activitesAutres);
+
+  const partners =
+    byId(state.tables.reeducateurs);
+
+
+  /* ---------------------------------------------------------
+     PARTICIPANTS PAR ACTIVITÉ
+     --------------------------------------------------------- */
+
+  const participantsByActivity =
+    new Map();
+
+  for (const participation of participations) {
+
+    const activityId =
+      refIds(
+        participation.Activites
+      )[0];
+
+    if (!activityId) {
+      continue;
+    }
+
+    const participantSet =
+      participantsByActivity.get(
+        activityId
+      ) ||
+      new Set();
+
+    refIds(
+      participation.Participants
+    ).forEach(
+      (participantId) => {
+        participantSet.add(
+          participantId
+        );
+      }
+    );
+
+    participantsByActivity.set(
+      activityId,
+      participantSet
+    );
+  }
+
+
+  /* ---------------------------------------------------------
+     USAGERS
+     --------------------------------------------------------- */
+
+  state.people = users
+    .filter((user) => !isTrue(user.Parti_e))
+    .map((user) => ({
+      id: user.id,
+      name: text(
+        user.Usager,
+        `${text(user.Prenom)} ${text(user.Nom)}`.trim()
+      ),
+      lastName: text(user.Nom).trim(),
+      firstName: text(user.Prenom).trim(),
+      portrait: user.Portrait,
+      presence: refIds(user.Presence).map((id) =>
+        normalizeDay(days.get(id)?.Jour)
+      ),
+      flags: {
+        Lundi: user.Lu,
+        Mardi: user.Ma,
+        Mercredi: user.Me,
+        Jeudi: user.Je,
+        Vendredi: user.Ve
+      }
+    }))
+
+    .sort((a, b) => {
+      const lastNameComparison = a.lastName.localeCompare(
+        b.lastName,
+        'fr',
+        { sensitivity: 'base' }
+      );
+
+      if (lastNameComparison !== 0) {
+        return lastNameComparison;
+      }
+
+      return a.firstName.localeCompare(
+        b.firstName,
+        'fr',
+        { sensitivity: 'base' }
+      );
+    });
+
+
+
+  /* ---------------------------------------------------------
+     ACTIVITÉS
+     --------------------------------------------------------- */
+
+  state.activities =
+    activities
+      .map((activity) => {
+
+        const dayRow =
+          days.get(
+            refIds(
+              activity.Jour
+            )[0]
+          );
+
+        const startRow =
+          hours.get(
+            refIds(
+              activity.Heure_debut
+            )[0]
+          );
+
+        const endRow =
+          hours.get(
+            refIds(
+              activity.Heure_fin
+            )[0]
+          );
+
+
+        const animatorNames =
+          refIds(
+            activity.Animateur_s
+          )
+            .map(
+              (id) =>
+                animators.get(id)
+            )
+            .filter(Boolean)
+            .map(
+              (animator) =>
+                text(
+                  animator.Nom2,
+                  `${text(
+                    animator.Prenom
+                  )} ${text(
+                    animator.Nom
+                  )}`.trim()
+                )
+            );
+
+
+        /*
+         * Nouvelles colonnes :
+         *
+         * Groupe ouvert
+         * Année complète
+         */
+
+        const groupOpenValue =
+          firstDefined(
+            activity,
+            [
+              'Groupe_ouvert',
+              'Groupe_Ouvert'
+            ],
+            false
+          );
+
+        const fullYearValue =
+          firstDefined(
+            activity,
+            [
+              'Annee_complete',
+              'Annee_Complete',
+              'Annee_complete_'
+            ],
+            false
+          );
+
+
+        return {
+          id:
+            activity.id,
+
+          kind:
+            'regular',
+
+          name:
+            text(
+              activity.Nom_activite,
+              'Activité'
+            ),
+
+          day:
+            normalizeDay(
+              dayRow?.Jour ||
+              activity.gristHelper_Display2
+            ),
+
+          dayOrder:
+            Number(
+              activity.Jour_Num_jour ||
+              dayRow?.Num_jour ||
+              99
+            ),
+
+          start:
+            text(
+              startRow?.Heures ||
+              activity.gristHelper_Display3
+            ),
+
+          end:
+            text(
+              endRow?.Heures ||
+              activity.gristHelper_Display4
+            ),
+
+          animators:
+            animatorNames,
+
+          capacity:
+            activity.Capacite,
+
+          description:
+            text(
+              activity.Remarques_planning
+            ).slice(0, 100),
+
+          visual:
+            activity.Visuel,
+
+          groupOpen:
+            isTrue(
+              groupOpenValue
+            ),
+
+          fullYear:
+            isTrue(
+              fullYearValue
+            ),
+
+          participants:
+            participantsByActivity.get(
+              activity.id
+            ) ||
+            new Set()
+        };
+      })
+
+      .sort(sortActivities);
+
+
+  /* ---------------------------------------------------------
+     ACTIVITÉS AUTRES / RÉÉDUCATIONS
+     --------------------------------------------------------- */
+
+  state.otherActivities =
+    state.tables.reeducations
+      .map((otherActivity) => {
+
+        const typeRow =
+          otherActivityTypes.get(
+            refIds(
+              otherActivity.Type
+            )[0]
+          );
+
+        const dayRow =
+          days.get(
+            refIds(
+              otherActivity.Jour
+            )[0]
+          );
+
+        const partnerRow =
+          partners.get(
+            refIds(
+              otherActivity.Partenaire
+            )[0]
+          );
+
+        const userIds =
+          refIds(
+            otherActivity.Usagers
+          );
+
+
+        const typeName =
+          text(
+            typeRow?.Type ||
+            otherActivity.gristHelper_Display,
+            'Activité autre'
+          );
+
+
+        const partnerName =
+          text(
+            partnerRow?.Partenaire ||
+            partnerRow?.Organisation ||
+            otherActivity.gristHelper_Display4 ||
+            otherActivity.gristHelper_Display6
+          );
+
+
+        const hourRow =
+          hours.get(
+            refIds(
+              firstDefined(
+                otherActivity,
+                [
+                  'Heure',
+                  'Horaire'
+                ]
+              )
+            )[0]
+          );
+
+
+        const rawSchedule =
+          text(
+            hourRow?.Heures ||
+            firstDefined(
+              otherActivity,
+              [
+                'Horaire',
+                'gristHelper_Display3'
+              ]
+            )
+          );
+
+
+        const scheduleParts =
+          rawSchedule
+            .split(
+              /\s*[–—-]\s*/
+            )
+            .filter(Boolean);
+
+
+        return {
+          id:
+            otherActivity.id,
+
+          kind:
+            'other',
+
+          name:
+            typeName,
+
+          day:
+            normalizeDay(
+              dayRow?.Jour ||
+              otherActivity.gristHelper_Display2
+            ),
+
+          dayOrder:
+            Number(
+              dayRow?.Num_jour ||
+              99
+            ),
+
+          start:
+            scheduleParts[0] ||
+            rawSchedule,
+
+          end:
+            scheduleParts[1] ||
+            '',
+
+          schedule:
+            rawSchedule,
+
+          partner:
+            partnerName,
+
+          place:
+            text(
+              otherActivity.Lieu
+            ),
+
+          description:
+            '',
+
+          visual:
+            typeRow?.Visuel_act_autre,
+
+          participants:
+            new Set(userIds)
+        };
+      })
+
+      .sort(sortActivities);
+}
+
+
+/* =========================================================
+   TRI
+   ========================================================= */
+
+function sortActivities(a, b) {
+  return (
+    a.dayOrder -
+      b.dayOrder ||
+
+    minutes(a.start) -
+      minutes(b.start) ||
+
+    a.name.localeCompare(
+      b.name,
+      'fr'
+    )
+  );
+}
+
+
+/* =========================================================
+   SÉLECTEUR D'USAGER
+   ========================================================= */
+
+function populatePeople() {
+  $('personSelect').innerHTML =
+    state.people
+      .map(
+        (person) =>
+          `<option value="${person.id}">
+            ${esc(person.name)}
+          </option>`
+      )
+      .join('');
+}
+
+
+/* =========================================================
+   MESSAGE D'ÉTAT
+   ========================================================= */
+
+function showStatus(
+  message,
+  error = false
+) {
+  $('status').textContent =
+    message;
+
+  $('status').classList.toggle(
+    'error',
+    error
+  );
+
+  $('status').classList.remove(
+    'hidden'
+  );
+
+  $('sheet').classList.add(
+    'hidden'
+  );
+}
+
+
+/* =========================================================
+   MATIN / APRÈS-MIDI
+   ========================================================= */
+
+function periodOf(activity) {
+  return minutes(activity.start) <
+    13 * 60
+    ? 'Matin'
+    : 'Après-midi';
+}
+
+
+/* =========================================================
+   PRÉSENCE
+   ========================================================= */
+
+function isPresent(person, day) {
+  return (
+    person.presence.includes(day) ||
+
+    person.flags[day] === true ||
+
+    person.flags[day] === 1
+  );
+}
+
+
+/* =========================================================
+   Date d'impression
+   ========================================================= */
+function updatePrintDate() {
+  const printDate = $('printDate');
+
+  if (!printDate) {
+    return;
+  }
+
+  const formattedDate = new Intl.DateTimeFormat('fr-FR', {
+    dateStyle: 'long'
+  }).format(new Date());
+
+  printDate.textContent = `Imprimé le ${formattedDate}`;
+}
+
+
+/* =========================================================
+   OPACITÉ
+   ========================================================= */
+
+function opacityFor(day) {
+  const input =
+    $(`opacity${day}`);
+
+  const value =
+    input
+      ? Number(input.value)
+      : 18;
+
+  return (
+    Math.min(
+      100,
+      Math.max(
+        0,
+        value
+      )
+    ) / 100
+  );
+}
+
+
+/* =========================================================
+   COULEURS
+   ========================================================= */
+
+function hexToRgba(
+  hex,
+  opacity
+) {
+  const normalized =
+    hex.replace('#', '');
+
+  const number =
+    Number.parseInt(
+      normalized,
+      16
+    );
+
+  const red =
+    (number >> 16) & 255;
+
+  const green =
+    (number >> 8) & 255;
+
+  const blue =
+    number & 255;
+
+  return `rgba(${red}, ${green}, ${blue}, ${opacity})`;
+}
+
+
+/* =========================================================
+   AFFICHAGE DU PLANNING
+   ========================================================= */
+
+async function render() {
+  const person = state.people.find(
+    (item) => item.id === Number(state.selectedId)
+  );
+
+  if (!person) {
+    return;
+  }
+
+  $('status').classList.add('hidden');
+  $('sheet').classList.remove('hidden');
+
+  $('personName').textContent = person.name;
+
+  const presentDays = DAYS.filter(
+    (day) => isPresent(person, day)
+  );
+
+  $('presenceText').textContent = presentDays.length
+    ? presentDays.join(', ')
+    : 'Présence habituelle non renseignée';
+
+  const portraitUrl = await attachmentUrl(person.portrait);
+
+  $('portrait').innerHTML = portraitUrl
+    ? `
+      <img
+        src="${portraitUrl}"
+        alt="Portrait de ${esc(person.name)}"
+      >
+    `
+    : `
+      <span>
+        ${esc(initials(person.name))}
+      </span>
+    `;
+
+  const cards = await Promise.all(
+    DAYS.map((day) => renderDay(person, day))
+  );
+
+  $('weekGrid').innerHTML = `
+    ${cards.join('')}
+
+    <div
+      class="meal-banner"
+      aria-label="Repas de 12 heures"
+    >
+      <span>
+        12 h · Repas
+      </span>
+    </div>
+  `;
+
+  alignMealBanner();
+  updatePrintDate();
+}
+
+
+
+/* =========================================================
+   AFFICHAGE D'UNE JOURNÉE
+
+   ORDRE DE PRIORITÉ :
+
+   1. USAGER ABSENT
+      → aucune activité affichée.
+
+   2. USAGER PRÉSENT + activité Année complète
+      → activité inscrite affichée.
+      → groupes ouverts masqués sur cette demi-journée.
+
+   3. USAGER PRÉSENT + activité non Année complète
+      → activité inscrite affichée.
+      → groupes ouverts affichés.
+
+   4. USAGER PRÉSENT + aucune inscription
+      → groupes ouverts affichés.
+
+   La logique est indépendante entre :
+   - matin
+   - après-midi
+   ========================================================= */
+
+async function renderDay(
+  person,
+  day
+) {
+
+  /*
+   * On détermine immédiatement
+   * si l'usager est présent.
+   */
+
+  const present =
+    isPresent(
+      person,
+      day
+    );
+
+
+  /* ---------------------------------------------------------
+     ACTIVITÉS AUXQUELLES L'USAGER EST INSCRIT
+     --------------------------------------------------------- */
+
+  const enrolledActivities =
+    present
+      ? state.activities.filter(
+          (activity) => (
+            activity.day === day &&
+            activity.participants.has(
+              person.id
+            )
+          )
+        )
+      : [];
+
+
+  /* ---------------------------------------------------------
+     GROUPE OUVERT
+     --------------------------------------------------------- */
+
+  function shouldShowOpenGroup(
+    openActivity
+  ) {
+
+    /*
+     * Si l'usager est absent :
+     * aucun groupe ouvert.
+     */
+
+    if (!present) {
+      return false;
+    }
+
+
+    const openPeriod =
+      periodOf(
+        openActivity
+      );
+
+
+    /*
+     * Inscriptions de l'usager
+     * sur la même demi-journée.
+     */
+
+    const enrolledSamePeriod =
+      enrolledActivities.filter(
+        (activity) =>
+          periodOf(activity) ===
+          openPeriod
+      );
+
+
+    /*
+     * Aucune activité inscrite :
+     * groupes ouverts proposés.
+     */
+
+    if (
+      enrolledSamePeriod.length ===
+      0
+    ) {
+      return true;
+    }
+
+
+    /*
+     * Présence d'une activité
+     * Année complète :
+     *
+     * groupes ouverts masqués.
+     */
+
+    const hasFullYearActivity =
+      enrolledSamePeriod.some(
+        (activity) =>
+          activity.fullYear ===
+          true
+      );
+
+
+    if (
+      hasFullYearActivity
+    ) {
+      return false;
+    }
+
+
+    /*
+     * Activité inscrite,
+     * mais pas Année complète :
+     *
+     * groupes ouverts affichés.
+     */
+
+    return true;
+  }
+
+
+  /* ---------------------------------------------------------
+     ACTIVITÉS ORDINAIRES
+     --------------------------------------------------------- */
+
+  const regularActivities =
+    state.activities.filter(
+      (activity) => {
+
+        /*
+         * PRIORITÉ ABSOLUE :
+         *
+         * usager absent =
+         * aucune activité.
+         */
+
+        if (!present) {
+          return false;
+        }
+
+
+        /*
+         * Mauvais jour.
+         */
+
+        if (
+          activity.day !== day
+        ) {
+          return false;
+        }
+
+
+        /*
+         * L'usager est inscrit :
+         * activité toujours affichée.
+         */
+
+        if (
+          activity.participants.has(
+            person.id
+          )
+        ) {
+          return true;
+        }
+
+
+        /*
+         * Pas inscrit
+         * + groupe fermé :
+         *
+         * activité masquée.
+         */
+
+        if (
+          !activity.groupOpen
+        ) {
+          return false;
+        }
+
+
+        /*
+         * Groupe ouvert :
+         * application de la règle
+         * Année complète.
+         */
+
+        return shouldShowOpenGroup(
+          activity
+        );
+      }
+    );
+
+
+  /* ---------------------------------------------------------
+     RÉÉDUCATIONS / ACTIVITÉS AUTRES
+     --------------------------------------------------------- */
+
+  const otherActivities =
+    state.otherActivities.filter(
+      (activity) => (
+        present &&
+        activity.day === day &&
+        activity.participants.has(
+          person.id
+        )
+      )
+    );
+
+
+  /* ---------------------------------------------------------
+     RASSEMBLEMENT
+     --------------------------------------------------------- */
+
+  const activities = [
+    ...regularActivities,
+    ...otherActivities
+  ].sort(sortActivities);
+
+
+  /* ---------------------------------------------------------
+     MATIN / APRÈS-MIDI
+     --------------------------------------------------------- */
+
+  const groups = {
+    Matin:
+      activities.filter(
+        (activity) =>
+          periodOf(activity) ===
+          'Matin'
+      ),
+
+    'Après-midi':
+      activities.filter(
+        (activity) =>
+          periodOf(activity) ===
+          'Après-midi'
+      )
+  };
+
+
+  const showEmpty =
+    $('showEmpty').checked;
+
+  const sections = [];
+
+
+  /* ---------------------------------------------------------
+     CONSTRUCTION DES DEMI-JOURNÉES
+     --------------------------------------------------------- */
+
+  for (
+    const label of [
+      'Matin',
+      'Après-midi'
+    ]
+  ) {
+
+    const list =
+      groups[label];
+
+
+    /*
+     * Si aucune activité et
+     * que les créneaux vides
+     * sont masqués.
+     */
+
+    if (
+      !list.length &&
+      !showEmpty
+    ) {
+
+      if (
+        label === 'Matin'
+      ) {
+        sections.push(
+          '<div class="meal-gap" aria-hidden="true"></div>'
+        );
+      }
+
+      continue;
+    }
+
+
+    /*
+     * Contenu de la demi-journée.
+     */
+
+    const inner =
+      list.length
+        ? (
+            await Promise.all(
+              list.map(
+                activityCard
+              )
+            )
+          ).join('')
+
+        : `
+          <div class="empty-slot">
+            ${
+              present
+                ? 'Aucune activité renseignée'
+                : 'Absent'
+            }
+          </div>
+        `;
+
+
+    sections.push(`
+      <section
+        class="period period-${label.toLowerCase()}"
+      >
+
+        <div class="period-title">
+          ${label}
+        </div>
+
+        ${inner}
+
+      </section>
+    `);
+
+
+    if (
+      label === 'Matin'
+    ) {
+      sections.push(
+        '<div class="meal-gap" aria-hidden="true"></div>'
+      );
+    }
+  }
+
+
+  /* ---------------------------------------------------------
+     COULEUR DE LA JOURNÉE
+     --------------------------------------------------------- */
+
+  const dayColor =
+    DAY_COLORS[day];
+
+  const dayBackground =
+    hexToRgba(
+      dayColor,
+      opacityFor(day)
+    );
+
+  const absenceClass =
+    present
+      ? ''
+      : ' day-absent';
+
+
+  /* ---------------------------------------------------------
+     HTML DU JOUR
+     --------------------------------------------------------- */
+
+  return `
+    <article
+      class="day${absenceClass}"
+      style="
+        --day-color: ${dayColor};
+        --day-background: ${dayBackground};
+      "
+    >
+
+      <div class="day-head">
+
+        <h3>
+          ${day}
+        </h3>
+
+        <span>
+          ${
+            present
+              ? `${activities.length} activité${
+                  activities.length > 1
+                    ? 's'
+                    : ''
+                }`
+              : 'ABSENT·E'
+          }
+        </span>
+
+      </div>
+
+      <div class="day-content">
+
+        ${sections.join('')}
+
+      </div>
+
+    </article>
+  `;
+}
+
+
+/* =========================================================
+   ALIGNEMENT DU BANDEAU REPAS
+   ========================================================= */
+
+function alignMealBanner() {
+  const grid =
+    $('weekGrid');
+
+  const morningSections = [
+    ...grid.querySelectorAll(
+      '.period-matin'
+    )
+  ];
+
+  const banner =
+    grid.querySelector(
+      '.meal-banner'
+    );
+
+
+  if (
+    !morningSections.length ||
+    !banner
+  ) {
+    return;
+  }
+
+
+  morningSections.forEach(
+    (section) => {
+      section.style.minHeight =
+        '';
+    }
+  );
+
+
+  const maxMorningHeight =
+    Math.max(
+      ...morningSections.map(
+        (section) =>
+          section
+            .getBoundingClientRect()
+            .height
+      )
+    );
+
+
+  morningSections.forEach(
+    (section) => {
+      section.style.minHeight =
+        `${maxMorningHeight}px`;
+    }
+  );
+
+
+  const firstGap =
+    grid.querySelector(
+      '.meal-gap'
+    );
+
+
+  if (!firstGap) {
+    return;
+  }
+
+
+  const gridRect =
+    grid.getBoundingClientRect();
+
+  const gapRect =
+    firstGap.getBoundingClientRect();
+
+
+  banner.style.top =
+    `${
+      gapRect.top -
+      gridRect.top
+    }px`;
+}
+
+
+/* =========================================================
+   CARTE ACTIVITÉ
+   ========================================================= */
+
+async function activityCard(
+  activity
+) {
+  const logo =
+    await attachmentUrl(
+      activity.visual
+    );
+
+
+  const time =
+    activity.schedule ||
+    [
+      activity.start,
+      activity.end
+    ]
+      .filter(Boolean)
+      .join(' – ');
+
+
+  const cardColor =
+    colorFor(
+      activity.name
+    );
+
+
+  const regularMeta =
+    activity.kind === 'regular' &&
+    activity.animators.length
+      ? `
+        <div>
+          <strong>Avec :</strong>
+          ${esc(
+            activity.animators.join(
+              ', '
+            )
+          )}
+        </div>
+      `
+      : '';
+
+
+  const otherMeta =
+    activity.kind === 'other'
+      ? `
+        ${
+          activity.partner &&
+          activity.partner.trim()
+            ? `
+              <div>
+                <strong>Avec :</strong>
+                ${esc(
+                  activity.partner
+                )}
+              </div>
+            `
+            : ''
+        }
+
+        ${
+          activity.place &&
+          activity.place.trim()
+            ? `
+              <div>
+                <strong>Lieu :</strong>
+                ${esc(
+                  activity.place
+                )}
+              </div>
+            `
+            : ''
+        }
+      `
+      : '';
+
+
+  return `
+    <article
+      class="
+        activity-card
+        ${
+          activity.kind === 'other'
+            ? ' activity-card-other'
+            : ''
+        }
+      "
+      style="
+        --card-color: ${cardColor}
+      "
+    >
+
+      ${
+        logo
+          ? `
+            <img
+              class="activity-logo"
+              src="${logo}"
+              alt=""
+            >
+          `
+          : ''
+      }
+
+      <h4 class="activity-title">
+        ${esc(
+          activity.name
+        )}
+      </h4>
+
+      ${
+        time
+          ? `
+            <div class="activity-time">
+              ${esc(time)}
+            </div>
+          `
+          : ''
+      }
+
+      <div class="activity-meta">
+
+        ${regularMeta}
+
+        ${otherMeta}
+
+      </div>
+
+      ${
+        activity.description
+          ? `
+            <p class="activity-desc">
+              ${esc(
+                activity.description.slice(
+                  0,
+                  100
+                )
+              )}
+            </p>
+          `
+          : ''
+      }
+
+    </article>
+  `;
+}
+
+
+/* =========================================================
+   ERREURS
+   ========================================================= */
+
+function showError(error) {
+  console.error(error);
+
+  showStatus(
+    'Une erreur empêche l’affichage du planning.',
+    true
+  );
+
+
+  $('errorText').textContent =
+    `${error?.message || error}\n\n` +
+    'Vérifiez que les tables portent exactement ces noms :\n' +
+    Object.values(TABLES)
+      .join('\n');
+
+
+  $('errorDialog').showModal();
+}
+
+
+/* =========================================================
+   ÉVÉNEMENTS
+   ========================================================= */
+
+$('personSelect')
+  .addEventListener(
+    'change',
+    (event) => {
+
+      state.selectedId =
+        Number(
+          event.target.value
+        );
+
+      render()
+        .catch(showError);
+    }
+  );
+
+
+$('showEmpty')
+  .addEventListener(
+    'change',
+    () => {
+      render()
+        .catch(showError);
+    }
+  );
+
+
+$('formatSelect')
+  .addEventListener(
+    'change',
+    (event) => {
+
+      document.body.classList.toggle(
+        'print-a3',
+        event.target.value === 'a3'
+      );
+    }
+  );
+
+
+for (const day of DAYS) {
+  $(`opacity${day}`)
+    .addEventListener(
+      'input',
+      () => {
+        render()
+          .catch(showError);
+      }
+    );
+}
+
+
+$('printBtn')
+  .addEventListener(
+    'click',
+    () => {
+      window.print();
+    }
+  );
+
+
+$('reloadBtn')
+  .addEventListener(
+    'click',
+    () => {
+      window.addEventListener('beforeprint', updatePrintDate);
+      fetchAll()
+        .catch(showError);
+    }
+  );
+
+
+/* =========================================================
+   INITIALISATION GRIST
+   ========================================================= */
+
+grist.ready({
+  requiredAccess: 'full'
+});
+
+
+grist.onOptions(
+  (_options, interaction) => {
+
+    if (
+      interaction?.access_level &&
+      interaction.access_level !==
+        'full'
+    ) {
+
+      showStatus(
+        'Autorisez « Accès complet au document » pour lire les tables liées.',
+        true
+      );
+    }
+  }
+);
+
+
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+
+fetchAll()
+  .catch(showError);
