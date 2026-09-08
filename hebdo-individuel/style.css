@@ -641,8 +641,8 @@ body.print-a3 {
   }
 
   .activity-card {
-    padding: 6px;
-    margin-bottom: 5px;
+    padding: 3px 6px 3px 6px;
+    margin-bottom: 3px;
 
     /* réduire plutôt que casser le style */
     border-left-width: 4px;
@@ -657,7 +657,7 @@ body.print-a3 {
   }
   .activity-title {
     font-size: 11px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     padding-right: 28px;
   }
 
@@ -674,7 +674,7 @@ body.print-a3 {
   
   .activity-desc {
     font-size: 8px;
-    margin-top: 4px;
+    margin-top: 3px;
   }
 
   .activity-logo {
