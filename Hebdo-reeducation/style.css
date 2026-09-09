@@ -365,3 +365,116 @@ dialog pre{white-space:pre-wrap;max-height:55vh;overflow:auto}
 }
 
 @page{size:A4 landscape;margin:5mm}
+
+/* ============================================================
+   V7 — OPTIMISATION IMPRESSION UNIQUEMENT
+   - 5 jours toujours contenus sur une seule feuille
+   - espace vertical réparti selon la charge matin / après-midi
+   - portraits et informations agrandis
+   - 2 colonnes utilisées avant de réduire les tuiles
+   ============================================================ */
+@media print {
+  html, body, #app, .app-shell, .print-sheet,
+  .week-grid, .day-head, .period-cell, .period-list {
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  .app-shell,.print-sheet{width:100%!important;max-width:100%!important;overflow:hidden!important}
+
+  .sheet-header{padding:0 0 1.2mm!important;margin:0 0 .6mm!important;min-height:0!important}
+  .association-logo-print{width:24mm!important;height:9mm!important}
+  .print-picto{width:8mm!important;height:8mm!important}
+  .sheet-header h2{font-size:11pt!important;line-height:1!important}
+  .sheet-header p{font-size:5.8pt!important;line-height:1!important}
+  .eyebrow{font-size:5pt!important}
+  .stat{min-width:21mm!important;padding:.8mm 1.2mm!important}
+  .stat strong{font-size:10pt!important}
+  .stat span{font-size:4.7pt!important}
+
+  .week-grid{
+    width:100%!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    grid-template-rows:8mm minmax(0,var(--morning-fr,1fr)) 6mm minmax(0,var(--afternoon-fr,1fr))!important;
+    column-gap:.75mm!important;
+    row-gap:.65mm!important;
+    padding-top:.4mm!important;
+  }
+  body.print-a4 .week-grid{height:171mm!important}
+  body.print-a3 .week-grid{height:257mm!important}
+
+  .day-head{padding:.8mm .5mm!important;font-size:8pt!important}
+  .day-head small{font-size:5pt!important;margin-top:.15mm!important}
+  .period-cell{padding:.6mm!important}
+  .period-label{margin:0 0 .4mm!important;font-size:4.7pt!important}
+  .period-label span{font-size:4pt!important}
+  .period-list{gap:.45mm!important}
+
+  .meal-row{height:6mm!important;font-size:6.8pt!important}
+  .meal-row strong{font-size:7.4pt!important}
+
+  /* Taille normale : nettement plus lisible qu'en V6. */
+  .appt,.appt:hover,.appt:focus,.appt.expanded{
+    grid-template-columns:12mm minmax(0,1fr)!important;
+    gap:.8mm!important;
+    padding:.7mm!important;
+  }
+  .portrait{width:12mm!important;height:12mm!important}
+  .time{font-size:8.5pt!important}
+  .kind{font-size:4.8pt!important}
+  .person-name{font-size:7pt!important;line-height:1.05!important;margin:.25mm 0!important}
+  .meta{font-size:5.1pt!important;line-height:1.08!important}
+  .practitioner{font-size:5.15pt!important;line-height:1.08!important}
+  .badge{font-size:4pt!important}
+
+  /* En 2 colonnes on conserve volontairement une photo et un texte lisibles. */
+  .period-cell.print-two-cols .period-list{column-gap:.45mm!important;row-gap:.45mm!important}
+  .period-cell.print-two-cols .appt,
+  .print-sheet.density-compact .period-cell.print-two-cols .appt,
+  .print-sheet.density-tight .period-cell.print-two-cols .appt,
+  .print-sheet.density-ultra .period-cell.print-two-cols .appt{
+    grid-template-columns:8mm minmax(0,1fr)!important;
+    gap:.4mm!important;
+    padding:.45mm!important;
+  }
+  .period-cell.print-two-cols .portrait,
+  .print-sheet.density-compact .period-cell.print-two-cols .portrait,
+  .print-sheet.density-tight .period-cell.print-two-cols .portrait,
+  .print-sheet.density-ultra .period-cell.print-two-cols .portrait{width:8mm!important;height:8mm!important}
+  .period-cell.print-two-cols .time,
+  .print-sheet.density-compact .period-cell.print-two-cols .time,
+  .print-sheet.density-tight .period-cell.print-two-cols .time,
+  .print-sheet.density-ultra .period-cell.print-two-cols .time{font-size:6.6pt!important}
+  .period-cell.print-two-cols .person-name,
+  .print-sheet.density-compact .period-cell.print-two-cols .person-name,
+  .print-sheet.density-tight .period-cell.print-two-cols .person-name,
+  .print-sheet.density-ultra .period-cell.print-two-cols .person-name{font-size:5.25pt!important;line-height:1.02!important}
+  .period-cell.print-two-cols .meta,
+  .print-sheet.density-compact .period-cell.print-two-cols .meta,
+  .print-sheet.density-tight .period-cell.print-two-cols .meta,
+  .print-sheet.density-ultra .period-cell.print-two-cols .meta{font-size:4pt!important;line-height:1.02!important}
+  .period-cell.print-two-cols .practitioner{font-size:4.05pt!important}
+  .period-cell.print-two-cols .kind{font-size:3.7pt!important}
+  .period-cell.print-two-cols .badge{font-size:3.2pt!important}
+
+  /* Réduction de dernier recours seulement pour les demi-journées extrêmes. */
+  .print-sheet.density-compact .appt{grid-template-columns:10.5mm minmax(0,1fr)!important}
+  .print-sheet.density-compact .portrait{width:10.5mm!important;height:10.5mm!important}
+  .print-sheet.density-compact .time{font-size:7.8pt!important}
+  .print-sheet.density-compact .person-name{font-size:6.5pt!important}
+  .print-sheet.density-compact .meta{font-size:4.8pt!important}
+
+  .print-sheet.density-tight .appt{grid-template-columns:9.5mm minmax(0,1fr)!important}
+  .print-sheet.density-tight .portrait{width:9.5mm!important;height:9.5mm!important}
+  .print-sheet.density-tight .time{font-size:7.2pt!important}
+  .print-sheet.density-tight .person-name{font-size:6pt!important}
+  .print-sheet.density-tight .meta{font-size:4.5pt!important}
+
+  .print-sheet.density-ultra .appt{grid-template-columns:8.5mm minmax(0,1fr)!important}
+  .print-sheet.density-ultra .portrait{width:8.5mm!important;height:8.5mm!important}
+  .print-sheet.density-ultra .time{font-size:6.7pt!important}
+  .print-sheet.density-ultra .person-name{font-size:5.5pt!important}
+  .print-sheet.density-ultra .meta{font-size:4.15pt!important}
+
+  .sheet-footer{font-size:4.4pt!important;padding-top:.35mm!important;line-height:1!important}
+}

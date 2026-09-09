@@ -311,8 +311,8 @@ function splitDayRows(shown, dayName) {
    Les seuils sont volontairement plus prudents en A4.
    ============================================================ */
 function twoColumnThreshold(period) {
-  if (state.format === 'a3') return period === 'morning' ? 7 : 7;
-  return period === 'morning' ? 5 : 5;
+  if (state.format === 'a3') return 5;
+  return 4;
 }
 
 function shouldUseTwoColumns(count, period) {
@@ -337,10 +337,11 @@ function printDensityClass(shown) {
     maxTotal = Math.max(maxTotal, split.all.length);
   }
 
-  // Les classes réduisent progressivement les tuiles à l'impression seulement.
-  if (maxEffective >= 7 || maxTotal >= 13) return 'density-ultra';
-  if (maxEffective >= 6 || maxTotal >= 11) return 'density-tight';
-  if (maxEffective >= 5 || maxTotal >= 9) return 'density-compact';
+  // Les 2 colonnes sont utilisées en priorité afin de garder portraits et textes grands.
+  // La réduction de densité n'intervient qu'en dernier recours.
+  if (maxEffective >= 8) return 'density-ultra';
+  if (maxEffective >= 7) return 'density-tight';
+  if (maxEffective >= 6) return 'density-compact';
   return '';
 }
 
@@ -350,6 +351,20 @@ function applyDensity(shown) {
   sheet.classList.remove('density-compact', 'density-tight', 'density-ultra');
   const density = printDensityClass(shown);
   if (density) sheet.classList.add(density);
+
+  // Répartit la hauteur imprimable entre matin et après-midi selon la charge réelle.
+  let morningRows = 1;
+  let afternoonRows = 1;
+  for (const day of DAYS) {
+    const split = splitDayRows(shown, day.name);
+    morningRows = Math.max(morningRows, effectiveRows(split.morning.length, 'morning'));
+    afternoonRows = Math.max(afternoonRows, effectiveRows(split.afternoon.length, 'afternoon'));
+  }
+  const total = morningRows + afternoonRows;
+  const morningShare = Math.max(.35, Math.min(.65, morningRows / total));
+  const afternoonShare = 1 - morningShare;
+  sheet.style.setProperty('--morning-fr', `${morningShare.toFixed(3)}fr`);
+  sheet.style.setProperty('--afternoon-fr', `${afternoonShare.toFixed(3)}fr`);
 }
 
 function renderBadges(appt) {
