@@ -935,20 +935,20 @@ async function render() {
   );
 
   $('weekGrid').innerHTML = `
-    ${cards.join('')}
+${cards.join('')}
+<div
+class="meal-banner"
+aria-label="Repas de 12 heures"
+>
+<span>
+12 h · Repas
+</span>
+</div>
+`;
 
-    <div
-      class="meal-banner"
-      aria-label="Repas de 12 heures"
-    >
-      <span>
-        12 h · Repas
-      </span>
-    </div>
-  `;
+alignMealBanner();
+updatePrintDate();
 
-  alignMealBanner();
-  updatePrintDate();
 }
 
 
