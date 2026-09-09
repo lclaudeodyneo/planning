@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Planning des rendez-vous — SAJ Anagallis</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+</head>
+<body class="print-a4">
+  <div class="app-shell">
+    <header class="topbar no-print">
+      <div class="brand">
+        <div id="headerPicto" class="header-picto"><span>K</span></div>
+        <div>
+          <h1>Planning des rendez-vous</h1>
+          <p>Kiné &amp; Orthophonie · SAJ Anagallis</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button id="reloadBtn" class="btn btn-light" type="button">Actualiser</button>
+        <div id="associationLogoTop" class="association-logo association-logo-top hidden"></div>
+      </div>
+    </header>
+
+    <section class="controls no-print" aria-label="Filtres du planning">
+      <label class="control control-select">
+        <span>Personne</span>
+        <select id="personSelect"><option value="">Toutes les personnes</option></select>
+      </label>
+
+      <fieldset class="control check-group type-group">
+        <legend>Rendez-vous</legend>
+        <label><input id="typeKine" type="checkbox" checked> Kiné</label>
+        <label><input id="typeOrtho" type="checkbox" checked> Orthophonie</label>
+      </fieldset>
+
+      <label class="control control-select">
+        <span>Praticien</span>
+        <select id="practitionerSelect"><option value="">Tous les praticiens</option></select>
+      </label>
+
+      <fieldset class="control check-group kine-filters">
+        <legend>Kiné — afficher</legend>
+        <label title="Kiné appartenant au cabinet CKPSP"><input id="filterCkpsp" type="checkbox" checked> CKPSP · salle kiné</label>
+        <label title="Kiné appartenant au cabinet Le Grillon"><input id="filterGrillon" type="checkbox" checked> Grillon · salle kiné</label>
+        <label title="Rendez-vous où la personne se rend seule au cabinet CKPSP"><input id="filterCabinet" type="checkbox" checked> Cabinet CKPSP</label>
+      </fieldset>
+
+      <fieldset class="control format-group">
+        <legend>Impression</legend>
+        <div class="segmented" role="group" aria-label="Format d'impression">
+          <button id="formatA4" class="seg active" data-format="a4" type="button">A4</button>
+          <button id="formatA3" class="seg" data-format="a3" type="button">A3</button>
+        </div>
+        <button id="printBtn" class="btn btn-primary" type="button">Imprimer / PDF</button>
+      </fieldset>
+    </section>
+
+    <main id="printSheet" class="print-sheet">
+      <section class="sheet-header">
+        <div class="sheet-title-wrap">
+          <div id="printPicto" class="print-picto"><span>K</span></div>
+          <div>
+            <div class="eyebrow">SAJ ANAGALLIS</div>
+            <h2>Rendez-vous Kiné &amp; Orthophonie</h2>
+            <p id="filterSummary">Planning hebdomadaire · lundi au vendredi</p>
+          </div>
+        </div>
+        <div class="sheet-header-right">
+          <div class="stats">
+            <div class="stat"><strong id="shownCount">0</strong><span>rendez-vous affichés</span></div>
+            <div class="stat"><strong id="personCount">—</strong><span id="personCountLabel">sélectionner une personne</span></div>
+          </div>
+          <div id="associationLogoPrint" class="association-logo association-logo-print hidden"></div>
+        </div>
+      </section>
+
+      <section id="status" class="status">Connexion à Grist…</section>
+      <section id="weekGrid" class="week-grid hidden" aria-label="Planning hebdomadaire"></section>
+
+      <footer class="sheet-footer">
+        <span><i class="legend-dot kine-dot"></i>Kiné</span>
+        <span><i class="legend-dot ortho-dot"></i>Orthophonie</span>
+        <span class="footer-note">Les rendez-vous « Cabinet CKPSP » correspondent aux déplacements autonomes.</span>
+      </footer>
+    </main>
+  </div>
+
+  <dialog id="errorDialog">
+    <h3>Impossible de charger le planning</h3>
+    <pre id="errorText"></pre>
+    <button class="btn btn-primary" onclick="this.closest('dialog').close()">Fermer</button>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
