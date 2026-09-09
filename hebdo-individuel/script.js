@@ -1739,9 +1739,11 @@ fetchAll()
    pour la version print
    ========================================================= */
 
-  function refreshPrintLayout() {
+function refreshPrintLayout() {
   requestAnimationFrame(() => {
-    alignMealBanner();
+    requestAnimationFrame(() => {
+      alignMealBanner();
+    });
   });
 }
 
@@ -1754,3 +1756,4 @@ window.addEventListener(
   'afterprint',
   refreshPrintLayout
 );
+

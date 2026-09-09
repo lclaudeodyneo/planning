@@ -555,8 +555,9 @@ body.print-a3 {
     display: block !important;
     max-width: none;
     padding: 0;
-    box-shadow: none;
+    border: 0;
     border-radius: 0;
+    box-shadow: none;
     background: var(--paper);
   }
 
@@ -587,6 +588,7 @@ body.print-a3 {
   .week-banner span {
     padding: 4px;
     font-size: 10px;
+    line-height: 1.2;
   }
 
   .week-grid {
@@ -602,38 +604,45 @@ body.print-a3 {
     font-size: 13px;
   }
 
+  .day-content {
+    min-height: 0 !important;
+  }
+
   .period {
-    padding: 5px;
+    min-height: 0 !important;
+    padding: 4px;
   }
 
   .period-title {
     margin-bottom: 4px;
     font-size: 9px;
+    line-height: 1.2;
   }
 
-  /*
-   * Hauteur réellement nécessaire pour le bandeau repas.
-   * Évite l'espace excessif sous la dernière activité du matin.
-   */
   .meal-gap {
-    height: 24px !important;
+    height: 12px !important;
+    min-height: 12px !important;
   }
 
   .meal-banner {
-    height: 24px;
-    padding: 4px 8px;
+    box-sizing: border-box;
+    height: 30px;
+    min-height: 30px;
+    padding: 5px 8px;
     font-size: 9px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: visible;
   }
 
   .activity-card {
     min-height: 0 !important;
-    padding: 3px 5px;
     margin-bottom: 3px;
+    padding: 3px 5px;
     border-left-width: 4px;
-    break-inside: avoid;
-    background: #fff;
     border-radius: 4px;
     box-shadow: none;
+    break-inside: avoid;
   }
 
   .activity-card:last-child {
@@ -642,18 +651,19 @@ body.print-a3 {
 
   .activity-title {
     margin-bottom: 2px;
-    padding-right: 40px;
+    padding-right: 36px;
     font-size: 10px;
-    line-height: 1.15;
+    line-height: 1.2;
   }
 
   .activity-time {
     padding: 2px 4px;
     font-size: 8px;
+    line-height: 1.2;
   }
 
   .activity-meta {
-    width: calc(100% - 40px);
+    width: calc(100% - 36px);
     margin-top: 2px;
     font-size: 7px;
     line-height: 1.2;
@@ -665,24 +675,36 @@ body.print-a3 {
     line-height: 1.2;
   }
 
-  /*
-   * Les icônes étaient encore à 60px et débordaient
-   * des cartes réduites pour l'impression.
-   */
   .activity-logo {
     top: 2px;
     right: 2px;
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
     border-radius: 3px;
   }
 
   .empty-slot {
     padding: 3px 5px;
     font-size: 7px;
+    line-height: 1.2;
   }
 
   .sheet-foot {
     margin-top: 5px;
   }
+
+  #presenceText,
+  .print-date {
+    display: inline;
+    margin-top: 0;
+  }
+
+  .print-date {
+    margin-left: 8px;
+  }
+
+  .print-date::before {
+    content: " • ";
+  }
 }
+
