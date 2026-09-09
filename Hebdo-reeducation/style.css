@@ -9,51 +9,359 @@
   --green:#348b68;
   --purple:#7a4da3;
   --orange:#d1842c;
-  --red:#b64b5d;
+  --red:#c62828;
+  --meal:#7a4da3;
   --radius:11px;
   --shadow:0 2px 10px rgba(27,52,72,.06);
 }
+
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--page)}
 button,select,input{font:inherit}
+.hidden{display:none!important}
+
 .app-shell{max-width:1500px;margin:0 auto;padding:12px}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;box-shadow:var(--shadow)}
-.brand{display:flex;align-items:center;gap:11px}.topbar-right{display:flex;align-items:center;gap:12px;margin-left:auto}.association-logo{display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;background:#fff}.association-logo img{display:block;width:100%;height:100%;object-fit:contain}.association-logo-top{width:82px;height:46px;padding:2px 2px 2px 6px;border-left:1px solid var(--line)}.association-logo-print{width:24mm;height:11mm;padding:0 0 0 2mm;border-left:.3mm solid var(--line)}.brand h1{margin:0;font-size:22px;letter-spacing:-.02em}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
-.header-picto,.print-picto{display:flex;align-items:center;justify-content:center;border-radius:9px;background:#eef5f8;color:var(--blue-dark);font-weight:800;overflow:hidden;flex:none}.header-picto{width:46px;height:46px}.print-picto{width:42px;height:42px}.header-picto img,.print-picto img{width:100%;height:100%;object-fit:contain;padding:4px}
+.brand{display:flex;align-items:center;gap:11px}
+.brand h1{margin:0;font-size:22px;letter-spacing:-.02em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.topbar-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+
+.association-logo{display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;background:#fff}
+.association-logo img{display:block;width:100%;height:100%;object-fit:contain}
+.association-logo-top{width:96px;height:52px;padding:2px 2px 2px 7px;border-left:1px solid var(--line)}
+.association-logo-print{width:28mm;height:12mm;padding:0 0 0 2mm;border-left:.3mm solid var(--line)}
+
+.header-picto,.print-picto{display:flex;align-items:center;justify-content:center;border-radius:9px;background:#eef5f8;color:var(--blue-dark);font-weight:800;overflow:hidden;flex:none}
+.header-picto{width:46px;height:46px}
+.print-picto{width:42px;height:42px}
+.header-picto img,.print-picto img{width:100%;height:100%;object-fit:contain;padding:4px}
+
 .controls{display:grid;grid-template-columns:1.05fr .95fr 1.1fr 1.5fr 1fr;gap:0;margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:9px;box-shadow:var(--shadow)}
-.control{min-width:0;border:0;margin:0;padding:2px 11px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--line)}.control:last-child{border-right:0}.control>span,.control legend{font-size:11px;font-weight:700;color:#36516a;margin-bottom:1px}
+.control{min-width:0;border:0;margin:0;padding:2px 11px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--line)}
+.control:last-child{border-right:0}
+.control>span,.control legend{font-size:11px;font-weight:700;color:#36516a;margin-bottom:1px}
 select{width:100%;height:35px;border:1px solid #cbd8e3;border-radius:8px;background:#fff;color:var(--ink);padding:0 9px;font-size:12px}
-.check-group{display:grid;grid-template-columns:1fr 1fr;align-content:start}.check-group legend{grid-column:1/-1}.check-group label{font-size:12px;display:flex;gap:6px;align-items:center;min-height:28px;white-space:nowrap}.kine-filters{grid-template-columns:1fr 1fr}.kine-filters label:last-child{grid-column:1/-1}
+.check-group{display:grid;grid-template-columns:1fr 1fr;align-content:start}
+.check-group legend{grid-column:1/-1}
+.check-group label{font-size:12px;display:flex;gap:6px;align-items:center;min-height:28px;white-space:nowrap}
+.kine-filters{grid-template-columns:1fr 1fr}
+.kine-filters label:last-child{grid-column:1/-1}
 input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px}
-.format-group{gap:7px}.segmented{display:grid;grid-template-columns:1fr 1fr;border:1px solid #cbd8e3;border-radius:8px;overflow:hidden}.seg{border:0;background:#fff;padding:7px 9px;color:#35516b;font-weight:700;font-size:12px;cursor:pointer}.seg.active{background:#e9f3f8;color:#1e6e96}.btn{border:0;border-radius:8px;padding:9px 13px;font-weight:700;cursor:pointer;font-size:12px}.btn-primary{background:var(--blue);color:#fff}.btn-light{background:#edf2f6;color:#35516b}
-.print-sheet{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:13px;box-shadow:var(--shadow)}
-.sheet-header{display:flex;justify-content:space-between;align-items:center;padding:0 2px 10px;border-bottom:1px solid var(--line);gap:18px}.sheet-header-right{display:flex;align-items:center;gap:10px;margin-left:auto}.sheet-title-wrap{display:flex;align-items:center;gap:10px;min-width:0}.sheet-header h2{margin:2px 0 3px;font-size:20px}.sheet-header p{margin:0;color:var(--muted);font-size:11px}.eyebrow{font-size:9px;font-weight:800;letter-spacing:.12em;color:var(--blue)}
-.stats{display:flex;gap:7px}.stat{min-width:126px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:#f8fafc}.stat strong{display:block;font-size:22px;line-height:1}.stat span{font-size:9px;color:var(--muted)}
-.status{padding:22px;text-align:center;color:var(--muted)}.hidden{display:none!important}
-.week-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding-top:9px;align-items:stretch}.day{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fbfcfd;min-width:0}.day-head{padding:8px 7px;text-align:center;border-bottom:1px solid var(--line);font-weight:700;font-size:13px}.day-head small{display:block;font-size:9px;font-weight:400;color:#587084;margin-top:2px}.day-body{padding:6px;display:flex;flex-direction:column;gap:5px;min-height:405px}
-.day-lundi .day-head{background:rgba(122,77,163,.10)}.day-mardi .day-head{background:rgba(47,128,168,.10)}.day-mercredi .day-head{background:rgba(52,139,104,.10)}.day-jeudi .day-head{background:rgba(209,132,44,.10)}.day-vendredi .day-head{background:rgba(182,75,93,.10)}
-.appt{display:grid;grid-template-columns:46px minmax(0,1fr);gap:7px;border:1px solid #cfdbe5;border-left:4px solid var(--green);border-radius:8px;background:#fff;padding:6px;break-inside:avoid;page-break-inside:avoid}.appt.ortho{border-left-color:var(--purple)}.appt.kine.ckpsp{border-left-color:var(--blue)}.appt.kine.grillon{border-left-color:var(--green)}.appt.kine.cabinet{box-shadow:inset 0 0 0 1px rgba(47,128,168,.08);background:#fbfdff}
-.portrait{width:46px;height:46px;border-radius:7px;background:#eef3f6;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#537087}.portrait img{width:100%;height:100%;object-fit:cover}.appt-content{min-width:0}.appt-top{display:flex;justify-content:space-between;gap:5px;align-items:center}.time{font-size:11px;font-weight:800}.kind{font-size:8px;text-transform:uppercase;font-weight:800;padding:2px 5px;border-radius:5px;background:#edf4f0;color:#276c50}.ortho .kind{background:#f1ecf7;color:#6a438f}.person-name{font-size:12px;font-weight:800;margin:3px 0 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.meta{font-size:9px;color:#556c80;line-height:1.35;overflow-wrap:anywhere}.practitioner{color:#345069;font-weight:700;margin-top:1px}.practitioner-label{font-weight:600;color:#6a7d8e}.practitioner-name{font-weight:800;color:#29485f}.badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}.badge{font-size:7.5px;font-weight:800;padding:2px 5px;border-radius:999px;background:#eef3f6;color:#506779}.badge.org-ckpsp{background:#e7f2f8;color:#266b8c}.badge.org-grillon{background:#e9f5ef;color:#2f775b}.badge.cabinet{background:#e8edf5;color:#344f78}.location{margin-top:3px;color:#607588}.empty{font-size:10px;color:#9aa8b4;text-align:center;padding:17px 5px}
-.sheet-footer{display:flex;align-items:center;gap:12px;font-size:8.5px;color:#708190;padding-top:7px}.legend-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}.kine-dot{background:var(--green)}.ortho-dot{background:var(--purple)}.footer-note{margin-left:auto;text-align:right}
-dialog{border:0;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.25);max-width:620px}dialog pre{white-space:pre-wrap;max-height:55vh;overflow:auto}
-@media(max-width:1000px){.controls{grid-template-columns:1fr 1fr}.control{border-right:0;border-bottom:1px solid var(--line);padding:8px}.week-grid{overflow:auto;grid-template-columns:repeat(5,260px)}}
+.format-group{gap:7px}
+.segmented{display:grid;grid-template-columns:1fr 1fr;border:1px solid #cbd8e3;border-radius:8px;overflow:hidden}
+.seg{border:0;background:#fff;padding:7px 9px;color:#35516b;font-weight:700;font-size:12px;cursor:pointer}
+.seg.active{background:#e9f3f8;color:#1e6e96}
+.btn{border:0;border-radius:8px;padding:9px 13px;font-weight:700;cursor:pointer;font-size:12px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-light{background:#edf2f6;color:#35516b}
 
-/* Densité écran et impression : ajustée en JS selon le nombre maximal de RDV dans une journée. */
-.print-sheet.density-compact .appt{grid-template-columns:39px minmax(0,1fr);padding:5px}.print-sheet.density-compact .portrait{width:39px;height:39px}.print-sheet.density-compact .person-name{font-size:11px}.print-sheet.density-compact .meta{font-size:8.5px}
-.print-sheet.density-tight .appt{grid-template-columns:33px minmax(0,1fr);padding:4px}.print-sheet.density-tight .portrait{width:33px;height:33px}.print-sheet.density-tight .person-name{font-size:10px;margin:1px 0}.print-sheet.density-tight .meta{font-size:7.7px}.print-sheet.density-tight .kind{font-size:7px}.print-sheet.density-tight .badges{margin-top:2px}
+.print-sheet{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:13px;box-shadow:var(--shadow);position:relative}
+.sheet-header{display:flex;justify-content:space-between;align-items:center;padding:0 2px 10px;border-bottom:1px solid var(--line);gap:18px}
+.sheet-header-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+.sheet-title-wrap{display:flex;align-items:center;gap:10px;min-width:0}
+.sheet-header h2{margin:2px 0 3px;font-size:20px}
+.sheet-header p{margin:0;color:var(--muted);font-size:11px}
+.eyebrow{font-size:9px;font-weight:800;letter-spacing:.12em;color:var(--blue)}
+.stats{display:flex;gap:7px}
+.stat{min-width:126px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:#f8fafc}
+.stat strong{display:block;font-size:22px;line-height:1}
+.stat span{font-size:9px;color:var(--muted)}
+.status{padding:22px;text-align:center;color:var(--muted)}
 
+/* ============================================================
+   GRILLE PRINCIPALE
+   5 en-têtes / 5 matins / bandeau repas / 5 après-midi
+   ============================================================ */
+.week-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  grid-template-rows:auto auto auto auto;
+  column-gap:7px;
+  row-gap:7px;
+  padding-top:9px;
+  position:relative;
+  align-items:stretch;
+}
+
+.day-head{padding:8px 7px;text-align:center;border:1px solid var(--line);font-weight:700;font-size:13px;border-radius:9px;background:#fff}
+.day-head small{display:block;font-size:9px;font-weight:400;color:#587084;margin-top:2px}
+.day-head.day-lundi{background:rgba(122,77,163,.10)}
+.day-head.day-mardi{background:rgba(47,128,168,.10)}
+.day-head.day-mercredi{background:rgba(52,139,104,.10)}
+.day-head.day-jeudi{background:rgba(209,132,44,.10)}
+.day-head.day-vendredi{background:rgba(182,75,93,.10)}
+
+.period-cell{border:1px solid var(--line);border-radius:9px;background:#fbfcfd;padding:6px;min-width:0;overflow:visible;position:relative}
+.period-label{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:6px;font-size:9px;font-weight:800;letter-spacing:.05em;color:#62798c}
+.period-label span{font-size:8px;font-weight:500;letter-spacing:0;color:#8a9aa7;text-align:right}
+.period-list{display:flex;flex-direction:column;gap:6px;position:relative;min-height:75px}
+
+.meal-row{
+  grid-column:1 / -1;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  background:var(--meal);
+  color:#fff;
+  border-radius:5px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.01em;
+  box-shadow:0 1px 3px rgba(67,42,89,.12);
+}
+.meal-row span{font-weight:700;opacity:.92}
+.meal-row strong{font-size:12px}
+
+/* ============================================================
+   TUILES
+   ============================================================ */
+.appt{
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr);
+  gap:10px;
+  border:1px solid #cfdbe5;
+  border-left:4px solid var(--green);
+  border-radius:8px;
+  background:#fff;
+  padding:8px;
+  break-inside:avoid;
+  page-break-inside:avoid;
+  position:relative;
+  z-index:1;
+  transition:transform .16s ease,box-shadow .16s ease,z-index 0s linear .16s;
+  transform-origin:center center;
+  cursor:default;
+}
+.appt.ortho{border-left-color:var(--purple)}
+.appt.kine.ckpsp{border-left-color:var(--blue)}
+.appt.kine.grillon{border-left-color:var(--green)}
+.appt.kine.cabinet{box-shadow:inset 0 0 0 1px rgba(47,128,168,.08);background:#fbfdff}
+.appt:hover,.appt:focus,.appt.expanded{transform:scale(1.30);z-index:100;box-shadow:0 12px 30px rgba(30,55,75,.24);outline:none;transition-delay:0s}
+
+.portrait{width:72px;height:72px;border-radius:8px;background:#eef3f6;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#537087;flex:none}
+.portrait img{width:100%;height:100%;object-fit:cover}
+.appt-content{min-width:0}
+.appt-top{display:flex;justify-content:space-between;gap:5px;align-items:center}
+.time{font-size:18px;font-weight:900;color:var(--red);line-height:1}
+.kind{font-size:8px;text-transform:uppercase;font-weight:800;padding:2px 5px;border-radius:5px;background:#edf4f0;color:#276c50}
+.ortho .kind{background:#f1ecf7;color:#6a438f}
+.person-name{font-size:13px;font-weight:800;margin:4px 0 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{font-size:9.5px;color:#556c80;line-height:1.35;overflow-wrap:anywhere}
+.practitioner{color:#345069;font-weight:700;margin-top:1px}
+.practitioner-label{font-weight:600;color:#6a7d8e}
+.practitioner-name{font-weight:800;color:#29485f}
+.badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.badge{font-size:7.5px;font-weight:800;padding:2px 5px;border-radius:999px;background:#eef3f6;color:#506779}
+.badge.org-ckpsp{background:#e7f2f8;color:#266b8c}
+.badge.org-grillon{background:#e9f5ef;color:#2f775b}
+.badge.cabinet{background:#e8edf5;color:#344f78}
+.location{margin-top:3px;color:#607588}
+.empty{font-size:10px;color:#9aa8b4;text-align:center;padding:17px 5px}
+
+.sheet-footer{display:flex;align-items:center;gap:12px;font-size:8.5px;color:#708190;padding-top:7px}
+.legend-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
+.kine-dot{background:var(--green)}
+.ortho-dot{background:var(--purple)}
+.footer-note{margin-left:auto;text-align:right}
+dialog{border:0;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.25);max-width:620px}
+dialog pre{white-space:pre-wrap;max-height:55vh;overflow:auto}
+
+@media(max-width:1000px){
+  .controls{grid-template-columns:1fr 1fr}
+  .control{border-right:0;border-bottom:1px solid var(--line);padding:8px}
+  .week-grid{min-width:1250px;overflow:visible}
+  .print-sheet{overflow:auto}
+  .appt{transform-origin:center center}
+}
+
+/* ============================================================
+   IMPRESSION
+   Le document est dimensionné comme une seule feuille paysage.
+   Les demi-journées chargées utilisent 2 colonnes.
+   ============================================================ */
 @media print{
-  html,body{background:#fff!important;margin:0!important;padding:0!important;width:100%!important;height:auto!important}
+  html,body{
+    background:#fff!important;
+    margin:0!important;
+    padding:0!important;
+    width:100%!important;
+    height:auto!important;
+    overflow:visible!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+
   .no-print,dialog{display:none!important}
   .app-shell{padding:0!important;max-width:none!important}
-  .print-sheet{box-shadow:none!important;border:0!important;border-radius:0!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;overflow:hidden!important;page-break-inside:avoid!important;break-inside:avoid-page!important}
-  .sheet-header{padding:0 0 2.5mm!important;margin:0 0 1.5mm!important}.sheet-header-right{gap:2mm!important}.association-logo-print{width:24mm!important;height:11mm!important;padding:0 0 0 2mm!important}.print-picto{width:11mm;height:11mm}.sheet-header h2{font-size:13pt}.sheet-header p{font-size:7pt}.eyebrow{font-size:6pt}.stats{gap:1.5mm}.stat{min-width:27mm;padding:1.6mm 2mm}.stat strong{font-size:13pt}.stat span{font-size:6pt}
-  .week-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:1.4mm!important;padding-top:1mm!important;overflow:hidden!important;page-break-inside:avoid!important;break-inside:avoid-page!important}
-  .day{border-radius:1.8mm!important;height:100%!important;overflow:hidden!important;page-break-inside:avoid!important;break-inside:avoid-page!important}.day-head{padding:1.7mm 1mm!important;font-size:8.5pt}.day-head small{font-size:5.8pt}.day-body{padding:1.1mm!important;gap:1mm!important;min-height:0!important;height:calc(100% - 11mm)!important;overflow:hidden!important}
-  .appt{grid-template-columns:8.5mm minmax(0,1fr)!important;gap:1mm!important;border-radius:1.5mm!important;padding:1mm!important;border-left-width:.9mm!important}.portrait{width:8.5mm!important;height:8.5mm!important;border-radius:1mm!important}.time{font-size:6.3pt!important}.kind{font-size:5.2pt!important;padding:.35mm .65mm!important}.person-name{font-size:6.8pt!important;margin:.4mm 0!important}.meta{font-size:5.4pt!important;line-height:1.15!important}.practitioner{font-size:5.5pt!important}.practitioner-label{font-weight:600!important}.practitioner-name{font-weight:800!important}.badge{font-size:4.7pt!important;padding:.3mm .7mm!important}.badges{gap:.5mm!important;margin-top:.5mm!important}.location{margin-top:.5mm!important}.sheet-footer{font-size:5.2pt!important;padding-top:1mm!important;gap:2.5mm!important}
-  .print-sheet.density-compact .appt{grid-template-columns:7.4mm minmax(0,1fr)!important;padding:.8mm!important}.print-sheet.density-compact .portrait{width:7.4mm!important;height:7.4mm!important}.print-sheet.density-compact .person-name{font-size:6.2pt!important}.print-sheet.density-compact .meta{font-size:5pt!important}
-  .print-sheet.density-tight .appt{grid-template-columns:6.4mm minmax(0,1fr)!important;padding:.6mm!important}.print-sheet.density-tight .portrait{width:6.4mm!important;height:6.4mm!important}.print-sheet.density-tight .person-name{font-size:5.7pt!important}.print-sheet.density-tight .meta{font-size:4.6pt!important}.print-sheet.density-tight .badge{font-size:4.2pt!important}
-  body.print-a4 .week-grid{height:165mm!important}
-  body.print-a3 .week-grid{height:247mm!important}
+  .print-sheet{
+    box-shadow:none!important;
+    border:0!important;
+    border-radius:0!important;
+    margin:0!important;
+    padding:0!important;
+    width:100%!important;
+    max-width:none!important;
+    overflow:hidden!important;
+    break-inside:avoid-page!important;
+    page-break-inside:avoid!important;
+    page-break-after:avoid!important;
+  }
+
+  .sheet-header{padding:0 0 2mm!important;margin:0 0 1.2mm!important;gap:3mm!important}
+  .sheet-header-right{gap:1.5mm!important}
+  .association-logo-print{width:26mm!important;height:11mm!important;padding-left:1.5mm!important}
+  .print-picto{width:10mm!important;height:10mm!important}
+  .sheet-header h2{font-size:12pt!important;margin:.3mm 0!important}
+  .sheet-header p{font-size:6.4pt!important}
+  .eyebrow{font-size:5.5pt!important}
+  .stats{gap:1.2mm!important}
+  .stat{min-width:24mm!important;padding:1.2mm 1.6mm!important;border-radius:1.5mm!important}
+  .stat strong{font-size:11.5pt!important}
+  .stat span{font-size:5.2pt!important}
+
+  .week-grid{
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    grid-template-rows:9mm minmax(0,1fr) 7mm minmax(0,1fr)!important;
+    column-gap:1.1mm!important;
+    row-gap:1.1mm!important;
+    padding-top:.7mm!important;
+    overflow:hidden!important;
+    break-inside:avoid-page!important;
+    page-break-inside:avoid!important;
+  }
+
+  body.print-a4 .week-grid{height:166mm!important}
+  body.print-a3 .week-grid{height:248mm!important}
+
+  .day-head{padding:1.2mm .8mm!important;border-radius:1.3mm!important;font-size:7.8pt!important;overflow:hidden!important}
+  .day-head small{font-size:4.9pt!important;margin-top:.3mm!important}
+
+  .period-cell{
+    min-height:0!important;
+    height:100%!important;
+    padding:.8mm!important;
+    border-radius:1.3mm!important;
+    overflow:hidden!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  .period-label{margin:0 0 .55mm!important;font-size:4.8pt!important;line-height:1!important}
+  .period-label span{font-size:4.1pt!important}
+  .period-list{gap:.65mm!important;min-height:0!important;align-content:start!important}
+
+  .meal-row{
+    height:7mm!important;
+    margin:0!important;
+    border-radius:1mm!important;
+    font-size:7pt!important;
+    gap:1.8mm!important;
+    box-shadow:none!important;
+  }
+  .meal-row strong{font-size:7.5pt!important}
+
+  /* Agrandissement désactivé à l'impression. */
+  .appt,.appt:hover,.appt:focus,.appt.expanded{
+    transform:none!important;
+    box-shadow:none!important;
+    z-index:auto!important;
+    transition:none!important;
+    grid-template-columns:10.5mm minmax(0,1fr)!important;
+    gap:.9mm!important;
+    padding:.85mm!important;
+    border-radius:1.2mm!important;
+    border-left-width:.8mm!important;
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  .portrait{width:10.5mm!important;height:10.5mm!important;border-radius:1mm!important}
+  .time{font-size:7.6pt!important;color:var(--red)!important}
+  .kind{font-size:4.6pt!important;padding:.25mm .45mm!important}
+  .person-name{font-size:6.3pt!important;margin:.3mm 0!important;line-height:1.05!important}
+  .meta{font-size:4.65pt!important;line-height:1.08!important}
+  .practitioner{font-size:4.7pt!important;line-height:1.08!important}
+  .badge{font-size:3.8pt!important;padding:.2mm .4mm!important}
+  .badges{gap:.3mm!important;margin-top:.25mm!important}
+  .location{margin-top:.25mm!important}
+
+  /* ========================================================
+     2 COLONNES PAR DEMI-JOURNÉE
+     Le bandeau repas reste sur toute la largeur des 5 jours.
+     ======================================================== */
+  .period-cell.print-two-cols .period-list{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-auto-flow:row!important;
+    grid-auto-rows:min-content!important;
+    column-gap:.55mm!important;
+    row-gap:.55mm!important;
+  }
+  .period-cell.print-two-cols .appt{
+    grid-template-columns:6.3mm minmax(0,1fr)!important;
+    gap:.45mm!important;
+    padding:.5mm!important;
+    border-left-width:.6mm!important;
+  }
+  .period-cell.print-two-cols .portrait{width:6.3mm!important;height:6.3mm!important;border-radius:.7mm!important}
+  .period-cell.print-two-cols .time{font-size:5.7pt!important}
+  .period-cell.print-two-cols .kind{font-size:3.5pt!important;padding:.15mm .25mm!important}
+  .period-cell.print-two-cols .person-name{font-size:4.7pt!important;white-space:normal!important;line-height:1!important;margin:.2mm 0!important}
+  .period-cell.print-two-cols .meta{font-size:3.65pt!important;line-height:1!important}
+  .period-cell.print-two-cols .practitioner{font-size:3.7pt!important}
+  .period-cell.print-two-cols .badge{font-size:3.1pt!important;padding:.12mm .25mm!important}
+  .period-cell.print-two-cols .badges{gap:.2mm!important;margin-top:.15mm!important}
+  .period-cell.print-two-cols .location{margin-top:.15mm!important}
+
+  /* Densité progressive : garde photo / heure / praticien lisibles. */
+  .print-sheet.density-compact .appt{grid-template-columns:9mm minmax(0,1fr)!important;padding:.7mm!important}
+  .print-sheet.density-compact .portrait{width:9mm!important;height:9mm!important}
+  .print-sheet.density-compact .time{font-size:7pt!important}
+  .print-sheet.density-compact .person-name{font-size:5.8pt!important}
+  .print-sheet.density-compact .meta{font-size:4.35pt!important}
+
+  .print-sheet.density-tight .appt{grid-template-columns:7.8mm minmax(0,1fr)!important;padding:.58mm!important;gap:.65mm!important}
+  .print-sheet.density-tight .portrait{width:7.8mm!important;height:7.8mm!important}
+  .print-sheet.density-tight .time{font-size:6.4pt!important}
+  .print-sheet.density-tight .person-name{font-size:5.3pt!important}
+  .print-sheet.density-tight .meta{font-size:4pt!important}
+  .print-sheet.density-tight .badge{font-size:3.4pt!important}
+
+  .print-sheet.density-ultra .appt{grid-template-columns:6.8mm minmax(0,1fr)!important;padding:.45mm!important;gap:.5mm!important}
+  .print-sheet.density-ultra .portrait{width:6.8mm!important;height:6.8mm!important}
+  .print-sheet.density-ultra .time{font-size:5.8pt!important}
+  .print-sheet.density-ultra .kind{font-size:3.8pt!important}
+  .print-sheet.density-ultra .person-name{font-size:4.8pt!important}
+  .print-sheet.density-ultra .meta{font-size:3.65pt!important;line-height:1!important}
+  .print-sheet.density-ultra .practitioner{font-size:3.7pt!important}
+  .print-sheet.density-ultra .badge{font-size:3pt!important}
+
+  /* Les règles 2 colonnes ont toujours priorité. */
+  .print-sheet.density-compact .period-cell.print-two-cols .appt,
+  .print-sheet.density-tight .period-cell.print-two-cols .appt,
+  .print-sheet.density-ultra .period-cell.print-two-cols .appt{
+    grid-template-columns:6.1mm minmax(0,1fr)!important;
+    padding:.45mm!important;
+    gap:.4mm!important;
+  }
+  .print-sheet.density-compact .period-cell.print-two-cols .portrait,
+  .print-sheet.density-tight .period-cell.print-two-cols .portrait,
+  .print-sheet.density-ultra .period-cell.print-two-cols .portrait{
+    width:6.1mm!important;height:6.1mm!important;
+  }
+  .print-sheet.density-compact .period-cell.print-two-cols .time,
+  .print-sheet.density-tight .period-cell.print-two-cols .time,
+  .print-sheet.density-ultra .period-cell.print-two-cols .time{font-size:5.4pt!important}
+  .print-sheet.density-compact .period-cell.print-two-cols .person-name,
+  .print-sheet.density-tight .period-cell.print-two-cols .person-name,
+  .print-sheet.density-ultra .period-cell.print-two-cols .person-name{font-size:4.45pt!important}
+  .print-sheet.density-compact .period-cell.print-two-cols .meta,
+  .print-sheet.density-tight .period-cell.print-two-cols .meta,
+  .print-sheet.density-ultra .period-cell.print-two-cols .meta{font-size:3.45pt!important}
+
+  .sheet-footer{font-size:4.8pt!important;padding-top:.7mm!important;gap:2mm!important;line-height:1!important}
 }
-@page{size:A4 landscape;margin:6mm}
+
+@page{size:A4 landscape;margin:5mm}
