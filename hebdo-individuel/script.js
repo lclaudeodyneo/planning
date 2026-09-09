@@ -1733,3 +1733,24 @@ grist.onOptions(
 
 fetchAll()
   .catch(showError);
+
+
+/* =========================================================
+   pour la version print
+   ========================================================= */
+
+  function refreshPrintLayout() {
+  requestAnimationFrame(() => {
+    alignMealBanner();
+  });
+}
+
+window.addEventListener(
+  'beforeprint',
+  refreshPrintLayout
+);
+
+window.addEventListener(
+  'afterprint',
+  refreshPrintLayout
+);
