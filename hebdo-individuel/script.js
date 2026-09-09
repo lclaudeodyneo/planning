@@ -935,20 +935,20 @@ async function render() {
   );
 
   $('weekGrid').innerHTML = `
-${cards.join('')}
-<div
-class="meal-banner"
-aria-label="Repas de 12 heures"
->
-<span>
-12 h · Repas
-</span>
-</div>
-`;
+    ${cards.join('')}
 
-alignMealBanner();
-updatePrintDate();
+    <div
+      class="meal-banner"
+      aria-label="Repas de 12 heures"
+    >
+      <span>
+        12 h · Repas
+      </span>
+    </div>
+  `;
 
+  alignMealBanner();
+  updatePrintDate();
 }
 
 
@@ -1733,26 +1733,3 @@ grist.onOptions(
 
 fetchAll()
   .catch(showError);
-
-
-/* =========================================================
-   pour la version print
-   ========================================================= */
-
-function refreshPrintLayout() {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      alignMealBanner();
-    });
-  });
-}
-
-window.addEventListener(
-  'beforeprint',
-  refreshPrintLayout
-);
-
-window.addEventListener(
-  'afterprint',
-  refreshPrintLayout
-);

@@ -1,5 +1,4 @@
 /* ==================== VARIABLES ==================== */
-
 :root {
   --ink: #183042;
   --muted: #687883;
@@ -13,7 +12,6 @@
 }
 
 /* ==================== RÈGLES GÉNÉRALES ==================== */
-
 * {
   box-sizing: border-box;
 }
@@ -29,7 +27,6 @@ body {
 }
 
 /* ==================== TOOLBAR ==================== */
-
 .toolbar {
   position: sticky;
   top: 0;
@@ -53,23 +50,23 @@ body {
 .brand-mark {
   width: 46px;
   height: 46px;
+  border-radius: 5px;
   display: grid;
   place-items: center;
-  border-radius: 5px;
   background: var(--accent);
   color: #fff;
   font-weight: 800;
 }
 
 .brand h1 {
-  margin: 0;
   font-size: 18px;
+  margin: 0;
 }
 
 .brand p {
+  font-size: 12px;
   margin: 2px 0 0;
   color: var(--muted);
-  font-size: 12px;
 }
 
 .controls {
@@ -82,18 +79,18 @@ body {
 .controls label {
   display: grid;
   gap: 4px;
-  color: var(--muted);
   font-size: 11px;
   font-weight: 700;
+  color: var(--muted);
 }
 
 select,
 button {
   min-height: 38px;
-  padding: 0 11px;
   border: 1px solid #c8d5db;
   border-radius: 5px;
   background: #fff;
+  padding: 0 11px;
   color: var(--ink);
 }
 
@@ -105,17 +102,63 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  filter: brightness(1.08);
-}
-
 .secondary {
   background: #e8eff2;
   color: var(--ink);
 }
 
-/* ==================== CONTENU PRINCIPAL ==================== */
+.toggle {
+  display: flex !important;
+  grid-template-columns: auto 1fr !important;
+  align-items: center;
+  padding: 0 4px 8px;
+}
 
+.toggle input {
+  width: 16px;
+  height: 16px;
+}
+
+.opacity-settings {
+  position: relative;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.opacity-settings summary {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 11px;
+  border: 1px solid #c8d5db;
+  border-radius: 5px;
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.opacity-controls {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  width: 220px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: 0 8px 24px rgba(23, 48, 66, 0.18);
+}
+
+.opacity-controls label {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0;
+}
+
+/* ==================== CONTENU PRINCIPAL ==================== */
 #app {
   padding: 22px;
 }
@@ -141,10 +184,10 @@ button:hover {
 .sheet {
   max-width: 1500px;
   margin: 0 auto;
-  padding: 24px;
   background: var(--paper);
   border-radius: 10px;
   box-shadow: 0 8px 30px rgba(23, 48, 66, 0.17);
+  padding: 24px;
 }
 
 .sheet-head {
@@ -164,15 +207,15 @@ button:hover {
 .portrait {
   width: 74px;
   height: 74px;
+  border-radius: 5px;
+  background: var(--soft);
+  border: 2px solid #cfe2e5;
   display: grid;
   place-items: center;
   overflow: hidden;
-  border: 2px solid #cfe2e5;
-  border-radius: 5px;
-  background: var(--soft);
-  color: var(--accent);
   font-size: 26px;
   font-weight: 800;
+  color: var(--accent);
 }
 
 .portrait img {
@@ -182,29 +225,29 @@ button:hover {
 }
 
 .eyebrow {
-  margin: 0 0 5px;
-  color: var(--accent);
   font-size: 11px;
-  font-weight: 800;
   letter-spacing: 0.16em;
+  font-weight: 800;
+  color: var(--accent);
+  margin: 0 0 5px;
 }
 
 .sheet h2 {
-  margin: 0;
   font-size: 27px;
+  margin: 0;
 }
 
 .muted {
-  margin: 5px 0 0;
   color: var(--muted);
   font-size: 12px;
+  margin: 5px 0 0;
 }
 
 .print-date {
   display: none;
-  margin: 4px 0 0;
   color: var(--muted);
   font-size: 11px;
+  margin: 4px 0 0;
 }
 
 .site-logo {
@@ -215,22 +258,21 @@ button:hover {
 }
 
 /* ==================== BANDEAU SEMAINE ==================== */
-
 .week-banner {
   display: grid;
   grid-template-columns: repeat(5, minmax(190px, 1fr));
-  overflow: hidden;
   background: var(--accent);
   color: #fff;
   border-radius: 5px 5px 0 0;
+  overflow: hidden;
 }
 
 .week-banner span {
   padding: 5px 8px;
-  border-right: 1px solid rgba(255, 255, 255, 0.45);
   text-align: center;
   font-size: 13px;
   font-weight: 800;
+  border-right: 1px solid rgba(255, 255, 255, 0.45);
 }
 
 .week-banner span:last-child {
@@ -238,7 +280,6 @@ button:hover {
 }
 
 /* ==================== GRILLE SEMAINE ==================== */
-
 .week-grid {
   position: relative;
   display: grid;
@@ -248,19 +289,19 @@ button:hover {
 }
 
 .day {
-  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 5px;
+  overflow: hidden;
   background: var(--day-background, #fbfcfd);
 }
 
 .day-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 11px 12px;
   background: var(--day-color, var(--accent));
   color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .day-head h3 {
@@ -269,8 +310,8 @@ button:hover {
 }
 
 .day-head span {
-  opacity: 0.92;
   font-size: 10px;
+  opacity: 0.92;
 }
 
 .day-content {
@@ -283,6 +324,7 @@ button:hover {
 }
 
 .day-absent::after {
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -293,7 +335,6 @@ button:hover {
     rgba(255, 255, 255, 0.08) 8px,
     rgba(255, 255, 255, 0.08) 16px
   );
-  content: "";
 }
 
 .day-absent .day-head {
@@ -308,11 +349,11 @@ button:hover {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 8px;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
 }
 
 .meal-gap {
@@ -325,29 +366,27 @@ button:hover {
   right: 0;
   z-index: 5;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   height: 26px;
-  padding: 5px 12px;
-  overflow: visible;
+  padding: 7px 12px;
   background: var(--accent);
   color: #fff;
   border-radius: 5px;
   font-size: 12px;
   font-weight: 800;
-  line-height: 1.2;
   text-align: center;
   pointer-events: none;
 }
 
 .activity-card {
   position: relative;
-  margin: 0 0 8px;
-  padding: 10px;
-  break-inside: avoid;
   background: #fff;
   border: 2px solid var(--card-color, var(--accent));
   border-radius: 4px;
+  padding: 10px;
+  margin: 0 0 8px;
+  break-inside: avoid;
 }
 
 .activity-card:last-child {
@@ -359,30 +398,29 @@ button:hover {
 }
 
 .activity-title {
+  font-weight: 800;
+  font-size: 14px;
   margin: 0 0 6px;
   padding-right: 60px;
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.2;
 }
 
 .activity-time {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 7px;
-  background: var(--soft);
-  color: var(--accent);
-  border-radius: 5px;
   font-size: 12px;
   font-weight: 800;
+  color: var(--accent);
+  background: var(--soft);
+  padding: 3px 7px;
+  border-radius: 5px;
 }
 
 .activity-meta {
-  margin-top: 7px;
-  color: #4e626e;
   font-size: 11px;
   line-height: 1.45;
+  color: #4e626e;
+  margin-top: 7px;
 }
 
 .activity-meta strong {
@@ -390,55 +428,53 @@ button:hover {
 }
 
 .activity-desc {
-  margin: 7px 0 0;
-  color: var(--muted);
   font-size: 10px;
   line-height: 1.35;
+  color: var(--muted);
+  margin: 7px 0 0;
 }
 
 .activity-logo {
   position: absolute;
-  top: 1px;
   right: 1px;
+  top: 1px;
   width: 60px;
   height: 60px;
+  border-radius: 4px;
   object-fit: cover;
   background: #edf3f5;
-  border-radius: 4px;
 }
 
 .empty-slot {
-  padding: 12px;
   border: 1px dashed #cad6dc;
   border-radius: 9px;
   color: #94a2aa;
-  font-size: 11px;
   text-align: center;
+  font-size: 11px;
+  padding: 12px;
 }
 
 .sheet-foot {
+  text-align: center;
+  color: #86959d;
+  font-size: 9px;
   margin-top: 14px;
   padding-top: 9px;
   border-top: 1px solid var(--line);
-  color: #86959d;
-  font-size: 9px;
-  text-align: center;
 }
 
 /* ==================== MODAL / DIALOG ==================== */
-
 dialog {
-  max-width: 620px;
   border: 0;
   border-radius: 5px;
+  max-width: 620px;
   box-shadow: 0 20px 60px #0003;
 }
 
 dialog pre {
-  padding: 12px;
-  overflow-wrap: anywhere;
   white-space: pre-wrap;
   background: #f5f7f8;
+  padding: 12px;
   border-radius: 4px;
 }
 
@@ -447,7 +483,6 @@ dialog button {
 }
 
 /* ==================== RESPONSIVE DESKTOP ==================== */
-
 @media (max-width: 1050px) {
   .toolbar {
     align-items: flex-start;
@@ -489,16 +524,22 @@ dialog button {
 }
 
 /* ==================== IMPRESSION ==================== */
-
 @page {
   size: A4 landscape;
   margin: 8mm;
 }
 
+body.print-a3 {
+  @page {
+    size: A3 landscape;
+    margin: 9mm;
+  }
+}
+
 @media print {
   html,
   body {
-    background: #fff;
+    background: #fff; /* impression : fond blanc */
   }
 
   .no-print,
@@ -513,20 +554,15 @@ dialog button {
   .sheet {
     display: block !important;
     max-width: none;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: var(--paper);
     box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    background: var(--paper);
   }
 
   .sheet-head {
     margin-bottom: 8px;
     padding-bottom: 8px;
-  }
-
-  .identity {
-    gap: 10px;
   }
 
   .portrait {
@@ -543,28 +579,35 @@ dialog button {
     font-size: 21px;
   }
 
+  /* conserver la grille identique au screen (5 colonnes) */
   .week-banner,
   .week-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(5, 1fr);
   }
 
-  .week-banner {
-    margin-bottom: 0;
+  .print-date {
+    display: inline;
+    margin-left: 8px;
+  }
+
+  #presenceText,
+  .print-date {
+    display: inline;
+    margin-top: 0;
+  }
+
+  .print-date::before {
+    content: " - ";
   }
 
   .week-banner span {
-    padding: 4px;
+    padding: 4px 4px;
     font-size: 10px;
-    line-height: 1.2;
   }
 
   .week-grid {
     gap: 6px;
     margin-top: 5px;
-  }
-
-  .day {
-    min-width: 0;
   }
 
   .day-head {
@@ -575,125 +618,78 @@ dialog button {
     font-size: 13px;
   }
 
-  .day-head span {
-    font-size: 8px;
-  }
-
-  .day-content {
-    min-height: 0 !important;
-  }
-
   .period {
-    min-height: 0 !important;
-    padding: 4px;
+    padding: 5px;
   }
 
-  .period-title {
-    margin-bottom: 4px;
-    font-size: 9px;
-    line-height: 1.2;
+  /* Moins d'espace sous la dernière activité du matin */
+  .period-matin {
+    padding-bottom: 2px !important;
   }
 
+  /* Le bandeau repas fait 24px :
+    28px laisse juste une petite marge */
   .meal-gap {
-    height: 12px !important;
-    min-height: 12px !important;
+    height: 30px !important;
   }
 
   .meal-banner {
-    box-sizing: border-box;
-    height: 30px;
-    min-height: 30px;
-    padding: 5px 8px;
-    overflow: visible;
+    height: 24px;
+    padding: 4px 8px;
     font-size: 9px;
-    line-height: 1.2;
-    white-space: nowrap;
   }
 
   .activity-card {
-    min-height: 0 !important;
+    padding: 3px 6px 3px 6px;
     margin-bottom: 3px;
-    padding: 3px 5px;
-    border-width: 2px;
+
+    /* réduire plutôt que casser le style */
     border-left-width: 4px;
+    break-inside: avoid;
+    background: #fff;
     border-radius: 4px;
     box-shadow: none;
   }
-
+  
   .activity-card:last-child {
     margin-bottom: 0 !important;
   }
-
   .activity-title {
+    font-size: 11px;
     margin-bottom: 2px;
-    padding-right: 36px;
-    font-size: 10px;
-    line-height: 1.2;
+    padding-right: 30px;
   }
 
   .activity-time {
-    gap: 3px;
-    padding: 2px 4px;
-    font-size: 8px;
-    line-height: 1.2;
+    font-size: 9px;
+    padding: 2px 5px;
   }
 
   .activity-meta {
-    width: calc(100% - 36px);
-    margin-top: 2px;
-    font-size: 7px;
-    line-height: 1.2;
+    font-size: 8px;
+    margin-top: 3px;
+    width: 70%;
   }
-
+  
   .activity-desc {
-    margin-top: 2px;
-    font-size: 7px;
-    line-height: 1.2;
+    font-size: 8px;
+    margin-top: 3px;
   }
 
   .activity-logo {
-    top: 2px;
-    right: 2px;
-    width: 30px;
-    height: 30px;
-    border-radius: 3px;
+    width: 60px;
+    height: 60px;
   }
 
   .empty-slot {
-    padding: 3px 5px;
-    font-size: 7px;
-    line-height: 1.2;
+    padding: 4px 8px 4px 8px;
+    font-size: 8px;
+    border-radius: 9px;
+    /* garder le style screen via les variables/couleurs du CSS */
+    border: 1px dashed #cad6dc;
   }
 
   .sheet-foot {
     margin-top: 5px;
-  }
-
-  #presenceText,
-  .print-date {
-    display: inline;
-    margin-top: 0;
-  }
-
-  .print-date {
-    margin-left: 8px;
-  }
-
-  .print-date::before {
-    content: " • ";
-  }
-}
-
-/* ==================== FORMAT A3 ==================== */
-
-@media print {
-  body.print-a3 {
-    --print-scale: 1.18;
-  }
-
-  body.print-a3 .sheet {
-    transform: scale(var(--print-scale));
-    transform-origin: top left;
-    width: calc(100% / var(--print-scale));
   }
 }
