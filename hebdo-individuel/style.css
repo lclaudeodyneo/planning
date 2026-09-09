@@ -539,7 +539,7 @@ body.print-a3 {
 @media print {
   html,
   body {
-    background: #fff; /* impression : fond blanc */
+    background: #fff;
   }
 
   .no-print,
@@ -554,9 +554,9 @@ body.print-a3 {
   .sheet {
     display: block !important;
     max-width: none;
+    padding: 0;
     box-shadow: none;
     border-radius: 0;
-    padding: 0;
     background: var(--paper);
   }
 
@@ -579,29 +579,13 @@ body.print-a3 {
     font-size: 21px;
   }
 
-  /* conserver la grille identique au screen (5 colonnes) */
   .week-banner,
   .week-grid {
     grid-template-columns: repeat(5, 1fr);
   }
 
-  .print-date {
-    display: inline;
-    margin-left: 8px;
-  }
-
-  #presenceText,
-  .print-date {
-    display: inline;
-    margin-top: 0;
-  }
-
-  .print-date::before {
-    content: " - ";
-  }
-
   .week-banner span {
-    padding: 4px 4px;
+    padding: 4px;
     font-size: 10px;
   }
 
@@ -622,15 +606,17 @@ body.print-a3 {
     padding: 5px;
   }
 
-  /* Moins d'espace sous la dernière activité du matin */
-  .period-matin {
-    padding-bottom: 2px !important;
+  .period-title {
+    margin-bottom: 4px;
+    font-size: 9px;
   }
 
-  /* Le bandeau repas fait 24px :
-    28px laisse juste une petite marge */
+  /*
+   * Hauteur réellement nécessaire pour le bandeau repas.
+   * Évite l'espace excessif sous la dernière activité du matin.
+   */
   .meal-gap {
-    height: 30px !important;
+    height: 24px !important;
   }
 
   .meal-banner {
@@ -640,53 +626,60 @@ body.print-a3 {
   }
 
   .activity-card {
-    padding: 3px 6px 3px 6px;
+    min-height: 0 !important;
+    padding: 3px 5px;
     margin-bottom: 3px;
-
-    /* réduire plutôt que casser le style */
     border-left-width: 4px;
     break-inside: avoid;
     background: #fff;
     border-radius: 4px;
     box-shadow: none;
   }
-  
+
   .activity-card:last-child {
     margin-bottom: 0 !important;
   }
+
   .activity-title {
-    font-size: 11px;
     margin-bottom: 2px;
-    padding-right: 30px;
+    padding-right: 40px;
+    font-size: 10px;
+    line-height: 1.15;
   }
 
   .activity-time {
-    font-size: 9px;
-    padding: 2px 5px;
+    padding: 2px 4px;
+    font-size: 8px;
   }
 
   .activity-meta {
-    font-size: 8px;
-    margin-top: 3px;
-    width: 70%;
-  }
-  
-  .activity-desc {
-    font-size: 8px;
-    margin-top: 3px;
+    width: calc(100% - 40px);
+    margin-top: 2px;
+    font-size: 7px;
+    line-height: 1.2;
   }
 
+  .activity-desc {
+    margin-top: 2px;
+    font-size: 7px;
+    line-height: 1.2;
+  }
+
+  /*
+   * Les icônes étaient encore à 60px et débordaient
+   * des cartes réduites pour l'impression.
+   */
   .activity-logo {
-    width: 60px;
-    height: 60px;
+    top: 2px;
+    right: 2px;
+    width: 34px;
+    height: 34px;
+    border-radius: 3px;
   }
 
   .empty-slot {
-    padding: 4px 8px 4px 8px;
-    font-size: 8px;
-    border-radius: 9px;
-    /* garder le style screen via les variables/couleurs du CSS */
-    border: 1px dashed #cad6dc;
+    padding: 3px 5px;
+    font-size: 7px;
   }
 
   .sheet-foot {
