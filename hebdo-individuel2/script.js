@@ -516,12 +516,25 @@
     const block = document.createElement("div");
     block.className = `schedule-slot ${extraClass}`;
 
+    // Fond très léger dérivé de la couleur du jour : le bandeau reste soutenu,
+    // tandis que la colonne garde une teinte discrète derrière les cartes.
+    block.style.backgroundColor = colorWithAlpha(COLORS[day.number], 0.09);
+
     const list = document.createElement("div");
     list.className = "activity-list";
     list.dataset.list = `${day.key}:${half}`;
 
     block.appendChild(list);
     return block;
+  }
+
+  function colorWithAlpha(hex, alpha) {
+    const clean = String(hex || "").replace("#", "");
+    if (!/^[0-9a-fA-F]{6}$/.test(clean)) return "#ffffff";
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
   function clearActivities() {

@@ -18,6 +18,13 @@
   box-sizing: border-box;
 }
 
+/* Important : certains éléments (notamment le portrait de secours) ont leur
+   propre propriété display. Cette règle garantit que l'attribut HTML hidden
+   reste toujours prioritaire lorsqu'on affiche la vraie photo. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
