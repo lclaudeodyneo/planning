@@ -262,8 +262,12 @@
     els.userFullName.textContent = userDisplayName(user);
     await renderPortrait(user);
 
+    const registeredActivities = activityModelsFor(user, year);
+    const openGroupActivities = openGroupActivityModelsFor(user, year, registeredActivities);
+
     const models = [
-      ...activityModelsFor(user, year),
+      ...registeredActivities,
+      ...openGroupActivities,
       ...reeducationModelsFor(user, year)
     ].filter(item => item.dayNumber >= 1 && item.dayNumber <= 5);
 
@@ -297,7 +301,12 @@
       ? " Rééducations non affichées pour cette année : la table Reeducations n'est pas historisée par année."
       : "";
 
-    setStatus(`${models.length} élément${models.length > 1 ? "s" : ""} affiché${models.length > 1 ? "s" : ""}.${rehabNote}`);
+    const openCount = openGroupActivities.length;
+    const openNote = openCount
+      ? ` Dont ${openCount} activité${openCount > 1 ? "s" : ""} en groupe ouvert.`
+      : "";
+
+    setStatus(`${models.length} élément${models.length > 1 ? "s" : ""} affiché${models.length > 1 ? "s" : ""}.${openNote}${rehabNote}`);
   }
 
   function activityModelsFor(user, year) {
@@ -330,6 +339,58 @@
         people: animatorNames(activity.Animateur_s),
         // Dans ce document, la colonne Ressource joue le rôle de lieu / ressource
         // logistique (salle, gymnase, véhicule, bureau...).
+        place: choiceListText(activity.Ressource),
+        notes: text(activity.Remarques_planning),
+        visualUrl: attachmentUrl(activity.Visuel),
+        visualLabel: ""
+      });
+    }
+
+    return result;
+  }
+
+  function openGroupActivityModelsFor(user, year, registeredActivities) {
+    /*
+      Règle métier : une activité marquée Groupe_ouvert est proposée à tout
+      usager qui n'est inscrit à AUCUNE activité sur la même demi-journée.
+
+      Important : seules les inscriptions issues de Participations occupent
+      la demi-journée. Une rééducation seule n'empêche donc pas l'affichage
+      d'un groupe ouvert.
+    */
+    const occupiedHalfDays = new Set(
+      registeredActivities.map(item => `${item.dayNumber}:${item.half}`)
+    );
+
+    const result = [];
+
+    for (const activity of state.rows.activities) {
+      if (!truthyBool(activity.Groupe_ouvert)) continue;
+
+      // Même règle d'année que pour les activités inscrites : une activité
+      // sans année explicite est considérée comme utilisable toutes années.
+      if (activity.Annee && Number(activity.Annee) !== Number(year.id)) continue;
+
+      const day = state.byId.days.get(Number(activity.Jour));
+      const start = timeLabel(activity.Heure_debut);
+      const end = timeLabel(activity.Heure_fin);
+      const minutes = parseMinutes(start);
+      const dayNumber = Number(day?.Num_jour) || Number(activity.Numero_du_jour_de_la_semaine) || 0;
+      const half = halfFromMinutes(minutes);
+
+      if (dayNumber < 1 || dayNumber > 5) continue;
+      if (occupiedHalfDays.has(`${dayNumber}:${half}`)) continue;
+
+      result.push({
+        source: "open-group",
+        openGroup: true,
+        title: text(activity.Nom_activite) || "Activité",
+        timeText: formatRange(start, end),
+        dayNumber,
+        half,
+        halfOrder: half === "matin" ? 0 : 1,
+        sortMinutes: Number.isFinite(minutes) ? minutes : 99999,
+        people: animatorNames(activity.Animateur_s),
         place: choiceListText(activity.Ressource),
         notes: text(activity.Remarques_planning),
         visualUrl: attachmentUrl(activity.Visuel),
@@ -446,6 +507,13 @@
       time.className = "activity-time";
       time.textContent = item.timeText;
       main.appendChild(time);
+    }
+
+    if (item.openGroup) {
+      const badge = document.createElement("div");
+      badge.className = "open-group-badge";
+      badge.textContent = "Groupe ouvert";
+      main.appendChild(badge);
     }
 
     if (item.people) main.appendChild(metaLine("Avec", item.people));
