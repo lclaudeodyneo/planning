@@ -35,20 +35,18 @@
     <main id="printViewport" class="planning-sheet" aria-live="polite">
       <div id="printInner">
         <header class="planning-header">
-          <div class="heading-block">
-            <div class="service-name">SAJ Anagallis</div>
-            <h1 id="planningTitle">Planning</h1>
+          <div id="portraitWrap" class="portrait-wrap" aria-hidden="true">
+            <div id="portraitFallback" class="portrait-fallback">?</div>
+            <img id="portrait" alt="" hidden>
           </div>
 
-          <div class="identity-block">
-            <div id="portraitWrap" class="portrait-wrap" aria-hidden="true">
-              <div id="portraitFallback" class="portrait-fallback">?</div>
-              <img id="portrait" alt="" hidden>
+          <div class="header-main">
+            <div class="service-line">
+              <span class="service-name">SAJ Anagallis</span>
+              <span class="service-sep">-</span>
+              <span id="planningTitle" class="planning-inline-title">Planning</span>
             </div>
-            <div>
-              <div class="identity-label">Planning individuel</div>
-              <div id="userFullName" class="user-full-name">Sélectionnez une personne</div>
-            </div>
+            <div id="userFullName" class="user-full-name">Sélectionnez une personne</div>
           </div>
         </header>
 

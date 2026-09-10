@@ -7,7 +7,7 @@
   --friday: #e66b6b;
   --ink: #26222a;
   --muted: #6f6874;
-  --line: #ded9e1;
+  --line: #d8d1de;
   --surface: #ffffff;
   --surface-soft: #f7f4f9;
   --shadow: 0 7px 24px rgba(35, 23, 42, .10);
@@ -112,46 +112,23 @@ select:disabled {
 }
 
 .planning-header {
-  min-height: 110px;
-  padding: 18px 22px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  min-height: 108px;
+  padding: 18px 24px 14px;
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  align-items: start;
+  gap: 16px;
   border-top: 8px solid var(--accent);
-  border-bottom: 1px solid var(--line);
   background:
-    linear-gradient(90deg, rgba(113,26,162,.065), rgba(255,255,255,0) 42%),
+    linear-gradient(90deg, rgba(113,26,162,.055), rgba(255,255,255,0) 42%),
     var(--surface);
 }
 
-.service-name {
-  color: var(--accent);
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: .02em;
-}
-
-.planning-header h1 {
-  margin: 4px 0 0;
-  font-size: 27px;
-  line-height: 1.05;
-}
-
-.identity-block {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  min-width: 330px;
-  justify-content: flex-end;
-}
-
 .portrait-wrap {
-  width: 72px;
-  height: 72px;
-  flex: 0 0 72px;
+  width: 86px;
+  height: 86px;
   overflow: hidden;
-  border-radius: 9px;
+  border-radius: 10px;
   border: 2px solid rgba(113,26,162,.18);
   background: #ece7f0;
 }
@@ -169,100 +146,139 @@ select:disabled {
   place-items: center;
   background: #ede6f1;
   color: var(--accent);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
 }
 
-.identity-label {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .04em;
+.header-main {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.service-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.service-name,
+.planning-inline-title,
+.service-sep {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.service-name,
+.planning-inline-title {
+  font-size: 28px;
+  line-height: 1.05;
+}
+
+.service-sep {
+  font-size: 24px;
+  line-height: 1;
 }
 
 .user-full-name {
-  margin-top: 3px;
-  font-size: 21px;
+  font-size: 23px;
   font-weight: 800;
+  line-height: 1.1;
 }
 
 .week-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  align-items: stretch;
-  min-height: 620px;
-}
-
-.day-column {
-  min-width: 0;
-  display: grid;
-  grid-template-rows: auto 1fr 1fr;
-  border-right: 1px solid var(--line);
-}
-
-.day-column:last-child {
-  border-right: 0;
+  grid-template-rows: auto minmax(215px, 1fr) 38px minmax(215px, 1fr);
+  border-top: 2px solid var(--accent);
+  border-left: 2px solid var(--accent);
+  margin: 0 18px 18px;
 }
 
 .day-header {
-  padding: 9px 7px;
-  color: white;
+  min-width: 0;
+  padding: 7px 6px;
   text-align: center;
   font-size: 15px;
   font-weight: 800;
-  letter-spacing: .01em;
+  color: #fff;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .02em;
 }
 
-.half-day {
-  min-height: 0;
+.schedule-slot {
+  min-width: 0;
   padding: 8px;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
   background: #fff;
+  overflow: hidden;
 }
 
-.half-day + .half-day {
-  border-top: 2px solid #d9d1de;
+.schedule-slot.top {
+  border-bottom: 0;
 }
 
-.half-label {
+.schedule-slot.bottom {
+  border-top: 0;
+}
+
+.meal-band {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin: 0 0 7px;
+  justify-content: center;
+  text-align: center;
+  padding: 3px 10px;
+  background: #fff;
   color: var(--accent);
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-}
-
-.half-label::after {
-  content: "";
-  height: 1px;
-  flex: 1 1 auto;
-  background: rgba(113,26,162,.24);
+  letter-spacing: .05em;
+  border-right: 2px solid var(--accent);
+  border-top: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
 }
 
 .activity-list {
   display: grid;
   gap: 6px;
+  align-content: start;
 }
 
 .activity-card {
   min-width: 0;
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
-  gap: 7px;
+  grid-template-columns: minmax(0, 1fr) 42px;
+  gap: 6px 7px;
   padding: 6px;
   border: 1px solid #e1dce5;
-  border-left: 4px solid var(--day-color);
   border-radius: 7px;
   background: #fff;
   box-shadow: 0 1px 2px rgba(38,34,42,.04);
 }
 
+.activity-main {
+  min-width: 0;
+}
+
+.activity-visual-wrap {
+  width: 42px;
+  display: flex;
+  align-items: start;
+  justify-content: end;
+}
+
 .activity-card.no-visual {
   grid-template-columns: minmax(0, 1fr);
+}
+
+.activity-visual-wrap:empty {
+  display: none;
 }
 
 .activity-visual {
@@ -307,7 +323,7 @@ select:disabled {
 }
 
 .empty-state {
-  margin: 18px;
+  margin: 0 18px 18px;
   padding: 18px;
   border: 1px dashed #cfc6d4;
   border-radius: 8px;
@@ -327,11 +343,14 @@ select:disabled {
   font-size: 13px;
 }
 
-/* Densité automatique à l'écran et à l'impression */
+.density-compact .week-grid {
+  grid-template-rows: auto minmax(190px, 1fr) 34px minmax(190px, 1fr);
+}
+
 .density-compact .activity-card {
-  grid-template-columns: 32px minmax(0, 1fr);
-  gap: 5px;
+  grid-template-columns: minmax(0, 1fr) 34px;
   padding: 5px;
+  gap: 4px 6px;
 }
 
 .density-compact .activity-visual {
@@ -344,33 +363,43 @@ select:disabled {
 }
 
 .density-compact .activity-time,
-.density-compact .activity-meta {
+.density-compact .activity-meta,
+.density-compact .empty-half {
   font-size: 9.8px;
 }
 
-.density-ultra .activity-card {
-  grid-template-columns: 27px minmax(0, 1fr);
-  gap: 4px;
-  padding: 4px;
-  border-left-width: 3px;
+.density-ultra .week-grid {
+  grid-template-rows: auto minmax(170px, 1fr) 30px minmax(170px, 1fr);
 }
 
-.density-ultra .activity-visual {
-  width: 27px;
-  height: 27px;
-}
-
-.density-ultra .activity-title {
-  font-size: 10.6px;
-}
-
-.density-ultra .activity-time,
-.density-ultra .activity-meta {
-  font-size: 9px;
+.density-ultra .schedule-slot {
+  padding: 5px;
 }
 
 .density-ultra .activity-list {
   gap: 4px;
+}
+
+.density-ultra .activity-card {
+  grid-template-columns: minmax(0, 1fr) 30px;
+  padding: 4px;
+  gap: 4px 5px;
+}
+
+.density-ultra .activity-visual {
+  width: 28px;
+  height: 28px;
+}
+
+.density-ultra .activity-title {
+  font-size: 10.5px;
+}
+
+.density-ultra .activity-time,
+.density-ultra .activity-meta,
+.density-ultra .empty-half,
+.density-ultra .meal-band {
+  font-size: 9px;
 }
 
 @media (max-width: 950px) {
@@ -383,17 +412,10 @@ select:disabled {
   }
 
   #printInner {
-    min-width: 930px;
+    min-width: 940px;
   }
 }
 
-/*
-  IMPRESSION
-  - A4 paysage : 297 x 210 mm
-  - marge 5 mm
-  - surface utile : 287 x 200 mm
-  Le JS applique en plus un facteur d'échelle si le contenu dépasse.
-*/
 @page {
   size: A4 landscape;
   margin: 5mm;
@@ -440,31 +462,25 @@ select:disabled {
   }
 
   .planning-header {
-    min-height: 25mm;
-    padding: 3.5mm 4mm;
+    min-height: 24mm;
+    padding: 3.2mm 4mm 3mm;
+    grid-template-columns: 21mm 1fr;
+    gap: 4mm;
     border-top-width: 2mm;
-  }
-
-  .service-name {
-    font-size: 11pt;
-  }
-
-  .planning-header h1 {
-    font-size: 17pt;
-  }
-
-  .identity-block {
-    min-width: 78mm;
   }
 
   .portrait-wrap {
     width: 18mm;
     height: 18mm;
-    flex-basis: 18mm;
   }
 
-  .identity-label {
-    font-size: 7.5pt;
+  .service-name,
+  .planning-inline-title {
+    font-size: 16pt;
+  }
+
+  .service-sep {
+    font-size: 14pt;
   }
 
   .user-full-name {
@@ -472,27 +488,27 @@ select:disabled {
   }
 
   .week-grid {
-    min-height: 173mm;
-    height: 173mm;
+    margin: 0 4mm 4mm;
+    height: 166mm;
+    grid-template-rows: auto minmax(0, 1fr) 8mm minmax(0, 1fr);
   }
 
   .day-header {
-    padding: 2mm 1.5mm;
-    font-size: 9.5pt;
+    padding: 1.4mm 1mm;
+    font-size: 9pt;
   }
 
-  .half-day {
-    padding: 1.6mm;
-    overflow: hidden;
+  .schedule-slot {
+    padding: 1.2mm;
   }
 
-  .half-label {
-    margin-bottom: 1.2mm;
-    font-size: 6.7pt;
+  .meal-band {
+    font-size: 9pt;
+    padding: 1mm;
   }
 
   .activity-list {
-    gap: 1.1mm;
+    gap: 1mm;
   }
 
   .activity-card {

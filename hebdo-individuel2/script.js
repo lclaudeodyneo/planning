@@ -1,9 +1,4 @@
-/* Planning individuel Grist — SAJ Anagallis
-   ------------------------------------------------------------
-   Ce widget est volontairement en LECTURE SEULE.
-   Il demande "full" uniquement parce que Grist l'exige pour
-   grist.docApi.fetchTable() sur plusieurs tables.
-*/
+/* Planning individuel Grist — SAJ Anagallis */
 
 (() => {
   "use strict";
@@ -22,9 +17,6 @@
       jeudi: "#e6a23c",
       vendredi: "#e66b6b"
     },
-
-    /* Les alias ci-dessous permettent au widget de tolérer plusieurs
-       intitulés de colonnes. Les noms EXACTS demandés sont placés en premier. */
     columns: {
       userDisplay: ["Usager", "Nom_complet", "Nom complet", "NomComplet", "Personne"],
       userLastName: ["Nom", "Nom_de_famille", "Nom de famille", "NomFamille"],
@@ -41,8 +33,6 @@
       participantDate: ["Date", "Date_activite", "Date activité"],
       participantHalf: ["Demi_journee", "Demi-journée", "Demi journée", "Periode", "Période", "Moment"],
 
-      /* Une participation peut pointer vers une activité, une autre activité
-         ou une rééducation. Le widget cherche toutes les références renseignées. */
       activityRef: [
         "Activite", "Activité", "Activites", "Activités",
         "Activite_autre", "Activité autre", "Autre_activite", "Autre activité",
@@ -55,7 +45,8 @@
       itemEnd: ["Fin", "Heure_fin", "Heure fin", "Horaire_fin", "Horaire fin"],
       itemVisual: ["Visuel", "Pictogramme", "Picto", "Image", "Photo", "Illustration", "Icone", "Icône"],
       itemPeople: ["Animateurs", "Animateur", "Professionnels", "Professionnel", "Intervenants", "Intervenant", "Reeducateur", "Rééducateur", "Kine", "Kiné", "Orthophoniste"],
-      itemPlace: ["Lieu", "Salle", "Localisation", "Endroit"]
+      itemPlace: ["Lieu", "Salle", "Localisation", "Endroit"],
+      itemNotes: ["Remarque", "Remarques", "Remarques planning", "Commentaire", "Commentaires", "Note", "Notes"]
     }
   };
 
@@ -124,14 +115,9 @@
     }
 
     grist.ready({requiredAccess: "full"});
-
-    /* onRecords sert de signal de rafraîchissement quand la table liée au widget
-       est modifiée. On relit alors les tables utiles pour garder l'affichage à jour. */
     grist.onRecords(() => {
       refreshAll().catch(handleError);
     });
-
-    /* Sécurité : certains contextes déclenchent tardivement onRecords. */
     setTimeout(() => refreshAll().catch(handleError), 250);
   }
 
@@ -144,18 +130,13 @@
     state.usersTableId = findTableId(tables, CONFIG.tables.users);
     state.participationsTableId = findTableId(tables, CONFIG.tables.participations);
 
-    if (!state.usersTableId) {
-      throw new Error(`Table "${CONFIG.tables.users}" introuvable.`);
-    }
-    if (!state.participationsTableId) {
-      throw new Error(`Table "${CONFIG.tables.participations}" introuvable.`);
-    }
+    if (!state.usersTableId) throw new Error(`Table "${CONFIG.tables.users}" introuvable.`);
+    if (!state.participationsTableId) throw new Error(`Table "${CONFIG.tables.participations}" introuvable.`);
 
     state.tables.clear();
     state.userRows = await getRows(state.usersTableId, true);
     state.participationRows = await getRows(state.participationsTableId, true);
     state.tokenInfo = await grist.docApi.getAccessToken({readOnly: true});
-
     state.yearSource = await discoverYearSource(tables);
 
     populateUserSelect();
@@ -166,7 +147,6 @@
     els.printButton.disabled = !state.selectedUserId;
 
     await renderSelectedPlanning();
-
     setStatus("Planning à jour.");
   }
 
@@ -183,9 +163,7 @@
     state.schemas.clear();
 
     for (const t of tableRows) {
-      if (t.id != null && t.tableId) {
-        state.tableRefToId.set(Number(t.id), String(t.tableId));
-      }
+      if (t.id != null && t.tableId) state.tableRefToId.set(Number(t.id), String(t.tableId));
     }
 
     for (const c of columnRows) {
@@ -262,10 +240,7 @@
       const current = rows.find(r => norm(r[stateKey]) === "actuel");
       if (!current) continue;
 
-      const labelKey =
-        pickKey(rows[0], CONFIG.columns.yearLabel) ||
-        firstUsefulTextColumn(tableId, rows[0], [stateKey]);
-
+      const labelKey = pickKey(rows[0], CONFIG.columns.yearLabel) || firstUsefulTextColumn(tableId, rows[0], [stateKey]);
       if (!labelKey) continue;
 
       const options = rows
@@ -279,17 +254,9 @@
           isCurrent: Number(r.id) === Number(current.id)
         }));
 
-      return {
-        tableId,
-        labelKey,
-        stateKey,
-        currentId: Number(current.id),
-        options
-      };
+      return {tableId, labelKey, stateKey, currentId: Number(current.id), options};
     }
 
-    /* Repli : si aucune table "Etat = Actuel" n'est trouvée, on extrait
-       les années directement depuis Participations. */
     const yearCol = findParticipationYearColumn();
     if (!yearCol) return null;
 
@@ -330,8 +297,6 @@
     const activeUsers = state.userRows
       .filter(r => {
         const leftKey = pickKey(r, CONFIG.columns.userLeft);
-        /* "Parti_e = False" : on garde uniquement les lignes non parties.
-           Une cellule vide est considérée comme False, comme dans Grist. */
         return !leftKey || isFalseLike(r[leftKey]);
       })
       .map(r => ({
@@ -371,9 +336,7 @@
       return;
     }
 
-    for (const y of state.yearSource.options) {
-      addOption(els.yearSelect, y.key, y.label);
-    }
+    for (const y of state.yearSource.options) addOption(els.yearSelect, y.key, y.label);
 
     const previousExists = state.yearSource.options.some(y => y.key === previous);
     if (previousExists) {
@@ -414,22 +377,15 @@
 
     const participationUserCol = findParticipationUserColumn();
     if (!participationUserCol) {
-      throw new Error(
-        `Impossible d’identifier, dans "${state.participationsTableId}", la colonne qui référence la table "${state.usersTableId}".`
-      );
+      throw new Error(`Impossible d’identifier, dans "${state.participationsTableId}", la colonne qui référence la table "${state.usersTableId}".`);
     }
 
     const filtered = state.participationRows.filter(p => {
-      const matchesUser = valueMatchesRow(
-        p[participationUserCol],
-        state.selectedUserId,
-        userLabel(user)
-      );
+      const matchesUser = valueMatchesRow(p[participationUserCol], state.selectedUserId, userLabel(user));
       return matchesUser && participationMatchesYear(p, year);
     });
 
     const models = await Promise.all(filtered.map(p => participationToModel(p)));
-
     const visibleModels = models.filter(m => DAYS.some(d => d.key === m.day));
     const buckets = new Map();
     for (const d of DAYS) {
@@ -442,9 +398,7 @@
       if (buckets.has(key)) buckets.get(key).push(m);
     }
 
-    for (const items of buckets.values()) {
-      items.sort((a, b) => a.sortTime - b.sortTime || a.title.localeCompare(b.title, "fr"));
-    }
+    for (const items of buckets.values()) items.sort((a, b) => a.sortTime - b.sortTime || a.title.localeCompare(b.title, "fr"));
 
     renderBuckets(buckets);
     applyDensity(buckets);
@@ -453,7 +407,6 @@
     els.emptyState.hidden = count !== 0;
     els.weekGrid.hidden = false;
     els.printButton.disabled = false;
-
     setStatus(`${count} participation${count > 1 ? "s" : ""} affichée${count > 1 ? "s" : ""}.`);
   }
 
@@ -467,8 +420,6 @@
     if (!yearCol) return true;
 
     const value = p[yearCol];
-
-    /* Si la colonne est une référence vers la table d'années, comparaison par id. */
     const refTable = refTarget(state.participationsTableId, yearCol);
     if (year.tableId && refTable && norm(refTable) === norm(year.tableId) && year.id != null) {
       return valueMatchesRow(value, year.id, year.label);
@@ -478,10 +429,7 @@
       return toArray(value).some(v => String(v) === String(year.rawValue));
     }
 
-    return toArray(value).some(v =>
-      norm(v) === norm(year.label) ||
-      (year.id != null && Number(v) === Number(year.id))
-    );
+    return toArray(value).some(v => norm(v) === norm(year.label) || (year.id != null && Number(v) === Number(year.id)));
   }
 
   async function participationToModel(p) {
@@ -493,10 +441,11 @@
     const endRaw = firstRawValue(sources, CONFIG.columns.itemEnd);
     const start = formatTime(startRaw);
     const end = formatTime(endRaw);
-    const timeText = start && end && start !== end ? `${start} – ${end}` : (start || end || "");
+    const timeText = start && end && start !== end ? `${start} - ${end}` : (start || end || "");
 
     const people = await firstDisplayValue(sources, CONFIG.columns.itemPeople);
     const place = await firstDisplayValue(sources, CONFIG.columns.itemPlace);
+    const notes = await firstDisplayValue(sources, CONFIG.columns.itemNotes);
     const visual = await firstVisualUrl(sources);
 
     const day = resolveDay(p, sources);
@@ -508,6 +457,7 @@
       timeText,
       people,
       place,
+      notes,
       visual,
       day,
       half,
@@ -522,7 +472,6 @@
     for (const key of keys) {
       const value = p[key];
       if (isEmptyValue(value)) continue;
-
       const target = refTarget(state.participationsTableId, key);
       if (target) {
         const rows = await getRows(target);
@@ -557,13 +506,12 @@
     if (dateKey && p[dateKey] != null) {
       const date = toDate(p[dateKey]);
       if (date && !Number.isNaN(date.getTime())) {
-        const jsDay = date.getDay(); // 1=lundi ... 5=vendredi
+        const jsDay = date.getDay();
         const day = DAYS.find(d => d.index === jsDay);
         if (day) return day.key;
       }
     }
 
-    /* Dernier repli : certains modèles mettent le jour dans l'activité référencée. */
     for (const src of sources.slice(1)) {
       const k = pickKey(src, CONFIG.columns.participantDay);
       if (!k) continue;
@@ -584,7 +532,6 @@
     }
 
     const minutes = timeToMinutes(startRaw);
-    /* 12 h 30 permet de classer correctement une activité débutant à midi. */
     return Number.isFinite(minutes) && minutes < 12 * 60 + 30 ? "matin" : "apres-midi";
   }
 
@@ -598,66 +545,63 @@
         if (!items.length) {
           const empty = document.createElement("div");
           empty.className = "empty-half";
-          empty.textContent = "Aucune activité";
+          empty.textContent = "";
           list.appendChild(empty);
           continue;
         }
 
-        for (const item of items) {
-          list.appendChild(activityCard(item, d.color));
-        }
+        for (const item of items) list.appendChild(activityCard(item));
       }
     }
   }
 
-  function activityCard(item, dayColor) {
+  function activityCard(item) {
     const card = document.createElement("article");
     card.className = `activity-card${item.visual ? "" : " no-visual"}`;
-    card.style.setProperty("--day-color", dayColor);
+
+    const main = document.createElement("div");
+    main.className = "activity-main";
+
+    const title = document.createElement("div");
+    title.className = "activity-title";
+    title.textContent = item.title;
+    main.appendChild(title);
+
+    if (item.timeText) {
+      const time = document.createElement("div");
+      time.className = "activity-time";
+      time.textContent = item.timeText;
+      main.appendChild(time);
+    }
+
+    if (item.people) main.appendChild(metaLine("Avec", item.people));
+    if (item.place) main.appendChild(metaLine("Lieu", item.place));
+    if (item.notes) main.appendChild(metaLine("Remarque", item.notes));
+
+    card.appendChild(main);
 
     if (item.visual) {
+      const visualWrap = document.createElement("div");
+      visualWrap.className = "activity-visual-wrap";
       const img = document.createElement("img");
       img.className = "activity-visual";
       img.src = item.visual;
       img.alt = "";
       img.loading = "eager";
       img.addEventListener("error", () => {
-        img.remove();
+        visualWrap.remove();
         card.classList.add("no-visual");
       }, {once: true});
-      card.appendChild(img);
+      visualWrap.appendChild(img);
+      card.appendChild(visualWrap);
     }
 
-    const body = document.createElement("div");
-
-    const title = document.createElement("div");
-    title.className = "activity-title";
-    title.textContent = item.title;
-    body.appendChild(title);
-
-    if (item.timeText) {
-      const time = document.createElement("div");
-      time.className = "activity-time";
-      time.textContent = item.timeText;
-      body.appendChild(time);
-    }
-
-    if (item.people) {
-      body.appendChild(metaLine("Avec", item.people));
-    }
-
-    if (item.place) {
-      body.appendChild(metaLine("Lieu", item.place));
-    }
-
-    card.appendChild(body);
     return card;
   }
 
   function metaLine(label, value) {
     const el = document.createElement("div");
     el.className = "activity-meta";
-
     const strong = document.createElement("strong");
     strong.textContent = `${label} : `;
     el.appendChild(strong);
@@ -669,35 +613,29 @@
     els.weekGrid.innerHTML = "";
 
     for (const day of DAYS) {
-      const col = document.createElement("section");
-      col.className = "day-column";
-
       const header = document.createElement("div");
       header.className = "day-header";
       header.style.backgroundColor = day.color;
       header.textContent = day.label;
-      col.appendChild(header);
-
-      col.appendChild(halfDayBlock(day, "matin", "Matin"));
-      col.appendChild(halfDayBlock(day, "apres-midi", "Après-midi"));
-
-      els.weekGrid.appendChild(col);
+      els.weekGrid.appendChild(header);
     }
+
+    for (const day of DAYS) els.weekGrid.appendChild(slotBlock(day, "matin", "top"));
+
+    const meal = document.createElement("div");
+    meal.className = "meal-band";
+    meal.textContent = "REPAS MIDI";
+    els.weekGrid.appendChild(meal);
+
+    for (const day of DAYS) els.weekGrid.appendChild(slotBlock(day, "apres-midi", "bottom"));
   }
 
-  function halfDayBlock(day, key, label) {
+  function slotBlock(day, key, extraClass) {
     const block = document.createElement("div");
-    block.className = "half-day";
-
-    const heading = document.createElement("div");
-    heading.className = "half-label";
-    heading.textContent = label;
-
+    block.className = `schedule-slot ${extraClass}`;
     const list = document.createElement("div");
     list.className = "activity-list";
     list.dataset.list = `${day.key}:${key}`;
-
-    block.appendChild(heading);
     block.appendChild(list);
     return block;
   }
@@ -714,7 +652,6 @@
     els.portraitFallback.textContent = initials(userLabel(user)) || "?";
 
     if (!key || isEmptyValue(user[key])) return;
-
     const url = await visualValueToUrl(state.usersTableId, key, user[key]);
     if (!url) return;
 
@@ -731,11 +668,8 @@
 
   async function firstVisualUrl(sources) {
     for (const src of sources) {
-      const tableId = src === sources[0]
-        ? state.participationsTableId
-        : (src.__tableId || "");
+      const tableId = src === sources[0] ? state.participationsTableId : (src.__tableId || "");
       const keys = matchingKeys(src, CONFIG.columns.itemVisual);
-
       for (const key of keys) {
         if (isEmptyValue(src[key])) continue;
         const url = await visualValueToUrl(tableId, key, src[key]);
@@ -781,11 +715,8 @@
 
   async function firstDisplayValue(sources, candidates) {
     for (const src of sources) {
-      const tableId = src === sources[0]
-        ? state.participationsTableId
-        : (src.__tableId || "");
+      const tableId = src === sources[0] ? state.participationsTableId : (src.__tableId || "");
       const keys = matchingKeys(src, candidates);
-
       for (const key of keys) {
         if (isEmptyValue(src[key])) continue;
         const value = await displayValue(tableId, key, src[key]);
@@ -816,10 +747,7 @@
     }
 
     if (Array.isArray(value)) {
-      return value
-        .filter(v => v !== "L" && v != null && v !== "")
-        .map(v => String(v))
-        .join(", ");
+      return value.filter(v => v !== "L" && v != null && v !== "").map(v => String(v)).join(", ");
     }
 
     return String(value ?? "").trim();
@@ -830,23 +758,15 @@
     const last = userLastName(row);
     if (first || last) return `${first} ${last}`.trim();
 
-    const candidates = [
-      "Usager", "Nom_complet", "Nom complet",
-      "Nom", "Titre", "Libelle", "Libellé",
-      "Activite", "Activité", "Professionnel",
-      "Intervenant", "Lieu", "Salle"
-    ];
+    const candidates = ["Usager", "Nom_complet", "Nom complet", "Nom", "Titre", "Libelle", "Libellé", "Activite", "Activité", "Professionnel", "Intervenant", "Lieu", "Salle"];
     const key = pickKey(row, candidates);
     if (key && !isEmptyValue(row[key])) return String(row[key]);
-
     return `#${row.id}`;
   }
 
   function userLabel(row) {
     const displayKey = pickKey(row, CONFIG.columns.userDisplay);
-    if (displayKey && !isEmptyValue(row[displayKey])) {
-      return String(row[displayKey]).trim();
-    }
+    if (displayKey && !isEmptyValue(row[displayKey])) return String(row[displayKey]).trim();
     const first = userFirstName(row);
     const last = userLastName(row);
     return `${first} ${last}`.trim() || `Usager #${row.id}`;
@@ -855,9 +775,6 @@
   function userLastName(row) {
     const key = pickKey(row, CONFIG.columns.userLastName);
     if (key && !isEmptyValue(row[key])) return String(row[key]).trim();
-
-    /* Si seul "Usager" existe, on utilise le dernier mot comme repli de tri.
-       Le vrai champ Nom reste toujours prioritaire. */
     const label = userLabelNoRecursion(row);
     const parts = label.trim().split(/\s+/);
     return parts.length > 1 ? parts[parts.length - 1] : label;
@@ -882,9 +799,7 @@
         if (target && norm(target) === norm(state.usersTableId)) return colId;
       }
     }
-    return state.participationRows.length
-      ? pickKey(state.participationRows[0], CONFIG.columns.participantUser)
-      : null;
+    return state.participationRows.length ? pickKey(state.participationRows[0], CONFIG.columns.participantUser) : null;
   }
 
   function findParticipationYearColumn() {
@@ -898,9 +813,7 @@
       }
     }
 
-    return state.participationRows.length
-      ? pickKey(state.participationRows[0], CONFIG.columns.participantYear)
-      : findColumnInSchema(state.participationsTableId, CONFIG.columns.participantYear);
+    return state.participationRows.length ? pickKey(state.participationRows[0], CONFIG.columns.participantYear) : findColumnInSchema(state.participationsTableId, CONFIG.columns.participantYear);
   }
 
   function refTarget(tableId, colId) {
@@ -973,20 +886,11 @@
   }
 
   function isFalseLike(value) {
-    return value === false ||
-      value === 0 ||
-      value == null ||
-      value === "" ||
-      norm(value) === "false" ||
-      norm(value) === "faux" ||
-      norm(value) === "non";
+    return value === false || value === 0 || value == null || value === "" || norm(value) === "false" || norm(value) === "faux" || norm(value) === "non";
   }
 
   function isEmptyValue(value) {
-    return value == null ||
-      value === "" ||
-      (Array.isArray(value) && value.length === 0) ||
-      (Array.isArray(value) && value.length === 1 && value[0] === "L");
+    return value == null || value === "" || (Array.isArray(value) && value.length === 0) || (Array.isArray(value) && value.length === 1 && value[0] === "L");
   }
 
   function toArray(value) {
@@ -996,22 +900,16 @@
   }
 
   function numericIds(value) {
-    return toArray(value)
-      .map(v => Number(v))
-      .filter(v => Number.isFinite(v) && v > 0);
+    return toArray(value).map(v => Number(v)).filter(v => Number.isFinite(v) && v > 0);
   }
 
   function valueMatchesRow(value, rowId, displayLabel) {
     const values = toArray(value);
-    return values.some(v =>
-      Number(v) === Number(rowId) ||
-      norm(v) === norm(displayLabel)
-    );
+    return values.some(v => Number(v) === Number(rowId) || norm(v) === norm(displayLabel));
   }
 
   function formatTime(value) {
     if (value == null || value === "") return "";
-
     if (typeof value === "string") {
       const s = value.trim();
       const m = s.match(/\b(\d{1,2})[h:](\d{2})\b/i);
@@ -1022,32 +920,23 @@
     }
 
     if (typeof value === "number") {
-      /* Time of day Grist : nombre de secondes depuis minuit. */
       if (value >= 0 && value < 86400) {
         const h = Math.floor(value / 3600);
         const m = Math.floor((value % 3600) / 60);
         return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
       }
-
-      /* DateTime Grist : timestamp en secondes. */
       if (value > 1e8) {
         const d = new Date(value * 1000);
-        if (!Number.isNaN(d.getTime())) {
-          return d.toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"});
-        }
+        if (!Number.isNaN(d.getTime())) return d.toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"});
       }
     }
 
-    if (value instanceof Date && !Number.isNaN(value.getTime())) {
-      return value.toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"});
-    }
-
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"});
     return String(value);
   }
 
   function timeToMinutes(value) {
     if (value == null || value === "") return 99999;
-
     if (typeof value === "number") {
       if (value >= 0 && value < 86400) return value / 60;
       if (value > 1e8) {
@@ -1078,12 +967,7 @@
   }
 
   function initials(name) {
-    return String(name || "")
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map(x => x[0]?.toUpperCase() || "")
-      .join("");
+    return String(name || "").trim().split(/\s+/).slice(0, 2).map(x => x[0]?.toUpperCase() || "").join("");
   }
 
   function applyDensity(buckets) {
@@ -1101,8 +985,6 @@
 
   async function prepareAndPrint() {
     setStatus("Préparation de l’impression A4…");
-
-    /* On laisse aux images déjà demandées une micro-tâche pour finir leur rendu. */
     await new Promise(resolve => setTimeout(resolve, 80));
     fitPrintContent();
     window.print();
@@ -1110,21 +992,15 @@
 
   function fitPrintContent() {
     resetPrintFit();
-
-    /* En impression, le viewport fait 287 x 200 mm. On convertit ces dimensions
-       en pixels CSS (96 dpi) pour calculer un facteur d'échelle fiable. */
     const pxPerMm = 96 / 25.4;
     const targetW = 287 * pxPerMm;
     const targetH = 200 * pxPerMm;
-
     const inner = els.printInner;
     const currentW = inner.scrollWidth || inner.getBoundingClientRect().width;
     const currentH = inner.scrollHeight || inner.getBoundingClientRect().height;
-
     if (!currentW || !currentH) return;
-
     const scale = Math.min(1, targetW / currentW, targetH / currentH);
-    inner.style.transform = `scale(${scale})`;
+    inner.style.transform = `scale(${Math.max(scale, 0.68)})`;
   }
 
   function resetPrintFit() {
@@ -1143,9 +1019,7 @@
   function fatal(message) {
     if (!els.fatalError) return;
     els.fatalError.hidden = false;
-    els.fatalError.textContent =
-      `${message}\n\n` +
-      `Vérifiez les noms de tables/colonnes ou adaptez le bloc CONFIG au début de script.js.`;
+    els.fatalError.textContent = `${message}\n\nVérifiez les noms de tables/colonnes ou adaptez le bloc CONFIG au début de script.js.`;
     setStatus("Erreur de configuration.");
   }
 
