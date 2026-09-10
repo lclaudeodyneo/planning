@@ -1,5 +1,10 @@
 'use strict';
 
+/* =========================================================
+   PLANNING INDIVIDUEL SAJ ANAGALLIS
+   Version raccordée au schéma Grist contrôlé le 08/09/2026
+   ========================================================= */
+
 const TABLES = {
   participations: 'Participations',
   activites: 'Activites',
@@ -11,6 +16,21 @@ const TABLES = {
   reeducations: 'Reeducations',
   reeducateurs: 'Reeducateurs'
 };
+
+const REQUIRED_TABLES = [
+  'participations',
+  'activites',
+  'usagers',
+  'jours',
+  'heures',
+  'animateurs'
+];
+
+const OPTIONAL_TABLES = [
+  'activitesAutres',
+  'reeducations',
+  'reeducateurs'
+];
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
 
@@ -33,15 +53,12 @@ const state = {
 
 const $ = (id) => document.getElementById(id);
 
-
 /* =========================================================
-   OUTILS
+   OUTILS GÉNÉRAUX
    ========================================================= */
 
 function rowsFromTable(table) {
-  if (!table || !Array.isArray(table.id)) {
-    return [];
-  }
+  if (!table || !Array.isArray(table.id)) return [];
 
   return table.id.map((id, index) =>
     Object.fromEntries(
@@ -54,71 +71,55 @@ function rowsFromTable(table) {
 }
 
 function isTrue(value) {
-  return (
-    value === true ||
-    value === 1 ||
-    value === 'true' ||
-    value === 'TRUE'
+  if (value === true || value === 1 || value === '1') return true;
+  if (typeof value !== 'string') return false;
+
+  return ['true', 'oui', 'yes', 'vrai'].includes(
+    value.trim().toLowerCase()
   );
 }
 
 function refIds(value) {
-  if (value == null) {
-    return [];
-  }
+  if (value == null || value === '') return [];
 
   if (Array.isArray(value)) {
-    return value[0] === 'L'
-      ? value.slice(1).filter(Number.isFinite)
-      : value.filter(Number.isFinite);
+    const values = value[0] === 'L' ? value.slice(1) : value;
+    return values
+      .map(Number)
+      .filter(Number.isFinite);
   }
 
-  return Number.isFinite(value)
-    ? [value]
-    : [];
+  const number = Number(value);
+  return Number.isFinite(number) ? [number] : [];
 }
-
 
 function byId(rows) {
-  return new Map(
-    rows.map((row) => [row.id, row])
-  );
+  return new Map(rows.map((row) => [Number(row.id), row]));
 }
-
 
 function text(value, fallback = '') {
-  return value == null || value === ''
-    ? fallback
-    : String(value);
+  return value == null || value === '' ? fallback : String(value);
 }
 
+function esc(value) {
+  return text(value).replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  })[character]);
+}
 
 function normalizeDay(value) {
-  const normalized =
-    text(value).trim().toLowerCase();
-
-  return (
-    DAYS.find(
-      (day) =>
-        day.toLowerCase() === normalized
-    ) ||
-    text(value, 'Jour')
-  );
+  const normalized = text(value).trim().toLowerCase();
+  return DAYS.find((day) => day.toLowerCase() === normalized) || text(value, 'Jour');
 }
-
 
 function minutes(value) {
-  const match =
-    text(value).match(
-      /(\d{1,2})\D(\d{2})/
-    );
-
-  return match
-    ? Number(match[1]) * 60 +
-        Number(match[2])
-    : 9999;
+  const match = text(value).match(/(\d{1,2})\D(\d{2})/);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : 9999;
 }
-
 
 function initials(name) {
   return text(name, '?')
@@ -130,81 +131,35 @@ function initials(name) {
     .toUpperCase();
 }
 
-
 function colorFor(name) {
   let hue = 0;
-
   for (const character of text(name)) {
-    hue =
-      (hue * 31 +
-        character.charCodeAt(0)) %
-      360;
+    hue = (hue * 31 + character.charCodeAt(0)) % 360;
   }
-
   return `hsl(${hue} 48% 48%)`;
 }
 
-
-function esc(value) {
-  return text(value).replace(
-    /[&<>"']/g,
-    (character) => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;'
-    })[character]
-  );
-}
-
-
-function firstDefined(
-  row,
-  columnNames,
-  fallback = ''
-) {
+function firstDefined(row, columnNames, fallback = '') {
   for (const columnName of columnNames) {
-    if (
-      row &&
-      row[columnName] != null &&
-      row[columnName] !== ''
-    ) {
+    if (row && row[columnName] != null && row[columnName] !== '') {
       return row[columnName];
     }
   }
-
   return fallback;
 }
 
-
-/*
- * Lecture robuste des colonnes Oui / Non de Grist.
- */
-function isTrue(value) {
-  if (
-    value === true ||
-    value === 1 ||
-    value === '1'
-  ) {
-    return true;
+function requireElement(id) {
+  const element = $(id);
+  if (!element) {
+    throw new Error(`Élément HTML obligatoire introuvable : #${id}`);
   }
-
-  if (typeof value === 'string') {
-    const normalized =
-      value.trim().toLowerCase();
-
-    return [
-      'true',
-      'oui',
-      'yes',
-      'vrai'
-    ].includes(normalized);
-  }
-
-  return false;
+  return element;
 }
 
+function onIfPresent(id, eventName, handler) {
+  const element = $(id);
+  if (element) element.addEventListener(eventName, handler);
+}
 
 /* =========================================================
    PIÈCES JOINTES GRIST
@@ -212,184 +167,112 @@ function isTrue(value) {
 
 let attachmentTokenInfo = null;
 
-
 async function attachmentUrl(value) {
   const ids = refIds(value);
-
-  if (!ids.length) {
-    return '';
-  }
+  if (!ids.length) return '';
 
   const id = ids[0];
-
-  if (state.attachmentUrls.has(id)) {
-    return state.attachmentUrls.get(id);
-  }
+  if (state.attachmentUrls.has(id)) return state.attachmentUrls.get(id);
 
   try {
     if (!attachmentTokenInfo) {
-      attachmentTokenInfo =
-        await grist.docApi.getAccessToken({
-          readOnly: true
-        });
+      attachmentTokenInfo = await grist.docApi.getAccessToken({ readOnly: true });
     }
 
-    const url =
-      `${attachmentTokenInfo.baseUrl}/attachments/${id}/download` +
-      `?auth=${encodeURIComponent(
-        attachmentTokenInfo.token
-      )}`;
-
-    state.attachmentUrls.set(
-      id,
-      url
-    );
-
+    const url = `${attachmentTokenInfo.baseUrl}/attachments/${id}/download?auth=${encodeURIComponent(attachmentTokenInfo.token)}`;
+    state.attachmentUrls.set(id, url);
     return url;
-
   } catch (error) {
-    console.error(
-      `Impossible de charger la pièce jointe ${id}`,
-      error
-    );
-
+    console.warn(`Pièce jointe ${id} non chargée`, error);
     return '';
   }
 }
-
 
 /* =========================================================
    CHARGEMENT DES TABLES
    ========================================================= */
 
-async function fetchAll() {
-  showStatus(
-    'Lecture des tables Grist…'
-  );
-
-  const entries =
-    await Promise.all(
-      Object.entries(TABLES).map(
-        async ([key, name]) => [
-          key,
-          await grist.docApi.fetchTable(name)
-        ]
-      )
-    );
-
-  state.tables =
-    Object.fromEntries(
-      entries.map(
-        ([key, table]) => [
-          key,
-          rowsFromTable(table)
-        ]
-      )
-    );
-
-  buildModel();
-  populatePeople();
-
-  const first =
-    state.people[0];
-
-  if (first) {
-    state.selectedId =
-      first.id;
-
-    $('personSelect').value =
-      String(first.id);
-
-    await render();
-
-  } else {
-    showStatus(
-      'Aucun usager trouvé dans la table Usagers.',
-      true
-    );
+async function fetchTableSafe(key, required) {
+  const name = TABLES[key];
+  try {
+    return rowsFromTable(await grist.docApi.fetchTable(name));
+  } catch (error) {
+    if (required) {
+      throw new Error(`Impossible de lire la table obligatoire « ${name} » : ${error?.message || error}`);
+    }
+    console.warn(`Table optionnelle « ${name} » non disponible`, error);
+    return [];
   }
 }
 
+async function fetchAll({ preserveSelection = false } = {}) {
+  showStatus('Lecture des tables Grist…');
+
+  const result = {};
+
+  for (const key of REQUIRED_TABLES) {
+    result[key] = await fetchTableSafe(key, true);
+  }
+
+  for (const key of OPTIONAL_TABLES) {
+    result[key] = await fetchTableSafe(key, false);
+  }
+
+  state.tables = result;
+  buildModel();
+  populatePeople();
+
+  if (!state.people.length) {
+    state.selectedId = null;
+    showStatus('Aucun usager actif trouvé dans la table Usagers.', true);
+    return;
+  }
+
+  const previousExists = preserveSelection &&
+    state.people.some((person) => person.id === Number(state.selectedId));
+
+  if (!previousExists) {
+    state.selectedId = state.people[0].id;
+  }
+
+  requireElement('personSelect').value = String(state.selectedId);
+  await render();
+}
 
 /* =========================================================
    CONSTRUCTION DU MODÈLE
    ========================================================= */
 
 function buildModel() {
-  const users =
-    state.tables.usagers;
+  const users = state.tables.usagers || [];
+  const activities = state.tables.activites || [];
+  const participations = state.tables.participations || [];
 
-  const activities =
-    state.tables.activites;
+  const days = byId(state.tables.jours || []);
+  const hours = byId(state.tables.heures || []);
+  const animators = byId(state.tables.animateurs || []);
+  const otherActivityTypes = byId(state.tables.activitesAutres || []);
+  const partners = byId(state.tables.reeducateurs || []);
 
-  const participations =
-    state.tables.participations;
-
-  const days =
-    byId(state.tables.jours);
-
-  const hours =
-    byId(state.tables.heures);
-
-  const animators =
-    byId(state.tables.animateurs);
-
-  const otherActivityTypes =
-    byId(state.tables.activitesAutres);
-
-  const partners =
-    byId(state.tables.reeducateurs);
-
-
-  /* ---------------------------------------------------------
-     PARTICIPANTS PAR ACTIVITÉ
-     --------------------------------------------------------- */
-
-  const participantsByActivity =
-    new Map();
+  const participantsByActivity = new Map();
 
   for (const participation of participations) {
+    const activityId = refIds(participation.Activites)[0];
+    if (!activityId) continue;
 
-    const activityId =
-      refIds(
-        participation.Activites
-      )[0];
-
-    if (!activityId) {
-      continue;
+    const participantSet = participantsByActivity.get(activityId) || new Set();
+    for (const participantId of refIds(participation.Participants)) {
+      participantSet.add(participantId);
     }
-
-    const participantSet =
-      participantsByActivity.get(
-        activityId
-      ) ||
-      new Set();
-
-    refIds(
-      participation.Participants
-    ).forEach(
-      (participantId) => {
-        participantSet.add(
-          participantId
-        );
-      }
-    );
-
-    participantsByActivity.set(
-      activityId,
-      participantSet
-    );
+    participantsByActivity.set(activityId, participantSet);
   }
 
-
-  /* ---------------------------------------------------------
-     USAGERS
-     --------------------------------------------------------- */
-
+  // Schéma Grist contrôlé : Parti_e, Lu, Ma, Me, Je, Ve.
+  // La colonne Presence n'existe pas dans le fichier transmis : elle n'est pas utilisée.
   state.people = users
     .filter((user) => !isTrue(user.Parti_e))
     .map((user) => ({
-      id: user.id,
+      id: Number(user.id),
       name: text(
         user.Usager,
         `${text(user.Prenom)} ${text(user.Nom)}`.trim()
@@ -397,500 +280,174 @@ function buildModel() {
       lastName: text(user.Nom).trim(),
       firstName: text(user.Prenom).trim(),
       portrait: user.Portrait,
-      presence: refIds(user.Presence).map((id) =>
-        normalizeDay(days.get(id)?.Jour)
-      ),
       flags: {
-        Lundi: user.Lu,
-        Mardi: user.Ma,
-        Mercredi: user.Me,
-        Jeudi: user.Je,
-        Vendredi: user.Ve
+        Lundi: isTrue(user.Lu),
+        Mardi: isTrue(user.Ma),
+        Mercredi: isTrue(user.Me),
+        Jeudi: isTrue(user.Je),
+        Vendredi: isTrue(user.Ve)
       }
     }))
+    .sort((a, b) =>
+      a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) ||
+      a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' })
+    );
 
-    .sort((a, b) => {
-      const lastNameComparison = a.lastName.localeCompare(
-        b.lastName,
-        'fr',
-        { sensitivity: 'base' }
+  state.activities = activities
+    .map((activity) => {
+      const dayRow = days.get(refIds(activity.Jour)[0]);
+      const startRow = hours.get(refIds(activity.Heure_debut)[0]);
+      const endRow = hours.get(refIds(activity.Heure_fin)[0]);
+
+      const animatorNames = refIds(activity.Animateur_s)
+        .map((id) => animators.get(id))
+        .filter(Boolean)
+        .map((animator) => text(
+          animator.Nom2,
+          `${text(animator.Prenom)} ${text(animator.Nom)}`.trim()
+        ))
+        .filter(Boolean);
+
+      return {
+        id: Number(activity.id),
+        kind: 'regular',
+        name: text(activity.Nom_activite, 'Activité'),
+        day: normalizeDay(dayRow?.Jour || activity.gristHelper_Display2),
+        // Colonne réelle du .grist : Numero_du_jour_de_la_semaine
+        dayOrder: Number(
+          activity.Numero_du_jour_de_la_semaine ||
+          dayRow?.Num_jour ||
+          99
+        ),
+        start: text(startRow?.Heures || activity.gristHelper_Display3),
+        end: text(endRow?.Heures || activity.gristHelper_Display4),
+        animators: animatorNames,
+        capacity: activity.Capacite,
+        description: text(activity.Remarques_planning).slice(0, 100),
+        visual: activity.Visuel,
+        groupOpen: isTrue(activity.Groupe_ouvert),
+        fullYear: isTrue(activity.Annee_complete),
+        participants: participantsByActivity.get(Number(activity.id)) || new Set()
+      };
+    })
+    .sort(sortActivities);
+
+  state.otherActivities = (state.tables.reeducations || [])
+    .map((otherActivity) => {
+      const typeRow = otherActivityTypes.get(refIds(otherActivity.Type)[0]);
+      const dayRow = days.get(refIds(otherActivity.Jour)[0]);
+      const partnerRow = partners.get(refIds(otherActivity.Partenaire)[0]);
+      const userIds = refIds(otherActivity.Usagers);
+
+      const typeName = text(
+        typeRow?.Type || otherActivity.gristHelper_Display,
+        'Activité autre'
       );
 
-      if (lastNameComparison !== 0) {
-        return lastNameComparison;
-      }
-
-      return a.firstName.localeCompare(
-        b.firstName,
-        'fr',
-        { sensitivity: 'base' }
+      const partnerName = text(
+        partnerRow?.Partenaire ||
+        partnerRow?.Organisation ||
+        otherActivity.gristHelper_Display4 ||
+        otherActivity.gristHelper_Display6
       );
-    });
 
+      const hourRow = hours.get(refIds(otherActivity.Horaire)[0]);
+      const rawSchedule = text(hourRow?.Heures || otherActivity.gristHelper_Display3);
+      const scheduleParts = rawSchedule
+        .split(/\s*[–—-]\s*/)
+        .filter(Boolean);
 
-
-  /* ---------------------------------------------------------
-     ACTIVITÉS
-     --------------------------------------------------------- */
-
-  state.activities =
-    activities
-      .map((activity) => {
-
-        const dayRow =
-          days.get(
-            refIds(
-              activity.Jour
-            )[0]
-          );
-
-        const startRow =
-          hours.get(
-            refIds(
-              activity.Heure_debut
-            )[0]
-          );
-
-        const endRow =
-          hours.get(
-            refIds(
-              activity.Heure_fin
-            )[0]
-          );
-
-
-        const animatorNames =
-          refIds(
-            activity.Animateur_s
-          )
-            .map(
-              (id) =>
-                animators.get(id)
-            )
-            .filter(Boolean)
-            .map(
-              (animator) =>
-                text(
-                  animator.Nom2,
-                  `${text(
-                    animator.Prenom
-                  )} ${text(
-                    animator.Nom
-                  )}`.trim()
-                )
-            );
-
-
-        /*
-         * Nouvelles colonnes :
-         *
-         * Groupe ouvert
-         * Année complète
-         */
-
-        const groupOpenValue =
-          firstDefined(
-            activity,
-            [
-              'Groupe_ouvert',
-              'Groupe_Ouvert'
-            ],
-            false
-          );
-
-        const fullYearValue =
-          firstDefined(
-            activity,
-            [
-              'Annee_complete',
-              'Annee_Complete',
-              'Annee_complete_'
-            ],
-            false
-          );
-
-
-        return {
-          id:
-            activity.id,
-
-          kind:
-            'regular',
-
-          name:
-            text(
-              activity.Nom_activite,
-              'Activité'
-            ),
-
-          day:
-            normalizeDay(
-              dayRow?.Jour ||
-              activity.gristHelper_Display2
-            ),
-
-          dayOrder:
-            Number(
-              activity.Jour_Num_jour ||
-              dayRow?.Num_jour ||
-              99
-            ),
-
-          start:
-            text(
-              startRow?.Heures ||
-              activity.gristHelper_Display3
-            ),
-
-          end:
-            text(
-              endRow?.Heures ||
-              activity.gristHelper_Display4
-            ),
-
-          animators:
-            animatorNames,
-
-          capacity:
-            activity.Capacite,
-
-          description:
-            text(
-              activity.Remarques_planning
-            ).slice(0, 100),
-
-          visual:
-            activity.Visuel,
-
-          groupOpen:
-            isTrue(
-              groupOpenValue
-            ),
-
-          fullYear:
-            isTrue(
-              fullYearValue
-            ),
-
-          participants:
-            participantsByActivity.get(
-              activity.id
-            ) ||
-            new Set()
-        };
-      })
-
-      .sort(sortActivities);
-
-
-  /* ---------------------------------------------------------
-     ACTIVITÉS AUTRES / RÉÉDUCATIONS
-     --------------------------------------------------------- */
-
-  state.otherActivities =
-    state.tables.reeducations
-      .map((otherActivity) => {
-
-        const typeRow =
-          otherActivityTypes.get(
-            refIds(
-              otherActivity.Type
-            )[0]
-          );
-
-        const dayRow =
-          days.get(
-            refIds(
-              otherActivity.Jour
-            )[0]
-          );
-
-        const partnerRow =
-          partners.get(
-            refIds(
-              otherActivity.Partenaire
-            )[0]
-          );
-
-        const userIds =
-          refIds(
-            otherActivity.Usagers
-          );
-
-
-        const typeName =
-          text(
-            typeRow?.Type ||
-            otherActivity.gristHelper_Display,
-            'Activité autre'
-          );
-
-
-        const partnerName =
-          text(
-            partnerRow?.Partenaire ||
-            partnerRow?.Organisation ||
-            otherActivity.gristHelper_Display4 ||
-            otherActivity.gristHelper_Display6
-          );
-
-
-        const hourRow =
-          hours.get(
-            refIds(
-              firstDefined(
-                otherActivity,
-                [
-                  'Heure',
-                  'Horaire'
-                ]
-              )
-            )[0]
-          );
-
-
-        const rawSchedule =
-          text(
-            hourRow?.Heures ||
-            firstDefined(
-              otherActivity,
-              [
-                'Horaire',
-                'gristHelper_Display3'
-              ]
-            )
-          );
-
-
-        const scheduleParts =
-          rawSchedule
-            .split(
-              /\s*[–—-]\s*/
-            )
-            .filter(Boolean);
-
-
-        return {
-          id:
-            otherActivity.id,
-
-          kind:
-            'other',
-
-          name:
-            typeName,
-
-          day:
-            normalizeDay(
-              dayRow?.Jour ||
-              otherActivity.gristHelper_Display2
-            ),
-
-          dayOrder:
-            Number(
-              dayRow?.Num_jour ||
-              99
-            ),
-
-          start:
-            scheduleParts[0] ||
-            rawSchedule,
-
-          end:
-            scheduleParts[1] ||
-            '',
-
-          schedule:
-            rawSchedule,
-
-          partner:
-            partnerName,
-
-          place:
-            text(
-              otherActivity.Lieu
-            ),
-
-          description:
-            '',
-
-          visual:
-            typeRow?.Visuel_act_autre,
-
-          participants:
-            new Set(userIds)
-        };
-      })
-
-      .sort(sortActivities);
+      return {
+        id: Number(otherActivity.id),
+        kind: 'other',
+        name: typeName,
+        day: normalizeDay(dayRow?.Jour || otherActivity.gristHelper_Display2),
+        dayOrder: Number(
+          otherActivity.Num_du_jour ||
+          otherActivity.Jour_Num_jour ||
+          dayRow?.Num_jour ||
+          99
+        ),
+        start: scheduleParts[0] || rawSchedule,
+        end: scheduleParts[1] || '',
+        schedule: rawSchedule,
+        partner: partnerName,
+        place: text(otherActivity.Lieu),
+        description: '',
+        visual: typeRow?.Visuel_act_autre,
+        participants: new Set(userIds)
+      };
+    })
+    .sort(sortActivities);
 }
-
-
-/* =========================================================
-   TRI
-   ========================================================= */
 
 function sortActivities(a, b) {
   return (
-    a.dayOrder -
-      b.dayOrder ||
-
-    minutes(a.start) -
-      minutes(b.start) ||
-
-    a.name.localeCompare(
-      b.name,
-      'fr'
-    )
+    a.dayOrder - b.dayOrder ||
+    minutes(a.start) - minutes(b.start) ||
+    a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })
   );
 }
 
-
 /* =========================================================
-   SÉLECTEUR D'USAGER
+   INTERFACE
    ========================================================= */
 
 function populatePeople() {
-  $('personSelect').innerHTML =
-    state.people
-      .map(
-        (person) =>
-          `<option value="${person.id}">
-            ${esc(person.name)}
-          </option>`
-      )
-      .join('');
+  const select = requireElement('personSelect');
+  select.innerHTML = state.people
+    .map((person) => `<option value="${person.id}">${esc(person.name)}</option>`)
+    .join('');
 }
 
+function showStatus(message, error = false) {
+  const status = requireElement('status');
+  const sheet = requireElement('sheet');
 
-/* =========================================================
-   MESSAGE D'ÉTAT
-   ========================================================= */
-
-function showStatus(
-  message,
-  error = false
-) {
-  $('status').textContent =
-    message;
-
-  $('status').classList.toggle(
-    'error',
-    error
-  );
-
-  $('status').classList.remove(
-    'hidden'
-  );
-
-  $('sheet').classList.add(
-    'hidden'
-  );
+  status.textContent = message;
+  status.classList.toggle('error', error);
+  status.classList.remove('hidden');
+  sheet.classList.add('hidden');
 }
-
-
-/* =========================================================
-   MATIN / APRÈS-MIDI
-   ========================================================= */
 
 function periodOf(activity) {
-  return minutes(activity.start) <
-    13 * 60
-    ? 'Matin'
-    : 'Après-midi';
+  return minutes(activity.start) < 13 * 60 ? 'Matin' : 'Après-midi';
 }
-
-
-/* =========================================================
-   PRÉSENCE
-   ========================================================= */
 
 function isPresent(person, day) {
-  return (
-    person.presence.includes(day) ||
-
-    person.flags[day] === true ||
-
-    person.flags[day] === 1
-  );
+  return Boolean(person?.flags?.[day]);
 }
 
-
-/* =========================================================
-   Date d'impression
-   ========================================================= */
 function updatePrintDate() {
   const printDate = $('printDate');
+  if (!printDate) return;
 
-  if (!printDate) {
-    return;
-  }
-
-  const formattedDate = new Intl.DateTimeFormat('fr-FR', {
+  printDate.textContent = `Imprimé le ${new Intl.DateTimeFormat('fr-FR', {
     dateStyle: 'long'
-  }).format(new Date());
-
-  printDate.textContent = `Imprimé le ${formattedDate}`;
+  }).format(new Date())}`;
 }
-
-
-/* =========================================================
-   OPACITÉ
-   ========================================================= */
 
 function opacityFor(day) {
-  const input =
-    $(`opacity${day}`);
+  const input = $(`opacity${day}`);
+  if (!input) return 0.18;
 
-  const value =
-    input
-      ? Number(input.value)
-      : 18;
+  const value = Number(input.value);
+  if (!Number.isFinite(value)) return 0.18;
 
-  return (
-    Math.min(
-      100,
-      Math.max(
-        0,
-        value
-      )
-    ) / 100
-  );
+  return Math.min(100, Math.max(0, value)) / 100;
 }
 
-
-/* =========================================================
-   COULEURS
-   ========================================================= */
-
-function hexToRgba(
-  hex,
-  opacity
-) {
-  const normalized =
-    hex.replace('#', '');
-
-  const number =
-    Number.parseInt(
-      normalized,
-      16
-    );
-
-  const red =
-    (number >> 16) & 255;
-
-  const green =
-    (number >> 8) & 255;
-
-  const blue =
-    number & 255;
-
+function hexToRgba(hex, opacity) {
+  const normalized = hex.replace('#', '');
+  const number = Number.parseInt(normalized, 16);
+  const red = (number >> 16) & 255;
+  const green = (number >> 8) & 255;
+  const blue = number & 255;
   return `rgba(${red}, ${green}, ${blue}, ${opacity})`;
 }
 
-
 /* =========================================================
-   AFFICHAGE DU PLANNING
+   AFFICHAGE
    ========================================================= */
 
 async function render() {
@@ -899,51 +456,32 @@ async function render() {
   );
 
   if (!person) {
+    showStatus('Aucun usager sélectionné.', true);
     return;
   }
 
-  $('status').classList.add('hidden');
-  $('sheet').classList.remove('hidden');
+  requireElement('status').classList.add('hidden');
+  requireElement('sheet').classList.remove('hidden');
+  requireElement('personName').textContent = person.name;
 
-  $('personName').textContent = person.name;
-
-  const presentDays = DAYS.filter(
-    (day) => isPresent(person, day)
-  );
-
-  $('presenceText').textContent = presentDays.length
+  const presentDays = DAYS.filter((day) => isPresent(person, day));
+  requireElement('presenceText').textContent = presentDays.length
     ? presentDays.join(', ')
     : 'Présence habituelle non renseignée';
 
   const portraitUrl = await attachmentUrl(person.portrait);
-
-  $('portrait').innerHTML = portraitUrl
-    ? `
-      <img
-        src="${portraitUrl}"
-        alt="Portrait de ${esc(person.name)}"
-      >
-    `
-    : `
-      <span>
-        ${esc(initials(person.name))}
-      </span>
-    `;
+  requireElement('portrait').innerHTML = portraitUrl
+    ? `<img src="${portraitUrl}" alt="Portrait de ${esc(person.name)}">`
+    : `<span>${esc(initials(person.name))}</span>`;
 
   const cards = await Promise.all(
     DAYS.map((day) => renderDay(person, day))
   );
 
-  $('weekGrid').innerHTML = `
+  requireElement('weekGrid').innerHTML = `
     ${cards.join('')}
-
-    <div
-      class="meal-banner"
-      aria-label="Repas de 12 heures"
-    >
-      <span>
-        12 h · Repas
-      </span>
+    <div class="meal-banner" aria-label="Repas de 12 heures">
+      <span>12 h · Repas</span>
     </div>
   `;
 
@@ -951,655 +489,185 @@ async function render() {
   updatePrintDate();
 }
 
+async function renderDay(person, day) {
+  const present = isPresent(person, day);
 
+  const enrolledActivities = present
+    ? state.activities.filter(
+        (activity) =>
+          activity.day === day &&
+          activity.participants.has(person.id)
+      )
+    : [];
 
-/* =========================================================
-   AFFICHAGE D'UNE JOURNÉE
+  function shouldShowOpenGroup(openActivity) {
+    if (!present) return false;
 
-   ORDRE DE PRIORITÉ :
-
-   1. USAGER ABSENT
-      → aucune activité affichée.
-
-   2. USAGER PRÉSENT + activité Année complète
-      → activité inscrite affichée.
-      → groupes ouverts masqués sur cette demi-journée.
-
-   3. USAGER PRÉSENT + activité non Année complète
-      → activité inscrite affichée.
-      → groupes ouverts affichés.
-
-   4. USAGER PRÉSENT + aucune inscription
-      → groupes ouverts affichés.
-
-   La logique est indépendante entre :
-   - matin
-   - après-midi
-   ========================================================= */
-
-async function renderDay(
-  person,
-  day
-) {
-
-  /*
-   * On détermine immédiatement
-   * si l'usager est présent.
-   */
-
-  const present =
-    isPresent(
-      person,
-      day
+    const openPeriod = periodOf(openActivity);
+    const enrolledSamePeriod = enrolledActivities.filter(
+      (activity) => periodOf(activity) === openPeriod
     );
 
+    if (!enrolledSamePeriod.length) return true;
 
-  /* ---------------------------------------------------------
-     ACTIVITÉS AUXQUELLES L'USAGER EST INSCRIT
-     --------------------------------------------------------- */
+    const hasFullYearActivity = enrolledSamePeriod.some(
+      (activity) => activity.fullYear === true
+    );
 
-  const enrolledActivities =
-    present
-      ? state.activities.filter(
-          (activity) => (
-            activity.day === day &&
-            activity.participants.has(
-              person.id
-            )
-          )
-        )
-      : [];
-
-
-  /* ---------------------------------------------------------
-     GROUPE OUVERT
-     --------------------------------------------------------- */
-
-  function shouldShowOpenGroup(
-    openActivity
-  ) {
-
-    /*
-     * Si l'usager est absent :
-     * aucun groupe ouvert.
-     */
-
-    if (!present) {
-      return false;
-    }
-
-
-    const openPeriod =
-      periodOf(
-        openActivity
-      );
-
-
-    /*
-     * Inscriptions de l'usager
-     * sur la même demi-journée.
-     */
-
-    const enrolledSamePeriod =
-      enrolledActivities.filter(
-        (activity) =>
-          periodOf(activity) ===
-          openPeriod
-      );
-
-
-    /*
-     * Aucune activité inscrite :
-     * groupes ouverts proposés.
-     */
-
-    if (
-      enrolledSamePeriod.length ===
-      0
-    ) {
-      return true;
-    }
-
-
-    /*
-     * Présence d'une activité
-     * Année complète :
-     *
-     * groupes ouverts masqués.
-     */
-
-    const hasFullYearActivity =
-      enrolledSamePeriod.some(
-        (activity) =>
-          activity.fullYear ===
-          true
-      );
-
-
-    if (
-      hasFullYearActivity
-    ) {
-      return false;
-    }
-
-
-    /*
-     * Activité inscrite,
-     * mais pas Année complète :
-     *
-     * groupes ouverts affichés.
-     */
-
-    return true;
+    return !hasFullYearActivity;
   }
 
+  const regularActivities = state.activities.filter((activity) => {
+    if (!present) return false;
+    if (activity.day !== day) return false;
 
-  /* ---------------------------------------------------------
-     ACTIVITÉS ORDINAIRES
-     --------------------------------------------------------- */
+    if (activity.participants.has(person.id)) return true;
+    if (!activity.groupOpen) return false;
 
-  const regularActivities =
-    state.activities.filter(
-      (activity) => {
+    return shouldShowOpenGroup(activity);
+  });
 
-        /*
-         * PRIORITÉ ABSOLUE :
-         *
-         * usager absent =
-         * aucune activité.
-         */
+  const otherActivities = state.otherActivities.filter(
+    (activity) =>
+      present &&
+      activity.day === day &&
+      activity.participants.has(person.id)
+  );
 
-        if (!present) {
-          return false;
-        }
-
-
-        /*
-         * Mauvais jour.
-         */
-
-        if (
-          activity.day !== day
-        ) {
-          return false;
-        }
-
-
-        /*
-         * L'usager est inscrit :
-         * activité toujours affichée.
-         */
-
-        if (
-          activity.participants.has(
-            person.id
-          )
-        ) {
-          return true;
-        }
-
-
-        /*
-         * Pas inscrit
-         * + groupe fermé :
-         *
-         * activité masquée.
-         */
-
-        if (
-          !activity.groupOpen
-        ) {
-          return false;
-        }
-
-
-        /*
-         * Groupe ouvert :
-         * application de la règle
-         * Année complète.
-         */
-
-        return shouldShowOpenGroup(
-          activity
-        );
-      }
-    );
-
-
-  /* ---------------------------------------------------------
-     RÉÉDUCATIONS / ACTIVITÉS AUTRES
-     --------------------------------------------------------- */
-
-  const otherActivities =
-    state.otherActivities.filter(
-      (activity) => (
-        present &&
-        activity.day === day &&
-        activity.participants.has(
-          person.id
-        )
-      )
-    );
-
-
-  /* ---------------------------------------------------------
-     RASSEMBLEMENT
-     --------------------------------------------------------- */
-
-  const activities = [
-    ...regularActivities,
-    ...otherActivities
-  ].sort(sortActivities);
-
-
-  /* ---------------------------------------------------------
-     MATIN / APRÈS-MIDI
-     --------------------------------------------------------- */
+  const activities = [...regularActivities, ...otherActivities]
+    .sort(sortActivities);
 
   const groups = {
-    Matin:
-      activities.filter(
-        (activity) =>
-          periodOf(activity) ===
-          'Matin'
-      ),
-
-    'Après-midi':
-      activities.filter(
-        (activity) =>
-          periodOf(activity) ===
-          'Après-midi'
-      )
+    Matin: activities.filter((activity) => periodOf(activity) === 'Matin'),
+    'Après-midi': activities.filter((activity) => periodOf(activity) === 'Après-midi')
   };
 
-
-  const showEmpty =
-    $('showEmpty').checked;
-
   const sections = [];
+  const showEmpty = $('showEmpty') ? $('showEmpty').checked : true;
 
+  for (const label of ['Matin', 'Après-midi']) {
+    const list = groups[label];
 
-  /* ---------------------------------------------------------
-     CONSTRUCTION DES DEMI-JOURNÉES
-     --------------------------------------------------------- */
-
-  for (
-    const label of [
-      'Matin',
-      'Après-midi'
-    ]
-  ) {
-
-    const list =
-      groups[label];
-
-
-    /*
-     * Si aucune activité et
-     * que les créneaux vides
-     * sont masqués.
-     */
-
-    if (
-      !list.length &&
-      !showEmpty
-    ) {
-
-      if (
-        label === 'Matin'
-      ) {
-        sections.push(
-          '<div class="meal-gap" aria-hidden="true"></div>'
-        );
+    if (!list.length && !showEmpty) {
+      if (label === 'Matin') {
+        sections.push('<div class="meal-gap" aria-hidden="true"></div>');
       }
-
       continue;
     }
 
+    const inner = list.length
+      ? (await Promise.all(list.map(activityCard))).join('')
+      : `<div class="empty-slot">${present ? 'Aucune activité renseignée' : 'Absent'}</div>`;
 
-    /*
-     * Contenu de la demi-journée.
-     */
-
-    const inner =
-      list.length
-        ? (
-            await Promise.all(
-              list.map(
-                activityCard
-              )
-            )
-          ).join('')
-
-        : `
-          <div class="empty-slot">
-            ${
-              present
-                ? 'Aucune activité renseignée'
-                : 'Absent'
-            }
-          </div>
-        `;
-
+    const cssLabel = label === 'Matin' ? 'matin' : 'après-midi';
 
     sections.push(`
-      <section
-        class="period period-${label.toLowerCase()}"
-      >
-
-        <div class="period-title">
-          ${label}
-        </div>
-
+      <section class="period period-${cssLabel}">
+        <div class="period-title">${label}</div>
         ${inner}
-
       </section>
     `);
 
-
-    if (
-      label === 'Matin'
-    ) {
-      sections.push(
-        '<div class="meal-gap" aria-hidden="true"></div>'
-      );
+    if (label === 'Matin') {
+      sections.push('<div class="meal-gap" aria-hidden="true"></div>');
     }
   }
 
-
-  /* ---------------------------------------------------------
-     COULEUR DE LA JOURNÉE
-     --------------------------------------------------------- */
-
-  const dayColor =
-    DAY_COLORS[day];
-
-  const dayBackground =
-    hexToRgba(
-      dayColor,
-      opacityFor(day)
-    );
-
-  const absenceClass =
-    present
-      ? ''
-      : ' day-absent';
-
-
-  /* ---------------------------------------------------------
-     HTML DU JOUR
-     --------------------------------------------------------- */
+  const dayColor = DAY_COLORS[day];
+  const dayBackground = hexToRgba(dayColor, opacityFor(day));
+  const absenceClass = present ? '' : ' day-absent';
 
   return `
-    <article
-      class="day${absenceClass}"
-      style="
-        --day-color: ${dayColor};
-        --day-background: ${dayBackground};
-      "
-    >
-
+    <article class="day${absenceClass}" style="--day-color:${dayColor};--day-background:${dayBackground};">
       <div class="day-head">
-
-        <h3>
-          ${day}
-        </h3>
-
-        <span>
-          ${
-            present
-              ? `${activities.length} activité${
-                  activities.length > 1
-                    ? 's'
-                    : ''
-                }`
-              : 'ABSENT·E'
-          }
-        </span>
-
+        <h3>${day}</h3>
+        <span>${present
+          ? `${activities.length} activité${activities.length > 1 ? 's' : ''}`
+          : 'ABSENT·E'}</span>
       </div>
-
-      <div class="day-content">
-
-        ${sections.join('')}
-
-      </div>
-
+      <div class="day-content">${sections.join('')}</div>
     </article>
   `;
 }
 
+function resetMealAlignment() {
+  const grid = $('weekGrid');
+  if (!grid) return;
 
-/* =========================================================
-   ALIGNEMENT DU BANDEAU REPAS
-   ========================================================= */
+  grid.querySelectorAll('.period-matin').forEach((section) => {
+    section.style.removeProperty('min-height');
+  });
+
+  const banner = grid.querySelector('.meal-banner');
+  if (banner) {
+    banner.style.removeProperty('top');
+  }
+}
 
 function alignMealBanner() {
-  const grid =
-    $('weekGrid');
+  const grid = $('weekGrid');
+  if (!grid) return;
 
-  const morningSections = [
-    ...grid.querySelectorAll(
-      '.period-matin'
-    )
-  ];
+  const morningSections = [...grid.querySelectorAll('.period-matin')];
+  const banner = grid.querySelector('.meal-banner');
 
-  const banner =
-    grid.querySelector(
-      '.meal-banner'
-    );
+  if (!morningSections.length || !banner) return;
 
+  // Toujours supprimer les anciennes dimensions avant de remesurer.
+  // C'est indispensable lors du passage écran -> impression :
+  // les hauteurs calculées à l'écran ne doivent jamais être réutilisées en A4.
+  morningSections.forEach((section) => {
+    section.style.removeProperty('min-height');
+  });
+  banner.style.removeProperty('top');
 
-  if (
-    !morningSections.length ||
-    !banner
-  ) {
-    return;
-  }
-
-
-  morningSections.forEach(
-    (section) => {
-      section.style.minHeight =
-        '';
-    }
-  );
-
-
-  const maxMorningHeight =
+  const maxMorningHeight = Math.ceil(
     Math.max(
-      ...morningSections.map(
-        (section) =>
-          section
-            .getBoundingClientRect()
-            .height
-      )
-    );
-
-
-  morningSections.forEach(
-    (section) => {
-      section.style.minHeight =
-        `${maxMorningHeight}px`;
-    }
+      ...morningSections.map((section) => section.getBoundingClientRect().height)
+    )
   );
 
+  morningSections.forEach((section) => {
+    section.style.minHeight = `${maxMorningHeight}px`;
+  });
 
-  const firstGap =
-    grid.querySelector(
-      '.meal-gap'
-    );
+  const firstGap = grid.querySelector('.meal-gap');
+  if (!firstGap) return;
 
-
-  if (!firstGap) {
-    return;
-  }
-
-
-  const gridRect =
-    grid.getBoundingClientRect();
-
-  const gapRect =
-    firstGap.getBoundingClientRect();
-
-
-  banner.style.top =
-    `${
-      gapRect.top -
-      gridRect.top
-    }px`;
+  const gridRect = grid.getBoundingClientRect();
+  const gapRect = firstGap.getBoundingClientRect();
+  banner.style.top = `${Math.ceil(gapRect.top - gridRect.top)}px`;
 }
 
+async function activityCard(activity) {
+  const logo = await attachmentUrl(activity.visual);
 
-/* =========================================================
-   CARTE ACTIVITÉ
-   ========================================================= */
+  const time = activity.schedule ||
+    [activity.start, activity.end].filter(Boolean).join(' – ');
 
-async function activityCard(
-  activity
-) {
-  const logo =
-    await attachmentUrl(
-      activity.visual
-    );
+  const cardColor = colorFor(activity.name);
 
+  const regularMeta = activity.kind === 'regular' && activity.animators.length
+    ? `<div><strong>Avec :</strong> ${esc(activity.animators.join(', '))}</div>`
+    : '';
 
-  const time =
-    activity.schedule ||
-    [
-      activity.start,
-      activity.end
-    ]
-      .filter(Boolean)
-      .join(' – ');
-
-
-  const cardColor =
-    colorFor(
-      activity.name
-    );
-
-
-  const regularMeta =
-    activity.kind === 'regular' &&
-    activity.animators.length
-      ? `
-        <div>
-          <strong>Avec :</strong>
-          ${esc(
-            activity.animators.join(
-              ', '
-            )
-          )}
-        </div>
-      `
-      : '';
-
-
-  const otherMeta =
-    activity.kind === 'other'
-      ? `
-        ${
-          activity.partner &&
-          activity.partner.trim()
-            ? `
-              <div>
-                <strong>Avec :</strong>
-                ${esc(
-                  activity.partner
-                )}
-              </div>
-            `
-            : ''
-        }
-
-        ${
-          activity.place &&
-          activity.place.trim()
-            ? `
-              <div>
-                <strong>Lieu :</strong>
-                ${esc(
-                  activity.place
-                )}
-              </div>
-            `
-            : ''
-        }
-      `
-      : '';
-
+  const otherMeta = activity.kind === 'other'
+    ? `
+      ${activity.partner ? `<div><strong>Avec :</strong> ${esc(activity.partner)}</div>` : ''}
+      ${activity.place ? `<div><strong>Lieu :</strong> ${esc(activity.place)}</div>` : ''}
+    `
+    : '';
 
   return `
-    <article
-      class="
-        activity-card
-        ${
-          activity.kind === 'other'
-            ? ' activity-card-other'
-            : ''
-        }
-      "
-      style="
-        --card-color: ${cardColor}
-      "
-    >
-
-      ${
-        logo
-          ? `
-            <img
-              class="activity-logo"
-              src="${logo}"
-              alt=""
-            >
-          `
-          : ''
-      }
-
-      <h4 class="activity-title">
-        ${esc(
-          activity.name
-        )}
-      </h4>
-
-      ${
-        time
-          ? `
-            <div class="activity-time">
-              ${esc(time)}
-            </div>
-          `
-          : ''
-      }
-
-      <div class="activity-meta">
-
-        ${regularMeta}
-
-        ${otherMeta}
-
-      </div>
-
-      ${
-        activity.description
-          ? `
-            <p class="activity-desc">
-              ${esc(
-                activity.description.slice(
-                  0,
-                  100
-                )
-              )}
-            </p>
-          `
-          : ''
-      }
-
+    <article class="activity-card${activity.kind === 'other' ? ' activity-card-other' : ''}" style="--card-color:${cardColor}">
+      ${logo ? `<img class="activity-logo" src="${logo}" alt="">` : ''}
+      <h4 class="activity-title">${esc(activity.name)}</h4>
+      ${time ? `<div class="activity-time">${esc(time)}</div>` : ''}
+      <div class="activity-meta">${regularMeta}${otherMeta}</div>
+      ${activity.description ? `<p class="activity-desc">${esc(activity.description)}</p>` : ''}
     </article>
   `;
 }
-
 
 /* =========================================================
    ERREURS
@@ -1608,128 +676,132 @@ async function activityCard(
 function showError(error) {
   console.error(error);
 
-  showStatus(
-    'Une erreur empêche l’affichage du planning.',
-    true
-  );
+  try {
+    showStatus('Une erreur empêche l’affichage du planning.', true);
+  } catch (_) {
+    // Si le HTML lui-même est incomplet, l'erreur reste visible en console.
+  }
 
+  const errorText = $('errorText');
+  if (errorText) {
+    errorText.textContent = `${error?.message || error}\n\nTables attendues :\n${Object.values(TABLES).join('\n')}`;
+  }
 
-  $('errorText').textContent =
-    `${error?.message || error}\n\n` +
-    'Vérifiez que les tables portent exactement ces noms :\n' +
-    Object.values(TABLES)
-      .join('\n');
-
-
-  $('errorDialog').showModal();
+  const dialog = $('errorDialog');
+  if (dialog && typeof dialog.showModal === 'function' && !dialog.open) {
+    dialog.showModal();
+  }
 }
 
+/* =========================================================
+   VÉRIFICATION DU HTML
+   ========================================================= */
+
+function validateHtml() {
+  const requiredIds = [
+    'personSelect',
+    'formatSelect',
+    'printBtn',
+    'reloadBtn',
+    'status',
+    'sheet',
+    'personName',
+    'presenceText',
+    'portrait',
+    'weekGrid'
+  ];
+
+  const missing = requiredIds.filter((id) => !$(id));
+  if (missing.length) {
+    throw new Error(`index.html incompatible : éléments manquants ${missing.map((id) => `#${id}`).join(', ')}`);
+  }
+}
 
 /* =========================================================
    ÉVÉNEMENTS
    ========================================================= */
 
-$('personSelect')
-  .addEventListener(
-    'change',
-    (event) => {
+function bindEvents() {
+  onIfPresent('personSelect', 'change', (event) => {
+    state.selectedId = Number(event.target.value);
+    render().catch(showError);
+  });
 
-      state.selectedId =
-        Number(
-          event.target.value
-        );
+  onIfPresent('formatSelect', 'change', (event) => {
+    document.body.classList.toggle('print-a3', event.target.value === 'a3');
+  });
 
-      render()
-        .catch(showError);
+  onIfPresent('showEmpty', 'change', () => {
+    render().catch(showError);
+  });
+
+  for (const day of DAYS) {
+    onIfPresent(`opacity${day}`, 'input', () => {
+      render().catch(showError);
+    });
+  }
+
+  onIfPresent('printBtn', 'click', () => {
+    updatePrintDate();
+    window.print();
+  });
+
+  onIfPresent('reloadBtn', 'click', () => {
+    fetchAll({ preserveSelection: true }).catch(showError);
+  });
+
+  window.addEventListener('beforeprint', () => {
+    updatePrintDate();
+
+    // Firefox applique le CSS d'impression avant l'événement beforeprint.
+    // On efface donc les hauteurs calculées à l'écran puis on recalcule
+    // l'alignement matin / repas avec les dimensions réelles de l'A4.
+    resetMealAlignment();
+    alignMealBanner();
+  });
+
+  window.addEventListener('afterprint', () => {
+    // Après impression, on revient aux dimensions naturelles de l'écran
+    // puis on réaligne proprement le bandeau repas.
+    resetMealAlignment();
+    requestAnimationFrame(() => {
+      if (!$('sheet')?.classList.contains('hidden')) alignMealBanner();
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    if (!$('sheet')?.classList.contains('hidden')) {
+      resetMealAlignment();
+      alignMealBanner();
     }
-  );
-
-
-$('showEmpty')
-  .addEventListener(
-    'change',
-    () => {
-      render()
-        .catch(showError);
-    }
-  );
-
-
-$('formatSelect')
-  .addEventListener(
-    'change',
-    (event) => {
-
-      document.body.classList.toggle(
-        'print-a3',
-        event.target.value === 'a3'
-      );
-    }
-  );
-
-
-for (const day of DAYS) {
-  $(`opacity${day}`)
-    .addEventListener(
-      'input',
-      () => {
-        render()
-          .catch(showError);
-      }
-    );
+  });
 }
-
-
-$('printBtn')
-  .addEventListener(
-    'click',
-    () => {
-      window.print();
-    }
-  );
-
-
-$('reloadBtn')
-  .addEventListener(
-    'click',
-    () => {
-      window.addEventListener('beforeprint', updatePrintDate);
-      fetchAll()
-        .catch(showError);
-    }
-  );
-
 
 /* =========================================================
    INITIALISATION GRIST
    ========================================================= */
 
-grist.ready({
-  requiredAccess: 'full'
-});
+async function start() {
+  validateHtml();
+  bindEvents();
 
+  grist.ready({ requiredAccess: 'full' });
 
-grist.onOptions(
-  (_options, interaction) => {
-
-    if (
-      interaction?.access_level &&
-      interaction.access_level !==
-        'full'
-    ) {
-
-      showStatus(
-        'Autorisez « Accès complet au document » pour lire les tables liées.',
-        true
-      );
-    }
+  if (typeof grist.onOptions === 'function') {
+    grist.onOptions((_options, interaction) => {
+      if (
+        interaction?.access_level &&
+        interaction.access_level !== 'full'
+      ) {
+        showStatus(
+          'Autorisez « Accès complet au document » pour lire les tables liées.',
+          true
+        );
+      }
+    });
   }
-);
 
+  await fetchAll();
+}
 
-/* =========================================================
-   DÉMARRAGE
-   ========================================================= */
-
-fetchAll()
-  .catch(showError);
+start().catch(showError);
