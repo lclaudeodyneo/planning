@@ -1,664 +1,807 @@
 'use strict';
 
-/* ============================================================
-   WIDGET RDV RÉÉDUCATION — SAJ ANAGALLIS
-   Version 6
-   - Kiné / Orthophonie
-   - Photo usager
-   - Nom du praticien dans chaque tuile
-   - Horaires rouges et renforcés
-   - Agrandissement des tuiles au survol / au toucher
-   - Logo association en haut à droite
-   - Bandeau repas global « 12 h • Repas »
-   - Impression A4 / A3 paysage sur UNE feuille
-   - 2 colonnes automatiques PAR DEMI-JOURNÉE quand nécessaire
-   ============================================================ */
+/* =========================================================
+   PLANNING INDIVIDUEL SAJ ANAGALLIS
+   Version raccordée au schéma Grist contrôlé le 08/09/2026
+   ========================================================= */
 
 const TABLES = {
-  users: 'Usagers',
+  participations: 'Participations',
+  activites: 'Activites',
+  usagers: 'Usagers',
+  jours: 'Jours_de_la_semaine',
+  heures: 'Heures',
+  animateurs: 'Animateurs',
+  activitesAutres: 'Activites_autres',
   reeducations: 'Reeducations',
-  practitioners: 'Reeducateurs',
-  otherTypes: 'Activites_autres',
-  days: 'Jours_de_la_semaine',
-  hours: 'Heures',
-  parameterCandidates: ['Parametres', 'Paramètres', 'Parametres_widget', 'Parametres_widgets']
+  reeducateurs: 'Reeducateurs'
 };
 
-const DAYS = [
-  {name:'Lundi', cls:'lundi'},
-  {name:'Mardi', cls:'mardi'},
-  {name:'Mercredi', cls:'mercredi'},
-  {name:'Jeudi', cls:'jeudi'},
-  {name:'Vendredi', cls:'vendredi'}
+const REQUIRED_TABLES = [
+  'participations',
+  'activites',
+  'usagers',
+  'jours',
+  'heures',
+  'animateurs'
 ];
 
-const MEAL_MINUTES = 12 * 60;
+const OPTIONAL_TABLES = [
+  'activitesAutres',
+  'reeducations',
+  'reeducateurs'
+];
 
-const state = {
-  users: [],
-  reeducations: [],
-  practitioners: [],
-  otherTypes: [],
-  days: [],
-  hours: [],
-  parameters: [],
-  attachmentUrls: new Map(),
-  attachmentTokenInfo: null,
-  associationLogo: '',
-  format: 'a4'
+const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+
+const DAY_COLORS = {
+  Lundi: '#5b8def',
+  Mardi: '#55a868',
+  Mercredi: '#c77cff',
+  Jeudi: '#e6a23c',
+  Vendredi: '#e66b6b'
 };
 
-const $ = id => document.getElementById(id);
-const normalize = value => String(value ?? '').trim();
-const norm = value => normalize(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-const esc = value => normalize(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const state = {
+  tables: {},
+  people: [],
+  activities: [],
+  otherActivities: [],
+  selectedId: null,
+  attachmentUrls: new Map()
+};
+
+const $ = (id) => document.getElementById(id);
+
+/* =========================================================
+   OUTILS GÉNÉRAUX
+   ========================================================= */
 
 function rowsFromTable(table) {
   if (!table || !Array.isArray(table.id)) return [];
-  return table.id.map((id, i) => {
-    const row = {id: Number(id)};
-    for (const [key, value] of Object.entries(table)) {
-      row[key] = Array.isArray(value) ? value[i] : value;
-    }
-    return row;
-  });
+
+  return table.id.map((id, index) =>
+    Object.fromEntries(
+      Object.entries(table).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value[index] : value
+      ])
+    )
+  );
 }
 
-function listIds(value) {
+function isTrue(value) {
+  if (value === true || value === 1 || value === '1') return true;
+  if (typeof value !== 'string') return false;
+
+  return ['true', 'oui', 'yes', 'vrai'].includes(
+    value.trim().toLowerCase()
+  );
+}
+
+function refIds(value) {
+  if (value == null || value === '') return [];
+
   if (Array.isArray(value)) {
-    return (value[0] === 'L' ? value.slice(1) : value)
-      .flat()
+    const values = value[0] === 'L' ? value.slice(1) : value;
+    return values
       .map(Number)
       .filter(Number.isFinite);
   }
-  const n = Number(value);
-  return Number.isFinite(n) && n !== 0 ? [n] : [];
+
+  const number = Number(value);
+  return Number.isFinite(number) ? [number] : [];
 }
 
-function firstId(value) { return listIds(value)[0] ?? null; }
-function byId(rows) { return new Map(rows.map(row => [Number(row.id), row])); }
-function get(row, ...names) {
-  for (const name of names) {
-    if (row && row[name] !== undefined && row[name] !== null && row[name] !== '') return row[name];
-  }
-  return '';
+function byId(rows) {
+  return new Map(rows.map((row) => [Number(row.id), row]));
 }
-function cleanChoice(value) { return normalize(value).replace(/^[^\p{L}\p{N}]+/u, '').trim(); }
-function initials(name) {
-  return normalize(name).split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase() || '?';
+
+function text(value, fallback = '') {
+  return value == null || value === '' ? fallback : String(value);
 }
+
+function esc(value) {
+  return text(value).replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  })[character]);
+}
+
+function normalizeDay(value) {
+  const normalized = text(value).trim().toLowerCase();
+  return DAYS.find((day) => day.toLowerCase() === normalized) || text(value, 'Jour');
+}
+
 function minutes(value) {
-  const text = normalize(value);
-  const m = text.match(/(\d{1,2})\s*[:h]\s*(\d{2})/i);
-  if (m) return Number(m[1]) * 60 + Number(m[2]);
-  const h = text.match(/^(\d{1,2})\s*h?$/i);
-  return h ? Number(h[1]) * 60 : 9999;
+  const match = text(value).match(/(\d{1,2})\D(\d{2})/);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : 9999;
 }
 
-function userName(user) {
-  return normalize(get(user, 'Usager')) ||
-    `${normalize(get(user, 'Prenom', 'Prénom'))} ${normalize(get(user, 'Nom')).toUpperCase()}`.trim();
+function initials(name) {
+  return text(name, '?')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
 }
 
-function practitionerName(row) {
-  return normalize(get(row, 'Partenaire', 'Nom2')) ||
-    `${normalize(get(row, 'Prenom', 'Prénom'))} ${normalize(get(row, 'Nom'))}`.trim() ||
-    'Praticien non renseigné';
-}
-
-function practitionerOrganisation(row) {
-  return cleanChoice(get(row, 'Organisation', 'Cabinet', 'Structure'));
-}
-
-function organisationKind(row) {
-  const n = norm(practitionerOrganisation(row));
-  if (n.includes('ckpsp')) return 'ckpsp';
-  if (n.includes('grillon')) return 'grillon';
-  return 'other';
-}
-
-function refText(value, rows, names) {
-  const row = byId(rows).get(firstId(value));
-  return row ? normalize(get(row, ...names)) : normalize(value);
-}
-
-function dayText(rd) {
-  return cleanChoice(normalize(get(rd, 'gristHelper_Display2')) || refText(get(rd, 'Jour'), state.days, ['Jour']));
-}
-
-function hourText(rd) {
-  return cleanChoice(normalize(get(rd, 'gristHelper_Display3')) || refText(get(rd, 'Horaire'), state.hours, ['Heures']));
-}
-
-function typeText(rd) {
-  const typeRow = byId(state.otherTypes).get(firstId(get(rd, 'Type')));
-  return cleanChoice(typeRow ? get(typeRow, 'Type', 'Nom_activite', 'Nom') : get(rd, 'gristHelper_Display', 'Type'));
-}
-
-function typeKind(label) {
-  const n = norm(label);
-  if (n.includes('ortho')) return 'ortho';
-  if (n.includes('kine') || n.includes('physio')) return 'kine';
-  return 'other';
-}
-
-function rawPlaceText(rd) { return cleanChoice(get(rd, 'Lieu', 'gristHelper_Display5')); }
-function isCabinetPlace(label) { return norm(label).includes('cabinet'); }
-
-/* ============================================================
-   LOGIQUE MÉTIER KINÉ
-   CKPSP / Grillon = organisation du praticien.
-   Lieu = Salle kiné ou Cabinet CKPSP.
-   Le Grillon n'est jamais considéré comme rendez-vous extérieur.
-   ============================================================ */
-function kineLocation(orgKind, rawPlace) {
-  if (isCabinetPlace(rawPlace) && orgKind === 'ckpsp') {
-    return {kind:'cabinet', label:'Cabinet CKPSP', autonomous:true};
+function colorFor(name) {
+  let hue = 0;
+  for (const character of text(name)) {
+    hue = (hue * 31 + character.charCodeAt(0)) % 360;
   }
-  return {kind:'salle', label:'Salle kiné', autonomous:false};
+  return `hsl(${hue} 48% 48%)`;
 }
 
-/* ============================================================
+function firstDefined(row, columnNames, fallback = '') {
+  for (const columnName of columnNames) {
+    if (row && row[columnName] != null && row[columnName] !== '') {
+      return row[columnName];
+    }
+  }
+  return fallback;
+}
+
+function requireElement(id) {
+  const element = $(id);
+  if (!element) {
+    throw new Error(`Élément HTML obligatoire introuvable : #${id}`);
+  }
+  return element;
+}
+
+function onIfPresent(id, eventName, handler) {
+  const element = $(id);
+  if (element) element.addEventListener(eventName, handler);
+}
+
+/* =========================================================
    PIÈCES JOINTES GRIST
-   ============================================================ */
+   ========================================================= */
+
+let attachmentTokenInfo = null;
+
 async function attachmentUrl(value) {
-  const ids = listIds(value);
+  const ids = refIds(value);
   if (!ids.length) return '';
+
   const id = ids[0];
   if (state.attachmentUrls.has(id)) return state.attachmentUrls.get(id);
 
   try {
-    if (!state.attachmentTokenInfo && grist.docApi.getAccessToken) {
-      state.attachmentTokenInfo = await grist.docApi.getAccessToken({readOnly:true});
+    if (!attachmentTokenInfo) {
+      attachmentTokenInfo = await grist.docApi.getAccessToken({ readOnly: true });
     }
-    const token = state.attachmentTokenInfo?.token;
-    const base = state.attachmentTokenInfo?.baseUrl || state.attachmentTokenInfo?.baseURL || '';
-    if (token && base) {
-      const url = `${base.replace(/\/$/, '')}/attachments/${id}/download?auth=${encodeURIComponent(token)}`;
-      state.attachmentUrls.set(id, url);
-      return url;
-    }
+
+    const url = `${attachmentTokenInfo.baseUrl}/attachments/${id}/download?auth=${encodeURIComponent(attachmentTokenInfo.token)}`;
+    state.attachmentUrls.set(id, url);
+    return url;
   } catch (error) {
-    console.warn('Pièce jointe Grist non disponible', error);
+    console.warn(`Pièce jointe ${id} non chargée`, error);
+    return '';
   }
-  return '';
 }
 
-function associationLogoAttachment() {
-  const preferredColumns = ['Logo_association', 'LogoAssociation', 'LogoSAJ', 'Logo_saj', 'Logo'];
-  for (const row of state.parameters) {
-    for (const col of preferredColumns) {
-      const value = get(row, col);
-      if (listIds(value).length) return value;
+/* =========================================================
+   CHARGEMENT DES TABLES
+   ========================================================= */
+
+async function fetchTableSafe(key, required) {
+  const name = TABLES[key];
+  try {
+    return rowsFromTable(await grist.docApi.fetchTable(name));
+  } catch (error) {
+    if (required) {
+      throw new Error(`Impossible de lire la table obligatoire « ${name} » : ${error?.message || error}`);
     }
+    console.warn(`Table optionnelle « ${name} » non disponible`, error);
+    return [];
   }
-  return '';
 }
 
-async function loadAssociationLogo() {
-  const value = associationLogoAttachment();
-  const url = value ? await attachmentUrl(value) : '';
-  state.associationLogo = url;
+async function fetchAll({ preserveSelection = false } = {}) {
+  showStatus('Lecture des tables Grist…');
 
-  for (const id of ['associationLogoTop', 'associationLogoPrint']) {
-    const el = $(id);
-    if (!el) continue;
-    if (url) {
-      el.innerHTML = `<img src="${esc(url)}" alt="Logo de l’association">`;
-      el.classList.remove('hidden');
-    } else {
-      el.innerHTML = '';
-      el.classList.add('hidden');
+  const result = {};
+
+  for (const key of REQUIRED_TABLES) {
+    result[key] = await fetchTableSafe(key, true);
+  }
+
+  for (const key of OPTIONAL_TABLES) {
+    result[key] = await fetchTableSafe(key, false);
+  }
+
+  state.tables = result;
+  buildModel();
+  populatePeople();
+
+  if (!state.people.length) {
+    state.selectedId = null;
+    showStatus('Aucun usager actif trouvé dans la table Usagers.', true);
+    return;
+  }
+
+  const previousExists = preserveSelection &&
+    state.people.some((person) => person.id === Number(state.selectedId));
+
+  if (!previousExists) {
+    state.selectedId = state.people[0].id;
+  }
+
+  requireElement('personSelect').value = String(state.selectedId);
+  await render();
+}
+
+/* =========================================================
+   CONSTRUCTION DU MODÈLE
+   ========================================================= */
+
+function buildModel() {
+  const users = state.tables.usagers || [];
+  const activities = state.tables.activites || [];
+  const participations = state.tables.participations || [];
+
+  const days = byId(state.tables.jours || []);
+  const hours = byId(state.tables.heures || []);
+  const animators = byId(state.tables.animateurs || []);
+  const otherActivityTypes = byId(state.tables.activitesAutres || []);
+  const partners = byId(state.tables.reeducateurs || []);
+
+  const participantsByActivity = new Map();
+
+  for (const participation of participations) {
+    const activityId = refIds(participation.Activites)[0];
+    if (!activityId) continue;
+
+    const participantSet = participantsByActivity.get(activityId) || new Set();
+    for (const participantId of refIds(participation.Participants)) {
+      participantSet.add(participantId);
     }
-  }
-}
-
-async function typeVisual(kind) {
-  const row = state.otherTypes.find(r => typeKind(get(r, 'Type', 'Nom_activite', 'Nom')) === kind);
-  return row ? attachmentUrl(get(row, 'Visuel_act_autre', 'Visuel')) : '';
-}
-
-/* ============================================================
-   CONSTRUCTION DES RENDEZ-VOUS
-   ============================================================ */
-function buildAppointments() {
-  const userMap = byId(state.users);
-  const practitionerMap = byId(state.practitioners);
-  const result = [];
-
-  for (const rd of state.reeducations) {
-    const type = typeText(rd);
-    const kind = typeKind(type);
-    if (!['kine', 'ortho'].includes(kind)) continue;
-
-    const day = dayText(rd);
-    if (!DAYS.some(d => norm(d.name) === norm(day))) continue;
-
-    const practitioner = practitionerMap.get(firstId(get(rd, 'Partenaire')));
-    const practitionerId = practitioner?.id ?? null;
-    const practitionerLabel = practitioner
-      ? practitionerName(practitioner)
-      : normalize(get(rd, 'gristHelper_Display4', 'gristHelper_Display6')) || 'Praticien non renseigné';
-    const organisation = practitioner ? practitionerOrganisation(practitioner) : '';
-    const orgKind = practitioner ? organisationKind(practitioner) : 'other';
-    const rawPlace = rawPlaceText(rd);
-
-    const location = kind === 'kine'
-      ? kineLocation(orgKind, rawPlace)
-      : {kind:'other', label:rawPlace || 'Lieu non renseigné', autonomous:false};
-
-    const people = listIds(get(rd, 'Usagers', 'Participants')).map(id => userMap.get(id)).filter(Boolean);
-    for (const person of people) {
-      result.push({
-        rd,
-        kind,
-        type,
-        day,
-        hour: hourText(rd),
-        practitionerId,
-        practitionerLabel,
-        organisation,
-        orgKind,
-        location,
-        person,
-        personId: person.id
-      });
-    }
+    participantsByActivity.set(activityId, participantSet);
   }
 
-  return result.sort((a, b) => {
-    const dayA = DAYS.findIndex(d => norm(d.name) === norm(a.day));
-    const dayB = DAYS.findIndex(d => norm(d.name) === norm(b.day));
-    return dayA - dayB || minutes(a.hour) - minutes(b.hour) || userName(a.person).localeCompare(userName(b.person), 'fr');
-  });
-}
-
-function selectedAppointments(all) {
-  const personId = Number($('personSelect').value) || null;
-  const practitionerId = Number($('practitionerSelect').value) || null;
-  const showKine = $('typeKine').checked;
-  const showOrtho = $('typeOrtho').checked;
-  const showCkpsp = $('filterCkpsp').checked;
-  const showGrillon = $('filterGrillon').checked;
-  const showCabinet = $('filterCabinet').checked;
-
-  return all.filter(appt => {
-    if (personId && appt.personId !== personId) return false;
-    if (practitionerId && appt.practitionerId !== practitionerId) return false;
-
-    if (appt.kind === 'ortho') return showOrtho;
-    if (appt.kind !== 'kine' || !showKine) return false;
-
-    if (appt.location.kind === 'cabinet') return showCabinet;
-    if (appt.orgKind === 'ckpsp') return showCkpsp;
-    if (appt.orgKind === 'grillon') return showGrillon;
-    return true;
-  });
-}
-
-function splitDayRows(shown, dayName) {
-  const rows = shown.filter(a => norm(a.day) === norm(dayName));
-  return {
-    all: rows,
-    morning: rows.filter(a => minutes(a.hour) < MEAL_MINUTES),
-    afternoon: rows.filter(a => minutes(a.hour) >= MEAL_MINUTES)
-  };
-}
-
-/* ============================================================
-   STRATÉGIE D'IMPRESSION
-   Une demi-journée passe en 2 colonnes si nécessaire.
-   Les seuils sont volontairement plus prudents en A4.
-   ============================================================ */
-function twoColumnThreshold(period) {
-  if (state.format === 'a3') return 5;
-  return 4;
-}
-
-function shouldUseTwoColumns(count, period) {
-  return count > twoColumnThreshold(period);
-}
-
-function effectiveRows(count, period) {
-  return shouldUseTwoColumns(count, period) ? Math.ceil(count / 2) : count;
-}
-
-function printDensityClass(shown) {
-  let maxEffective = 0;
-  let maxTotal = 0;
-
-  for (const day of DAYS) {
-    const split = splitDayRows(shown, day.name);
-    maxEffective = Math.max(
-      maxEffective,
-      effectiveRows(split.morning.length, 'morning'),
-      effectiveRows(split.afternoon.length, 'afternoon')
+  // Schéma Grist contrôlé : Parti_e, Lu, Ma, Me, Je, Ve.
+  // La colonne Presence n'existe pas dans le fichier transmis : elle n'est pas utilisée.
+  state.people = users
+    .filter((user) => !isTrue(user.Parti_e))
+    .map((user) => ({
+      id: Number(user.id),
+      name: text(
+        user.Usager,
+        `${text(user.Prenom)} ${text(user.Nom)}`.trim()
+      ),
+      lastName: text(user.Nom).trim(),
+      firstName: text(user.Prenom).trim(),
+      portrait: user.Portrait,
+      flags: {
+        Lundi: isTrue(user.Lu),
+        Mardi: isTrue(user.Ma),
+        Mercredi: isTrue(user.Me),
+        Jeudi: isTrue(user.Je),
+        Vendredi: isTrue(user.Ve)
+      }
+    }))
+    .sort((a, b) =>
+      a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' }) ||
+      a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' })
     );
-    maxTotal = Math.max(maxTotal, split.all.length);
-  }
 
-  // Les 2 colonnes sont utilisées en priorité afin de garder portraits et textes grands.
-  // La réduction de densité n'intervient qu'en dernier recours.
-  if (maxEffective >= 8) return 'density-ultra';
-  if (maxEffective >= 7) return 'density-tight';
-  if (maxEffective >= 6) return 'density-compact';
-  return '';
+  state.activities = activities
+    .map((activity) => {
+      const dayRow = days.get(refIds(activity.Jour)[0]);
+      const startRow = hours.get(refIds(activity.Heure_debut)[0]);
+      const endRow = hours.get(refIds(activity.Heure_fin)[0]);
+
+      const animatorNames = refIds(activity.Animateur_s)
+        .map((id) => animators.get(id))
+        .filter(Boolean)
+        .map((animator) => text(
+          animator.Nom2,
+          `${text(animator.Prenom)} ${text(animator.Nom)}`.trim()
+        ))
+        .filter(Boolean);
+
+      return {
+        id: Number(activity.id),
+        kind: 'regular',
+        name: text(activity.Nom_activite, 'Activité'),
+        day: normalizeDay(dayRow?.Jour || activity.gristHelper_Display2),
+        // Colonne réelle du .grist : Numero_du_jour_de_la_semaine
+        dayOrder: Number(
+          activity.Numero_du_jour_de_la_semaine ||
+          dayRow?.Num_jour ||
+          99
+        ),
+        start: text(startRow?.Heures || activity.gristHelper_Display3),
+        end: text(endRow?.Heures || activity.gristHelper_Display4),
+        animators: animatorNames,
+        capacity: activity.Capacite,
+        description: text(activity.Remarques_planning).slice(0, 100),
+        visual: activity.Visuel,
+        groupOpen: isTrue(activity.Groupe_ouvert),
+        fullYear: isTrue(activity.Annee_complete),
+        participants: participantsByActivity.get(Number(activity.id)) || new Set()
+      };
+    })
+    .sort(sortActivities);
+
+  state.otherActivities = (state.tables.reeducations || [])
+    .map((otherActivity) => {
+      const typeRow = otherActivityTypes.get(refIds(otherActivity.Type)[0]);
+      const dayRow = days.get(refIds(otherActivity.Jour)[0]);
+      const partnerRow = partners.get(refIds(otherActivity.Partenaire)[0]);
+      const userIds = refIds(otherActivity.Usagers);
+
+      const typeName = text(
+        typeRow?.Type || otherActivity.gristHelper_Display,
+        'Activité autre'
+      );
+
+      const partnerName = text(
+        partnerRow?.Partenaire ||
+        partnerRow?.Organisation ||
+        otherActivity.gristHelper_Display4 ||
+        otherActivity.gristHelper_Display6
+      );
+
+      const hourRow = hours.get(refIds(otherActivity.Horaire)[0]);
+      const rawSchedule = text(hourRow?.Heures || otherActivity.gristHelper_Display3);
+      const scheduleParts = rawSchedule
+        .split(/\s*[–—-]\s*/)
+        .filter(Boolean);
+
+      return {
+        id: Number(otherActivity.id),
+        kind: 'other',
+        name: typeName,
+        day: normalizeDay(dayRow?.Jour || otherActivity.gristHelper_Display2),
+        dayOrder: Number(
+          otherActivity.Num_du_jour ||
+          otherActivity.Jour_Num_jour ||
+          dayRow?.Num_jour ||
+          99
+        ),
+        start: scheduleParts[0] || rawSchedule,
+        end: scheduleParts[1] || '',
+        schedule: rawSchedule,
+        partner: partnerName,
+        place: text(otherActivity.Lieu),
+        description: '',
+        visual: typeRow?.Visuel_act_autre,
+        participants: new Set(userIds)
+      };
+    })
+    .sort(sortActivities);
 }
 
-function applyDensity(shown) {
-  const sheet = $('printSheet');
-  if (!sheet) return;
-  sheet.classList.remove('density-compact', 'density-tight', 'density-ultra');
-  const density = printDensityClass(shown);
-  if (density) sheet.classList.add(density);
-
-  // Répartit la hauteur imprimable entre matin et après-midi selon la charge réelle.
-  let morningRows = 1;
-  let afternoonRows = 1;
-  for (const day of DAYS) {
-    const split = splitDayRows(shown, day.name);
-    morningRows = Math.max(morningRows, effectiveRows(split.morning.length, 'morning'));
-    afternoonRows = Math.max(afternoonRows, effectiveRows(split.afternoon.length, 'afternoon'));
-  }
-  const total = morningRows + afternoonRows;
-  const morningShare = Math.max(.35, Math.min(.65, morningRows / total));
-  const afternoonShare = 1 - morningShare;
-  sheet.style.setProperty('--morning-fr', `${morningShare.toFixed(3)}fr`);
-  sheet.style.setProperty('--afternoon-fr', `${afternoonShare.toFixed(3)}fr`);
+function sortActivities(a, b) {
+  return (
+    a.dayOrder - b.dayOrder ||
+    minutes(a.start) - minutes(b.start) ||
+    a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })
+  );
 }
 
-function renderBadges(appt) {
-  if (appt.kind === 'ortho') return '';
-  const badges = [];
-  if (appt.orgKind === 'ckpsp') badges.push('<span class="badge org-ckpsp">CKPSP</span>');
-  else if (appt.orgKind === 'grillon') badges.push('<span class="badge org-grillon">Grillon</span>');
-  else if (appt.organisation) badges.push(`<span class="badge">${esc(appt.organisation)}</span>`);
-  if (appt.location.kind === 'cabinet') badges.push('<span class="badge cabinet">Au cabinet</span>');
-  return badges.length ? `<div class="badges">${badges.join('')}</div>` : '';
+/* =========================================================
+   INTERFACE
+   ========================================================= */
+
+function populatePeople() {
+  const select = requireElement('personSelect');
+  select.innerHTML = state.people
+    .map((person) => `<option value="${person.id}">${esc(person.name)}</option>`)
+    .join('');
 }
 
-function appointmentCard(appt, portraitPromises) {
-  const card = document.createElement('div');
-  const orgClass = appt.kind === 'kine'
-    ? (appt.orgKind === 'ckpsp' ? 'ckpsp' : appt.orgKind === 'grillon' ? 'grillon' : '')
-    : '';
-  const cabinetClass = appt.location.kind === 'cabinet' ? 'cabinet' : '';
-  card.className = `appt ${appt.kind} ${orgClass} ${cabinetClass}`.trim();
-  card.tabIndex = 0;
-  card.title = 'Survoler pour agrandir';
+function showStatus(message, error = false) {
+  const status = requireElement('status');
+  const sheet = requireElement('sheet');
 
-  const portraitId = `portrait-${appt.rd.id}-${appt.personId}-${Math.random().toString(36).slice(2,8)}`;
-  const kindLabel = appt.kind === 'kine' ? 'Kiné' : 'Orthophonie';
-  const locationExtra = appt.location.autonomous ? ' · autonome' : '';
-
-  card.innerHTML = `
-    <div id="${portraitId}" class="portrait">${esc(initials(userName(appt.person)))}</div>
-    <div class="appt-content">
-      <div class="appt-top">
-        <span class="time">${esc(appt.hour || 'Horaire ?')}</span>
-        <span class="kind">${kindLabel}</span>
-      </div>
-      <div class="person-name">${esc(userName(appt.person))}</div>
-      <div class="meta">
-        <div class="practitioner"><span class="practitioner-label">Praticien :</span> <span class="practitioner-name">${esc(appt.practitionerLabel || 'Non renseigné')}</span></div>
-        ${renderBadges(appt)}
-        <div class="location">${esc(appt.location.label + locationExtra)}</div>
-      </div>
-    </div>`;
-
-  portraitPromises.push((async () => {
-    const url = await attachmentUrl(get(appt.person, 'Portrait'));
-    if (!url) return;
-    const el = document.getElementById(portraitId);
-    if (el) el.innerHTML = `<img src="${esc(url)}" alt="">`;
-  })());
-
-  return card;
+  status.textContent = message;
+  status.classList.toggle('error', error);
+  status.classList.remove('hidden');
+  sheet.classList.add('hidden');
 }
 
-function buildPeriodCell(dayDef, rows, period, portraitPromises) {
-  const cell = document.createElement('section');
-  const twoCols = shouldUseTwoColumns(rows.length, period);
-  cell.className = `period-cell period-${period} day-${dayDef.cls}${twoCols ? ' print-two-cols' : ''}`;
-  cell.dataset.count = String(rows.length);
-
-  const label = period === 'morning' ? 'MATIN' : 'APRÈS-MIDI';
-  cell.innerHTML = `
-    <div class="period-label">${label}<span>${rows.length ? `${rows.length} rdv` : ''}${twoCols ? ' · 2 col. impression' : ''}</span></div>
-    <div class="period-list"></div>`;
-
-  const list = cell.querySelector('.period-list');
-  if (!rows.length) {
-    list.innerHTML = '<div class="empty">Aucun rendez-vous</div>';
-  } else {
-    for (const appt of rows) list.appendChild(appointmentCard(appt, portraitPromises));
-  }
-  return cell;
+function periodOf(activity) {
+  return minutes(activity.start) < 13 * 60 ? 'Matin' : 'Après-midi';
 }
 
-/* ============================================================
-   RENDU
-   Grille = 5 en-têtes / 5 matins / bandeau repas / 5 après-midi
-   ============================================================ */
+function isPresent(person, day) {
+  return Boolean(person?.flags?.[day]);
+}
+
+function updatePrintDate() {
+  const printDate = $('printDate');
+  if (!printDate) return;
+
+  printDate.textContent = `Imprimé le ${new Intl.DateTimeFormat('fr-FR', {
+    dateStyle: 'long'
+  }).format(new Date())}`;
+}
+
+function opacityFor(day) {
+  const input = $(`opacity${day}`);
+  if (!input) return 0.18;
+
+  const value = Number(input.value);
+  if (!Number.isFinite(value)) return 0.18;
+
+  return Math.min(100, Math.max(0, value)) / 100;
+}
+
+function hexToRgba(hex, opacity) {
+  const normalized = hex.replace('#', '');
+  const number = Number.parseInt(normalized, 16);
+  const red = (number >> 16) & 255;
+  const green = (number >> 8) & 255;
+  const blue = number & 255;
+  return `rgba(${red}, ${green}, ${blue}, ${opacity})`;
+}
+
+/* =========================================================
+   AFFICHAGE
+   ========================================================= */
+
 async function render() {
-  const all = buildAppointments();
-  const shown = selectedAppointments(all);
-  $('shownCount').textContent = shown.length;
+  const person = state.people.find(
+    (item) => item.id === Number(state.selectedId)
+  );
 
-  const selectedPerson = Number($('personSelect').value) || null;
-  if (selectedPerson) {
-    const person = state.users.find(u => u.id === selectedPerson);
-    const total = all.filter(a => a.personId === selectedPerson).length;
-    $('personCount').textContent = total;
-    $('personCountLabel').textContent = `pour ${userName(person)}`;
-  } else {
-    $('personCount').textContent = '—';
-    $('personCountLabel').textContent = 'sélectionner une personne';
+  if (!person) {
+    showStatus('Aucun usager sélectionné.', true);
+    return;
   }
 
-  const summary = [];
-  if (selectedPerson) {
-    const p = state.users.find(u => u.id === selectedPerson);
-    if (p) summary.push(userName(p));
-  }
-  if ($('practitionerSelect').value) {
-    const p = state.practitioners.find(x => x.id === Number($('practitionerSelect').value));
-    if (p) summary.push(practitionerName(p));
-  }
-  $('filterSummary').textContent = summary.length
-    ? `Planning hebdomadaire · ${summary.join(' · ')}`
-    : 'Planning hebdomadaire · lundi au vendredi';
+  requireElement('status').classList.add('hidden');
+  requireElement('sheet').classList.remove('hidden');
+  requireElement('personName').textContent = person.name;
 
-  applyDensity(shown);
+  const presentDays = DAYS.filter((day) => isPresent(person, day));
+  requireElement('presenceText').textContent = presentDays.length
+    ? presentDays.join(', ')
+    : 'Présence habituelle non renseignée';
 
-  const grid = $('weekGrid');
-  grid.innerHTML = '';
-  const portraitPromises = [];
+  const portraitUrl = await attachmentUrl(person.portrait);
+  requireElement('portrait').innerHTML = portraitUrl
+    ? `<img src="${portraitUrl}" alt="Portrait de ${esc(person.name)}">`
+    : `<span>${esc(initials(person.name))}</span>`;
 
-  // 1. En-têtes des cinq jours.
-  for (const dayDef of DAYS) {
-    const split = splitDayRows(shown, dayDef.name);
-    const header = document.createElement('header');
-    header.className = `day-head day-${dayDef.cls}`;
-    header.innerHTML = `${esc(dayDef.name)}<small>${split.all.length} rendez-vous</small>`;
-    grid.appendChild(header);
-  }
+  const cards = await Promise.all(
+    DAYS.map((day) => renderDay(person, day))
+  );
 
-  // 2. Matin : cinq cellules.
-  for (const dayDef of DAYS) {
-    const split = splitDayRows(shown, dayDef.name);
-    grid.appendChild(buildPeriodCell(dayDef, split.morning, 'morning', portraitPromises));
-  }
+  requireElement('weekGrid').innerHTML = `
+    ${cards.join('')}
+    <div class="meal-banner" aria-label="Repas de 12 heures">
+      <span>12 h · Repas</span>
+    </div>
+  `;
 
-  // 3. Bandeau repas global, identique dans son principe aux autres widgets.
-  const meal = document.createElement('div');
-  meal.className = 'meal-row';
-  meal.innerHTML = '<span>12 h</span><strong>Repas</strong>';
-  grid.appendChild(meal);
-
-  // 4. Après-midi : cinq cellules.
-  for (const dayDef of DAYS) {
-    const split = splitDayRows(shown, dayDef.name);
-    grid.appendChild(buildPeriodCell(dayDef, split.afternoon, 'afternoon', portraitPromises));
-  }
-
-  $('status').classList.add('hidden');
-  grid.classList.remove('hidden');
-  await Promise.allSettled(portraitPromises);
-
-  const kinePicto = await typeVisual('kine');
-  if (kinePicto) {
-    $('headerPicto').innerHTML = `<img src="${esc(kinePicto)}" alt="Pictogramme kiné">`;
-    $('printPicto').innerHTML = `<img src="${esc(kinePicto)}" alt="Pictogramme kiné">`;
-  }
+  alignMealBanner();
+  updatePrintDate();
 }
 
-/* ============================================================
-   SÉLECTEURS
-   ============================================================ */
-function fillSelectors() {
-  const person = $('personSelect');
-  const practitioner = $('practitionerSelect');
+async function renderDay(person, day) {
+  const present = isPresent(person, day);
 
-  person.innerHTML = '<option value="">Toutes les personnes</option>';
-  [...state.users]
-    .sort((a, b) => userName(a).localeCompare(userName(b), 'fr'))
-    .forEach(u => person.insertAdjacentHTML('beforeend', `<option value="${u.id}">${esc(userName(u))}</option>`));
+  const enrolledActivities = present
+    ? state.activities.filter(
+        (activity) =>
+          activity.day === day &&
+          activity.participants.has(person.id)
+      )
+    : [];
 
-  practitioner.innerHTML = '<option value="">Tous les praticiens</option>';
-  [...state.practitioners]
-    .sort((a, b) => practitionerName(a).localeCompare(practitionerName(b), 'fr'))
-    .forEach(p => {
-      const org = practitionerOrganisation(p);
-      const suffix = org ? ` — ${org}` : '';
-      practitioner.insertAdjacentHTML('beforeend', `<option value="${p.id}">${esc(practitionerName(p) + suffix)}</option>`);
-    });
-}
+  function shouldShowOpenGroup(openActivity) {
+    if (!present) return false;
 
-async function fetchTable(name) {
-  try {
-    return await grist.docApi.fetchTable(name);
-  } catch (error) {
-    throw new Error(`Table ${name} introuvable ou inaccessible.\n${error.message || error}`);
+    const openPeriod = periodOf(openActivity);
+    const enrolledSamePeriod = enrolledActivities.filter(
+      (activity) => periodOf(activity) === openPeriod
+    );
+
+    if (!enrolledSamePeriod.length) return true;
+
+    const hasFullYearActivity = enrolledSamePeriod.some(
+      (activity) => activity.fullYear === true
+    );
+
+    return !hasFullYearActivity;
   }
-}
 
-async function fetchOptionalFirst(names) {
-  for (const name of names) {
-    try {
-      return await grist.docApi.fetchTable(name);
-    } catch (_) {
-      // Table optionnelle : essayer la suivante.
+  const regularActivities = state.activities.filter((activity) => {
+    if (!present) return false;
+    if (activity.day !== day) return false;
+
+    if (activity.participants.has(person.id)) return true;
+    if (!activity.groupOpen) return false;
+
+    return shouldShowOpenGroup(activity);
+  });
+
+  const otherActivities = state.otherActivities.filter(
+    (activity) =>
+      present &&
+      activity.day === day &&
+      activity.participants.has(person.id)
+  );
+
+  const activities = [...regularActivities, ...otherActivities]
+    .sort(sortActivities);
+
+  const groups = {
+    Matin: activities.filter((activity) => periodOf(activity) === 'Matin'),
+    'Après-midi': activities.filter((activity) => periodOf(activity) === 'Après-midi')
+  };
+
+  const sections = [];
+  const showEmpty = $('showEmpty') ? $('showEmpty').checked : true;
+
+  for (const label of ['Matin', 'Après-midi']) {
+    const list = groups[label];
+
+    if (!list.length && !showEmpty) {
+      if (label === 'Matin') {
+        sections.push('<div class="meal-gap" aria-hidden="true"></div>');
+      }
+      continue;
+    }
+
+    const inner = list.length
+      ? (await Promise.all(list.map(activityCard))).join('')
+      : `<div class="empty-slot">${present ? 'Aucune activité renseignée' : 'Absent'}</div>`;
+
+    const cssLabel = label === 'Matin' ? 'matin' : 'après-midi';
+
+    sections.push(`
+      <section class="period period-${cssLabel}">
+        <div class="period-title">${label}</div>
+        ${inner}
+      </section>
+    `);
+
+    if (label === 'Matin') {
+      sections.push('<div class="meal-gap" aria-hidden="true"></div>');
     }
   }
-  return null;
+
+  const dayColor = DAY_COLORS[day];
+  const dayBackground = hexToRgba(dayColor, opacityFor(day));
+  const absenceClass = present ? '' : ' day-absent';
+
+  return `
+    <article class="day${absenceClass}" style="--day-color:${dayColor};--day-background:${dayBackground};">
+      <div class="day-head">
+        <h3>${day}</h3>
+        <span>${present
+          ? `${activities.length} activité${activities.length > 1 ? 's' : ''}`
+          : 'ABSENT·E'}</span>
+      </div>
+      <div class="day-content">${sections.join('')}</div>
+    </article>
+  `;
 }
 
-async function loadData({preserveSelection = false} = {}) {
-  const savedPerson = preserveSelection ? $('personSelect').value : '';
-  const savedPractitioner = preserveSelection ? $('practitionerSelect').value : '';
+function resetMealAlignment() {
+  const grid = $('weekGrid');
+  if (!grid) return;
 
-  try {
-    $('status').textContent = 'Chargement des rendez-vous…';
-    $('status').classList.remove('hidden');
-    $('weekGrid').classList.add('hidden');
-    state.attachmentUrls.clear();
-    state.attachmentTokenInfo = null;
+  grid.querySelectorAll('.period-matin').forEach((section) => {
+    section.style.removeProperty('min-height');
+  });
 
-    const [users, reeducations, practitioners, otherTypes, days, hours, parameters] = await Promise.all([
-      fetchTable(TABLES.users),
-      fetchTable(TABLES.reeducations),
-      fetchTable(TABLES.practitioners),
-      fetchTable(TABLES.otherTypes),
-      fetchTable(TABLES.days),
-      fetchTable(TABLES.hours),
-      fetchOptionalFirst(TABLES.parameterCandidates)
-    ]);
-
-    state.users = rowsFromTable(users);
-    state.reeducations = rowsFromTable(reeducations);
-    state.practitioners = rowsFromTable(practitioners);
-    state.otherTypes = rowsFromTable(otherTypes);
-    state.days = rowsFromTable(days);
-    state.hours = rowsFromTable(hours);
-    state.parameters = rowsFromTable(parameters);
-
-    fillSelectors();
-    if (savedPerson && [...$('personSelect').options].some(o => o.value === savedPerson)) $('personSelect').value = savedPerson;
-    if (savedPractitioner && [...$('practitionerSelect').options].some(o => o.value === savedPractitioner)) $('practitionerSelect').value = savedPractitioner;
-
-    await loadAssociationLogo();
-    await render();
-  } catch (error) {
-    $('status').textContent = 'Erreur de chargement';
-    $('errorText').textContent = error.stack || error.message || String(error);
-    if (typeof $('errorDialog').showModal === 'function') $('errorDialog').showModal();
+  const banner = grid.querySelector('.meal-banner');
+  if (banner) {
+    banner.style.removeProperty('top');
   }
 }
 
-/* ============================================================
-   FORMAT / IMPRESSION
-   ============================================================ */
-function setFormat(format) {
-  state.format = format;
-  document.body.classList.toggle('print-a4', format === 'a4');
-  document.body.classList.toggle('print-a3', format === 'a3');
-  $('formatA4').classList.toggle('active', format === 'a4');
-  $('formatA3').classList.toggle('active', format === 'a3');
+function alignMealBanner() {
+  const grid = $('weekGrid');
+  if (!grid) return;
 
-  let style = $('dynamicPageStyle');
-  if (!style) {
-    style = document.createElement('style');
-    style.id = 'dynamicPageStyle';
-    document.head.appendChild(style);
-  }
-  style.textContent = `@page{size:${format.toUpperCase()} landscape;margin:5mm}`;
+  const morningSections = [...grid.querySelectorAll('.period-matin')];
+  const banner = grid.querySelector('.meal-banner');
 
-  if (state.reeducations.length) render().catch(showError);
+  if (!morningSections.length || !banner) return;
+
+  // Toujours supprimer les anciennes dimensions avant de remesurer.
+  // C'est indispensable lors du passage écran -> impression :
+  // les hauteurs calculées à l'écran ne doivent jamais être réutilisées en A4.
+  morningSections.forEach((section) => {
+    section.style.removeProperty('min-height');
+  });
+  banner.style.removeProperty('top');
+
+  const maxMorningHeight = Math.ceil(
+    Math.max(
+      ...morningSections.map((section) => section.getBoundingClientRect().height)
+    )
+  );
+
+  morningSections.forEach((section) => {
+    section.style.minHeight = `${maxMorningHeight}px`;
+  });
+
+  const firstGap = grid.querySelector('.meal-gap');
+  if (!firstGap) return;
+
+  const gridRect = grid.getBoundingClientRect();
+  const gapRect = firstGap.getBoundingClientRect();
+  banner.style.top = `${Math.ceil(gapRect.top - gridRect.top)}px`;
 }
+
+async function activityCard(activity) {
+  const logo = await attachmentUrl(activity.visual);
+
+  const time = activity.schedule ||
+    [activity.start, activity.end].filter(Boolean).join(' – ');
+
+  const cardColor = colorFor(activity.name);
+
+  const regularMeta = activity.kind === 'regular' && activity.animators.length
+    ? `<div><strong>Avec :</strong> ${esc(activity.animators.join(', '))}</div>`
+    : '';
+
+  const otherMeta = activity.kind === 'other'
+    ? `
+      ${activity.partner ? `<div><strong>Avec :</strong> ${esc(activity.partner)}</div>` : ''}
+      ${activity.place ? `<div><strong>Lieu :</strong> ${esc(activity.place)}</div>` : ''}
+    `
+    : '';
+
+  return `
+    <article class="activity-card${activity.kind === 'other' ? ' activity-card-other' : ''}" style="--card-color:${cardColor}">
+      ${logo ? `<img class="activity-logo" src="${logo}" alt="">` : ''}
+      <h4 class="activity-title">${esc(activity.name)}</h4>
+      ${time ? `<div class="activity-time">${esc(time)}</div>` : ''}
+      <div class="activity-meta">${regularMeta}${otherMeta}</div>
+      ${activity.description ? `<p class="activity-desc">${esc(activity.description)}</p>` : ''}
+    </article>
+  `;
+}
+
+/* =========================================================
+   ERREURS
+   ========================================================= */
 
 function showError(error) {
   console.error(error);
-  $('errorText').textContent = error?.stack || error?.message || String(error);
-  if (typeof $('errorDialog').showModal === 'function' && !$('errorDialog').open) $('errorDialog').showModal();
+
+  try {
+    showStatus('Une erreur empêche l’affichage du planning.', true);
+  } catch (_) {
+    // Si le HTML lui-même est incomplet, l'erreur reste visible en console.
+  }
+
+  const errorText = $('errorText');
+  if (errorText) {
+    errorText.textContent = `${error?.message || error}\n\nTables attendues :\n${Object.values(TABLES).join('\n')}`;
+  }
+
+  const dialog = $('errorDialog');
+  if (dialog && typeof dialog.showModal === 'function' && !dialog.open) {
+    dialog.showModal();
+  }
 }
 
+/* =========================================================
+   VÉRIFICATION DU HTML
+   ========================================================= */
+
+function validateHtml() {
+  const requiredIds = [
+    'personSelect',
+    'formatSelect',
+    'printBtn',
+    'reloadBtn',
+    'status',
+    'sheet',
+    'personName',
+    'presenceText',
+    'portrait',
+    'weekGrid'
+  ];
+
+  const missing = requiredIds.filter((id) => !$(id));
+  if (missing.length) {
+    throw new Error(`index.html incompatible : éléments manquants ${missing.map((id) => `#${id}`).join(', ')}`);
+  }
+}
+
+/* =========================================================
+   ÉVÉNEMENTS
+   ========================================================= */
+
 function bindEvents() {
-  ['personSelect', 'practitionerSelect', 'typeKine', 'typeOrtho', 'filterCkpsp', 'filterGrillon', 'filterCabinet']
-    .forEach(id => $(id).addEventListener('change', () => render().catch(showError)));
-
-  $('formatA4').addEventListener('click', () => setFormat('a4'));
-  $('formatA3').addEventListener('click', () => setFormat('a3'));
-  $('printBtn').addEventListener('click', () => {
-    setFormat(state.format);
-    requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
+  onIfPresent('personSelect', 'change', (event) => {
+    state.selectedId = Number(event.target.value);
+    render().catch(showError);
   });
-  $('reloadBtn').addEventListener('click', () => loadData({preserveSelection:true}));
 
-  // Téléphone / tablette : appui = agrandissement ; appui ailleurs = fermeture.
-  document.addEventListener('click', event => {
-    const card = event.target.closest?.('.appt');
-    document.querySelectorAll('.appt.expanded').forEach(el => {
-      if (el !== card) el.classList.remove('expanded');
+  onIfPresent('formatSelect', 'change', (event) => {
+    document.body.classList.toggle('print-a3', event.target.value === 'a3');
+  });
+
+  onIfPresent('showEmpty', 'change', () => {
+    render().catch(showError);
+  });
+
+  for (const day of DAYS) {
+    onIfPresent(`opacity${day}`, 'input', () => {
+      render().catch(showError);
     });
-    if (card) card.classList.toggle('expanded');
+  }
+
+  onIfPresent('printBtn', 'click', () => {
+    updatePrintDate();
+    window.print();
   });
 
-  // Juste avant impression, on recalcule avec le format choisi.
+  onIfPresent('reloadBtn', 'click', () => {
+    fetchAll({ preserveSelection: true }).catch(showError);
+  });
+
   window.addEventListener('beforeprint', () => {
-    try {
-      const shown = selectedAppointments(buildAppointments());
-      applyDensity(shown);
-    } catch (error) {
-      console.warn('Préparation impression', error);
+    updatePrintDate();
+
+    // Firefox applique le CSS d'impression avant l'événement beforeprint.
+    // On efface donc les hauteurs calculées à l'écran puis on recalcule
+    // l'alignement matin / repas avec les dimensions réelles de l'A4.
+    resetMealAlignment();
+    alignMealBanner();
+  });
+
+  window.addEventListener('afterprint', () => {
+    // Après impression, on revient aux dimensions naturelles de l'écran
+    // puis on réaligne proprement le bandeau repas.
+    resetMealAlignment();
+    requestAnimationFrame(() => {
+      if (!$('sheet')?.classList.contains('hidden')) alignMealBanner();
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    if (!$('sheet')?.classList.contains('hidden')) {
+      resetMealAlignment();
+      alignMealBanner();
     }
   });
 }
 
-bindEvents();
-setFormat('a4');
+/* =========================================================
+   INITIALISATION GRIST
+   ========================================================= */
 
-grist.ready({requiredAccess:'full', columns:[]});
-grist.onRecords(() => loadData({preserveSelection:true}));
-grist.onRecord(() => loadData({preserveSelection:true}));
-setTimeout(() => loadData(), 250);
+async function start() {
+  validateHtml();
+  bindEvents();
+
+  grist.ready({ requiredAccess: 'full' });
+
+  if (typeof grist.onOptions === 'function') {
+    grist.onOptions((_options, interaction) => {
+      if (
+        interaction?.access_level &&
+        interaction.access_level !== 'full'
+      ) {
+        showStatus(
+          'Autorisez « Accès complet au document » pour lire les tables liées.',
+          true
+        );
+      }
+    });
+  }
+
+  await fetchAll();
+}
+
+start().catch(showError);
