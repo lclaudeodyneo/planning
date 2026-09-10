@@ -2,7 +2,7 @@
 
 /* =========================================================
    PLANNING INDIVIDUEL SAJ ANAGALLIS
-   Version raccordée au schéma Grist contrôlé le 08/09/2026
+   Version impression A4 optimisée
    ========================================================= */
 
 const TABLES = {
@@ -139,15 +139,6 @@ function colorFor(name) {
   return `hsl(${hue} 48% 48%)`;
 }
 
-function firstDefined(row, columnNames, fallback = '') {
-  for (const columnName of columnNames) {
-    if (row && row[columnName] != null && row[columnName] !== '') {
-      return row[columnName];
-    }
-  }
-  return fallback;
-}
-
 function requireElement(id) {
   const element = $(id);
   if (!element) {
@@ -159,6 +150,517 @@ function requireElement(id) {
 function onIfPresent(id, eventName, handler) {
   const element = $(id);
   if (element) element.addEventListener(eventName, handler);
+}
+
+/* =========================================================
+   STYLES INJECTÉS — CORRECTIONS D'AFFICHAGE / IMPRESSION
+   ========================================================= */
+
+function ensureInjectedStyles() {
+  if (document.getElementById('planning-print-fixes')) return;
+
+  const style = document.createElement('style');
+  style.id = 'planning-print-fixes';
+  style.textContent = `
+.day {
+  background: var(--day-background, #f8fafc);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.day-head {
+  background: var(--day-color, #5b8def);
+}
+
+.day-content {
+  min-height: 0;
+  height: auto;
+}
+
+.meal-banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #3d2c72;
+  color: #fff;
+  border-radius: 3px;
+  font-weight: 800;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.meal-banner span {
+  display: block;
+}
+
+#sheet.print-preparing {
+  visibility: visible;
+}
+
+@page {
+  size: A4 landscape;
+  margin: 5mm;
+}
+
+@media print {
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print,
+  #status {
+    display: none !important;
+  }
+
+  #app {
+    padding: 0 !important;
+  }
+
+  .sheet {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .sheet-head {
+    flex: 0 0 auto !important;
+    margin-bottom: 2.5mm !important;
+    padding-bottom: 1.5mm !important;
+    border-bottom-width: 1.1mm !important;
+  }
+
+  .identity {
+    gap: 3mm !important;
+  }
+
+  .portrait {
+    width: 15mm !important;
+    height: 15mm !important;
+    border-radius: 2.6mm !important;
+    border-width: .5mm !important;
+  }
+
+  .sheet h2 {
+    margin: 0 !important;
+    font-size: 15pt !important;
+    line-height: 1.03 !important;
+  }
+
+  .eyebrow {
+    margin: 0 0 1mm !important;
+    font-size: 6pt !important;
+    letter-spacing: .12em !important;
+  }
+
+  .muted,
+  #printDate {
+    font-size: 6pt !important;
+    line-height: 1.15 !important;
+    margin-top: .7mm !important;
+  }
+
+  .legend {
+    gap: 3mm !important;
+    font-size: 6.2pt !important;
+  }
+
+  .dot {
+    width: 2mm !important;
+    height: 2mm !important;
+    margin-right: .8mm !important;
+  }
+
+  .week-grid {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    column-gap: 1.6mm !important;
+    row-gap: 0 !important;
+    align-items: start !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .day {
+    min-width: 0 !important;
+    border-radius: 2mm !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .day-head {
+    padding: 1.4mm 1.2mm !important;
+  }
+
+  .day-head h3 {
+    font-size: 8.5pt !important;
+    line-height: 1 !important;
+  }
+
+  .day-head span {
+    font-size: 5.1pt !important;
+    line-height: 1 !important;
+  }
+
+  .day-content {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .period {
+    padding: 1.15mm !important;
+    min-height: 0 !important;
+  }
+
+  .period + .period {
+    border-top-width: .35mm !important;
+  }
+
+  .period-title {
+    margin-bottom: .9mm !important;
+    font-size: 6pt !important;
+    line-height: 1 !important;
+    letter-spacing: .06em !important;
+  }
+
+  .activity-card {
+    padding: 1.15mm !important;
+    margin: 0 0 .95mm !important;
+    border-left-width: 1.1mm !important;
+    border-radius: 1.5mm !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .activity-card:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  .activity-title {
+    margin: 0 0 .6mm !important;
+    padding-right: 7mm !important;
+    font-size: 7.2pt !important;
+    line-height: 1.08 !important;
+  }
+
+  .activity-time {
+    gap: .6mm !important;
+    padding: .3mm .75mm !important;
+    font-size: 5.8pt !important;
+    line-height: 1 !important;
+  }
+
+  .activity-meta {
+    margin-top: .7mm !important;
+    font-size: 5.2pt !important;
+    line-height: 1.14 !important;
+  }
+
+  .activity-desc {
+    margin: .7mm 0 0 !important;
+    font-size: 4.8pt !important;
+    line-height: 1.12 !important;
+  }
+
+  .activity-logo {
+    width: 6mm !important;
+    height: 6mm !important;
+    right: .8mm !important;
+    top: .8mm !important;
+    border-radius: 1mm !important;
+  }
+
+  .empty-slot {
+    padding: 1.5mm !important;
+    font-size: 5.1pt !important;
+    min-height: 0 !important;
+  }
+
+  .period-matin {
+    min-height: 0 !important;
+  }
+
+  .meal-gap {
+    height: 5.2mm !important;
+    min-height: 5.2mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .meal-banner {
+    left: 0 !important;
+    right: 0 !important;
+    height: 5.2mm !important;
+    min-height: 5.2mm !important;
+    padding: 0 !important;
+    border-radius: 1.2mm !important;
+    font-size: 6pt !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+  }
+
+  .sheet-foot {
+    flex: 0 0 auto !important;
+    margin-top: 1.3mm !important;
+    padding-top: .8mm !important;
+    font-size: 4.8pt !important;
+    line-height: 1.05 !important;
+  }
+
+  body.print-density-1 .sheet-head {
+    margin-bottom: 2mm !important;
+    padding-bottom: 1.2mm !important;
+  }
+
+  body.print-density-1 .portrait {
+    width: 14mm !important;
+    height: 14mm !important;
+  }
+
+  body.print-density-1 .sheet h2 {
+    font-size: 14.2pt !important;
+  }
+
+  body.print-density-1 .week-grid {
+    column-gap: 1.35mm !important;
+  }
+
+  body.print-density-1 .day-head {
+    padding: 1.2mm 1mm !important;
+  }
+
+  body.print-density-1 .activity-card {
+    padding: 1mm !important;
+    margin-bottom: .8mm !important;
+  }
+
+  body.print-density-1 .activity-title {
+    font-size: 6.8pt !important;
+  }
+
+  body.print-density-1 .activity-time {
+    font-size: 5.5pt !important;
+  }
+
+  body.print-density-1 .activity-meta {
+    font-size: 4.95pt !important;
+  }
+
+  body.print-density-1 .activity-desc {
+    font-size: 4.55pt !important;
+  }
+
+  body.print-density-1 .activity-logo {
+    width: 5.5mm !important;
+    height: 5.5mm !important;
+  }
+
+  body.print-density-1 .meal-gap,
+  body.print-density-1 .meal-banner {
+    height: 4.9mm !important;
+    min-height: 4.9mm !important;
+  }
+
+  body.print-density-2 .sheet-head {
+    margin-bottom: 1.7mm !important;
+    padding-bottom: 1mm !important;
+  }
+
+  body.print-density-2 .portrait {
+    width: 13mm !important;
+    height: 13mm !important;
+  }
+
+  body.print-density-2 .sheet h2 {
+    font-size: 13.5pt !important;
+  }
+
+  body.print-density-2 .eyebrow,
+  body.print-density-2 .muted,
+  body.print-density-2 #printDate,
+  body.print-density-2 .legend {
+    font-size: 5.5pt !important;
+  }
+
+  body.print-density-2 .week-grid {
+    column-gap: 1.15mm !important;
+  }
+
+  body.print-density-2 .day-head {
+    padding: 1.05mm .9mm !important;
+  }
+
+  body.print-density-2 .day-head h3 {
+    font-size: 7.9pt !important;
+  }
+
+  body.print-density-2 .day-head span {
+    font-size: 4.8pt !important;
+  }
+
+  body.print-density-2 .period {
+    padding: .95mm !important;
+  }
+
+  body.print-density-2 .period-title {
+    margin-bottom: .65mm !important;
+    font-size: 5.55pt !important;
+  }
+
+  body.print-density-2 .activity-card {
+    padding: .85mm !important;
+    margin-bottom: .68mm !important;
+  }
+
+  body.print-density-2 .activity-title {
+    font-size: 6.35pt !important;
+    padding-right: 6mm !important;
+  }
+
+  body.print-density-2 .activity-time {
+    font-size: 5.1pt !important;
+    padding: .25mm .6mm !important;
+  }
+
+  body.print-density-2 .activity-meta {
+    margin-top: .55mm !important;
+    font-size: 4.7pt !important;
+    line-height: 1.1 !important;
+  }
+
+  body.print-density-2 .activity-desc {
+    margin-top: .55mm !important;
+    font-size: 4.3pt !important;
+    line-height: 1.08 !important;
+  }
+
+  body.print-density-2 .activity-logo {
+    width: 5mm !important;
+    height: 5mm !important;
+  }
+
+  body.print-density-2 .empty-slot {
+    padding: 1.1mm !important;
+    font-size: 4.7pt !important;
+  }
+
+  body.print-density-2 .meal-gap,
+  body.print-density-2 .meal-banner {
+    height: 4.6mm !important;
+    min-height: 4.6mm !important;
+  }
+
+  body.print-density-2 .sheet-foot {
+    margin-top: 1mm !important;
+    font-size: 4.45pt !important;
+  }
+
+  body.print-density-3 .sheet-head {
+    margin-bottom: 1.5mm !important;
+    padding-bottom: .9mm !important;
+  }
+
+  body.print-density-3 .portrait {
+    width: 12mm !important;
+    height: 12mm !important;
+  }
+
+  body.print-density-3 .sheet h2 {
+    font-size: 13pt !important;
+  }
+
+  body.print-density-3 .eyebrow,
+  body.print-density-3 .muted,
+  body.print-density-3 #printDate,
+  body.print-density-3 .legend {
+    font-size: 5.2pt !important;
+  }
+
+  body.print-density-3 .week-grid {
+    column-gap: 1mm !important;
+  }
+
+  body.print-density-3 .day-head {
+    padding: .95mm .8mm !important;
+  }
+
+  body.print-density-3 .day-head h3 {
+    font-size: 7.4pt !important;
+  }
+
+  body.print-density-3 .day-head span {
+    font-size: 4.6pt !important;
+  }
+
+  body.print-density-3 .period {
+    padding: .8mm !important;
+  }
+
+  body.print-density-3 .period-title {
+    margin-bottom: .55mm !important;
+    font-size: 5.2pt !important;
+  }
+
+  body.print-density-3 .activity-card {
+    padding: .72mm !important;
+    margin-bottom: .55mm !important;
+  }
+
+  body.print-density-3 .activity-title {
+    font-size: 6.05pt !important;
+    padding-right: 5.5mm !important;
+  }
+
+  body.print-density-3 .activity-time {
+    font-size: 4.9pt !important;
+  }
+
+  body.print-density-3 .activity-meta {
+    font-size: 4.5pt !important;
+  }
+
+  body.print-density-3 .activity-desc {
+    font-size: 4.1pt !important;
+  }
+
+  body.print-density-3 .activity-logo {
+    width: 4.6mm !important;
+    height: 4.6mm !important;
+  }
+
+  body.print-density-3 .meal-gap,
+  body.print-density-3 .meal-banner {
+    height: 4.25mm !important;
+    min-height: 4.25mm !important;
+  }
+
+  body.print-density-3 .sheet-foot {
+    margin-top: .8mm !important;
+    font-size: 4.2pt !important;
+  }
+}
+`;
+
+  document.head.appendChild(style);
 }
 
 /* =========================================================
@@ -267,8 +769,6 @@ function buildModel() {
     participantsByActivity.set(activityId, participantSet);
   }
 
-  // Schéma Grist contrôlé : Parti_e, Lu, Ma, Me, Je, Ve.
-  // La colonne Presence n'existe pas dans le fichier transmis : elle n'est pas utilisée.
   state.people = users
     .filter((user) => !isTrue(user.Parti_e))
     .map((user) => ({
@@ -313,9 +813,9 @@ function buildModel() {
         kind: 'regular',
         name: text(activity.Nom_activite, 'Activité'),
         day: normalizeDay(dayRow?.Jour || activity.gristHelper_Display2),
-        // Colonne réelle du .grist : Numero_du_jour_de_la_semaine
         dayOrder: Number(
           activity.Numero_du_jour_de_la_semaine ||
+          activity.Jour_Num_jour ||
           dayRow?.Num_jour ||
           99
         ),
@@ -323,7 +823,7 @@ function buildModel() {
         end: text(endRow?.Heures || activity.gristHelper_Display4),
         animators: animatorNames,
         capacity: activity.Capacite,
-        description: text(activity.Remarques_planning).slice(0, 100),
+        description: text(activity.Remarques_planning || activity.Description).slice(0, 100),
         visual: activity.Visuel,
         groupOpen: isTrue(activity.Groupe_ouvert),
         fullYear: isTrue(activity.Annee_complete),
@@ -447,6 +947,171 @@ function hexToRgba(hex, opacity) {
 }
 
 /* =========================================================
+   IMPRESSION — AJUSTEMENT INTELLIGENT
+   ========================================================= */
+
+const PRINT_DENSITY_CLASSES = [
+  'print-density-1',
+  'print-density-2',
+  'print-density-3'
+];
+
+function clearPrintDensity() {
+  document.body.classList.remove(...PRINT_DENSITY_CLASSES);
+}
+
+function mmToPx(mm) {
+  const probe = document.createElement('div');
+  probe.style.position = 'absolute';
+  probe.style.left = '-9999px';
+  probe.style.top = '0';
+  probe.style.width = '1mm';
+  probe.style.height = `${mm}mm`;
+  probe.style.pointerEvents = 'none';
+  probe.style.visibility = 'hidden';
+  document.body.appendChild(probe);
+  const pixels = probe.getBoundingClientRect().height;
+  probe.remove();
+  return pixels;
+}
+
+function queueMealAlignment() {
+  requestAnimationFrame(() => {
+    alignMealBanner();
+    setTimeout(alignMealBanner, 60);
+    setTimeout(alignMealBanner, 180);
+  });
+}
+
+function attachImageReflowHandlers() {
+  const grid = $('weekGrid');
+  if (!grid) return;
+
+  grid.querySelectorAll('img').forEach((img) => {
+    if (img.dataset.boundReflow === '1') return;
+    img.dataset.boundReflow = '1';
+
+    img.addEventListener('load', () => {
+      alignMealBanner();
+    });
+
+    img.addEventListener('error', () => {
+      alignMealBanner();
+    });
+  });
+}
+
+function resetMealAlignment() {
+  const grid = $('weekGrid');
+  if (!grid) return;
+
+  grid.querySelectorAll('.period-matin').forEach((section) => {
+    section.style.removeProperty('min-height');
+  });
+
+  const banner = grid.querySelector('.meal-banner');
+  if (banner) {
+    banner.style.removeProperty('top');
+  }
+}
+
+function alignMealBanner() {
+  const grid = $('weekGrid');
+  if (!grid) return;
+
+  const morningSections = [...grid.querySelectorAll('.period-matin')];
+  const banner = grid.querySelector('.meal-banner');
+
+  if (!morningSections.length || !banner) return;
+
+  morningSections.forEach((section) => {
+    section.style.removeProperty('min-height');
+  });
+  banner.style.removeProperty('top');
+
+  const maxMorningHeight = Math.ceil(
+    Math.max(
+      ...morningSections.map((section) => section.getBoundingClientRect().height)
+    )
+  );
+
+  morningSections.forEach((section) => {
+    section.style.minHeight = `${maxMorningHeight}px`;
+  });
+
+  const firstGap = grid.querySelector('.meal-gap');
+  if (!firstGap) return;
+
+  const gridRect = grid.getBoundingClientRect();
+  const gapRect = firstGap.getBoundingClientRect();
+  banner.style.top = `${Math.ceil(gapRect.top - gridRect.top)}px`;
+}
+
+function sheetFitsA4() {
+  const sheet = $('sheet');
+  if (!sheet) return true;
+
+  const maxHeight = mmToPx(200); // A4 paysage avec 5 mm + 5 mm de marges.
+  const maxWidth = mmToPx(287);  // A4 paysage avec 5 mm + 5 mm de marges.
+
+  const rect = sheet.getBoundingClientRect();
+  const heightFits = rect.height <= maxHeight + 3;
+  const widthFits = rect.width <= maxWidth + 2;
+
+  return heightFits && widthFits;
+}
+
+function preparePrintLayout() {
+  ensureInjectedStyles();
+  updatePrintDate();
+  clearPrintDensity();
+  resetMealAlignment();
+  alignMealBanner();
+
+  const attempts = [
+    null,
+    'print-density-1',
+    'print-density-2',
+    'print-density-3'
+  ];
+
+  for (const densityClass of attempts) {
+    clearPrintDensity();
+    if (densityClass) {
+      document.body.classList.add(densityClass);
+    }
+
+    resetMealAlignment();
+    alignMealBanner();
+
+    const sheet = $('sheet');
+    if (sheet) {
+      // Force le recalcul de mise en page avant la mesure.
+      void sheet.offsetHeight;
+    }
+
+    if (sheetFitsA4()) {
+      return;
+    }
+  }
+}
+
+function cleanupPrintLayout() {
+  clearPrintDensity();
+  resetMealAlignment();
+  queueMealAlignment();
+}
+
+function requestPrint() {
+  preparePrintLayout();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  });
+}
+
+/* =========================================================
    AFFICHAGE
    ========================================================= */
 
@@ -485,8 +1150,9 @@ async function render() {
     </div>
   `;
 
-  alignMealBanner();
   updatePrintDate();
+  attachImageReflowHandlers();
+  queueMealAlignment();
 }
 
 async function renderDay(person, day) {
@@ -588,185 +1254,6 @@ async function renderDay(person, day) {
       <div class="day-content">${sections.join('')}</div>
     </article>
   `;
-}
-
-function resetMealAlignment() {
-  const grid = $('weekGrid');
-  if (!grid) return;
-
-  grid.querySelectorAll('.period-matin').forEach((section) => {
-    section.style.removeProperty('min-height');
-  });
-
-  const banner = grid.querySelector('.meal-banner');
-  if (banner) {
-    banner.style.removeProperty('top');
-  }
-}
-
-function alignMealBanner() {
-  const grid = $('weekGrid');
-  if (!grid) return;
-
-  const morningSections = [...grid.querySelectorAll('.period-matin')];
-  const banner = grid.querySelector('.meal-banner');
-
-  if (!morningSections.length || !banner) return;
-
-  // Toujours supprimer les anciennes dimensions avant de remesurer.
-  // C'est indispensable lors du passage écran -> impression :
-  // les hauteurs calculées à l'écran ne doivent jamais être réutilisées en A4.
-  morningSections.forEach((section) => {
-    section.style.removeProperty('min-height');
-  });
-  banner.style.removeProperty('top');
-
-  const maxMorningHeight = Math.ceil(
-    Math.max(
-      ...morningSections.map((section) => section.getBoundingClientRect().height)
-    )
-  );
-
-  morningSections.forEach((section) => {
-    section.style.minHeight = `${maxMorningHeight}px`;
-  });
-
-  const firstGap = grid.querySelector('.meal-gap');
-  if (!firstGap) return;
-
-  const gridRect = grid.getBoundingClientRect();
-  const gapRect = firstGap.getBoundingClientRect();
-  banner.style.top = `${Math.ceil(gapRect.top - gridRect.top)}px`;
-}
-
-/* =========================================================
-   AJUSTEMENT IMPRESSION SUR UNE SEULE PAGE
-   ---------------------------------------------------------
-   L'ancienne correction ne suffisait pas : après remise à zéro,
-   alignMealBanner() imposait de nouveau à tous les matins la hauteur
-   du matin le plus haut. C'est nécessaire pour garder un bandeau repas
-   horizontal, mais cela peut augmenter la hauteur totale imprimée.
-
-   La stratégie ci-dessous :
-   1. neutralise le min-height:100% de .day-content uniquement à l'impression ;
-   2. réduit le meal-gap à la hauteur exacte du bandeau (24 px) ;
-   3. recalcule proprement l'alignement repas ;
-   4. si le planning dépasse encore la hauteur imprimable, applique
-      automatiquement le plus petit zoom nécessaire pour tenir sur 1 page.
-   ========================================================= */
-
-function clearPrintFit() {
-  const sheet = $('sheet');
-  const grid = $('weekGrid');
-
-  if (sheet) {
-    sheet.style.removeProperty('zoom');
-    sheet.style.removeProperty('width');
-  }
-
-  if (!grid) return;
-
-  grid.style.removeProperty('align-items');
-
-  grid.querySelectorAll('.day-content').forEach((content) => {
-    content.style.removeProperty('min-height');
-  });
-
-  grid.querySelectorAll('.meal-gap').forEach((gap) => {
-    gap.style.removeProperty('height');
-  });
-}
-
-function printableHeightPx() {
-  const a3 =
-    $('formatSelect')?.value === 'a3' ||
-    document.body.classList.contains('print-a3');
-
-  // A4 paysage : hauteur 210 mm, marges CSS 8 + 8 mm.
-  // A3 paysage : hauteur 297 mm, marges CSS 9 + 9 mm.
-  // On garde 3 mm de sécurité pour éviter qu'un arrondi de Firefox
-  // ne déclenche une seconde page.
-  const pageHeightMm = a3 ? 297 : 210;
-  const verticalMarginsMm = a3 ? 18 : 16;
-  const safetyMm = 3;
-
-  return (pageHeightMm - verticalMarginsMm - safetyMm) * (96 / 25.4);
-}
-
-function preparePrintFit() {
-  const sheet = $('sheet');
-  const grid = $('weekGrid');
-
-  if (!sheet || !grid) return;
-
-  clearPrintFit();
-  resetMealAlignment();
-
-  // Évite que .day-content { min-height: 100% } ne crée une hauteur
-  // artificielle dans la grille imprimée.
-  grid.style.alignItems = 'start';
-
-  grid.querySelectorAll('.day-content').forEach((content) => {
-    content.style.minHeight = '0';
-  });
-
-  // Le bandeau d'impression fait 24 px : 30 px de meal-gap réservaient
-  // encore 6 px inutiles dans chaque colonne.
-  grid.querySelectorAll('.meal-gap').forEach((gap) => {
-    gap.style.setProperty('height', '24px', 'important');
-  });
-
-  alignMealBanner();
-
-  const maxHeight = printableHeightPx();
-
-  // Force le calcul de mise en page avec les styles d'impression actifs.
-  let currentHeight = sheet.getBoundingClientRect().height;
-
-  if (!Number.isFinite(currentHeight) || currentHeight <= maxHeight) {
-    return;
-  }
-
-  // Premier ajustement : uniquement la réduction strictement nécessaire.
-  let zoom = Math.min(1, (maxHeight / currentHeight) * 0.985);
-  zoom = Math.max(0.70, zoom);
-
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    sheet.style.zoom = String(zoom);
-
-    // Compenser la réduction de largeur du zoom pour continuer à exploiter
-    // toute la largeur de la feuille et éviter des retours à la ligne inutiles.
-    sheet.style.width = `${100 / zoom}%`;
-
-    resetMealAlignment();
-    alignMealBanner();
-
-    currentHeight = sheet.getBoundingClientRect().height;
-
-    if (!Number.isFinite(currentHeight) || currentHeight <= maxHeight) {
-      break;
-    }
-
-    const correction = (maxHeight / currentHeight) * 0.985;
-    const nextZoom = Math.max(0.70, zoom * correction);
-
-    if (Math.abs(nextZoom - zoom) < 0.002) {
-      zoom = Math.max(0.70, zoom - 0.01);
-    } else {
-      zoom = nextZoom;
-    }
-  }
-}
-
-function restoreScreenLayoutAfterPrint() {
-  clearPrintFit();
-  resetMealAlignment();
-
-  requestAnimationFrame(() => {
-    if (!$('sheet')?.classList.contains('hidden')) {
-      alignMealBanner();
-    }
-  });
 }
 
 async function activityCard(activity) {
@@ -872,8 +1359,7 @@ function bindEvents() {
   }
 
   onIfPresent('printBtn', 'click', () => {
-    updatePrintDate();
-    window.print();
+    requestPrint();
   });
 
   onIfPresent('reloadBtn', 'click', () => {
@@ -881,18 +1367,17 @@ function bindEvents() {
   });
 
   window.addEventListener('beforeprint', () => {
-    updatePrintDate();
-    preparePrintFit();
+    preparePrintLayout();
   });
 
   window.addEventListener('afterprint', () => {
-    restoreScreenLayoutAfterPrint();
+    cleanupPrintLayout();
   });
 
   window.addEventListener('resize', () => {
     if (!$('sheet')?.classList.contains('hidden')) {
-      resetMealAlignment();
-      alignMealBanner();
+      clearPrintDensity();
+      queueMealAlignment();
     }
   });
 }
@@ -902,6 +1387,7 @@ function bindEvents() {
    ========================================================= */
 
 async function start() {
+  ensureInjectedStyles();
   validateHtml();
   bindEvents();
 
