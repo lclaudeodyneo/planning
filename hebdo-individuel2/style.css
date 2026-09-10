@@ -424,8 +424,12 @@ select:disabled {
 @media print {
   html,
   body {
-    width: 297mm;
-    height: 210mm;
+    /* La zone imprimable est déjà définie par @page (A4 paysage + marges).
+       Ne surtout pas imposer 297 x 210 mm au body : cela ajoute les marges
+       à la hauteur du document et peut créer une seconde page blanche. */
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: hidden !important;
@@ -444,7 +448,7 @@ select:disabled {
   }
 
   #printViewport {
-    width: 287mm !important;
+    width: 100% !important;
     height: 200mm !important;
     margin: 0 !important;
     padding: 0 !important;
