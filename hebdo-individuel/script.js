@@ -639,6 +639,136 @@ function alignMealBanner() {
   banner.style.top = `${Math.ceil(gapRect.top - gridRect.top)}px`;
 }
 
+/* =========================================================
+   AJUSTEMENT IMPRESSION SUR UNE SEULE PAGE
+   ---------------------------------------------------------
+   L'ancienne correction ne suffisait pas : après remise à zéro,
+   alignMealBanner() imposait de nouveau à tous les matins la hauteur
+   du matin le plus haut. C'est nécessaire pour garder un bandeau repas
+   horizontal, mais cela peut augmenter la hauteur totale imprimée.
+
+   La stratégie ci-dessous :
+   1. neutralise le min-height:100% de .day-content uniquement à l'impression ;
+   2. réduit le meal-gap à la hauteur exacte du bandeau (24 px) ;
+   3. recalcule proprement l'alignement repas ;
+   4. si le planning dépasse encore la hauteur imprimable, applique
+      automatiquement le plus petit zoom nécessaire pour tenir sur 1 page.
+   ========================================================= */
+
+function clearPrintFit() {
+  const sheet = $('sheet');
+  const grid = $('weekGrid');
+
+  if (sheet) {
+    sheet.style.removeProperty('zoom');
+    sheet.style.removeProperty('width');
+  }
+
+  if (!grid) return;
+
+  grid.style.removeProperty('align-items');
+
+  grid.querySelectorAll('.day-content').forEach((content) => {
+    content.style.removeProperty('min-height');
+  });
+
+  grid.querySelectorAll('.meal-gap').forEach((gap) => {
+    gap.style.removeProperty('height');
+  });
+}
+
+function printableHeightPx() {
+  const a3 =
+    $('formatSelect')?.value === 'a3' ||
+    document.body.classList.contains('print-a3');
+
+  // A4 paysage : hauteur 210 mm, marges CSS 8 + 8 mm.
+  // A3 paysage : hauteur 297 mm, marges CSS 9 + 9 mm.
+  // On garde 3 mm de sécurité pour éviter qu'un arrondi de Firefox
+  // ne déclenche une seconde page.
+  const pageHeightMm = a3 ? 297 : 210;
+  const verticalMarginsMm = a3 ? 18 : 16;
+  const safetyMm = 3;
+
+  return (pageHeightMm - verticalMarginsMm - safetyMm) * (96 / 25.4);
+}
+
+function preparePrintFit() {
+  const sheet = $('sheet');
+  const grid = $('weekGrid');
+
+  if (!sheet || !grid) return;
+
+  clearPrintFit();
+  resetMealAlignment();
+
+  // Évite que .day-content { min-height: 100% } ne crée une hauteur
+  // artificielle dans la grille imprimée.
+  grid.style.alignItems = 'start';
+
+  grid.querySelectorAll('.day-content').forEach((content) => {
+    content.style.minHeight = '0';
+  });
+
+  // Le bandeau d'impression fait 24 px : 30 px de meal-gap réservaient
+  // encore 6 px inutiles dans chaque colonne.
+  grid.querySelectorAll('.meal-gap').forEach((gap) => {
+    gap.style.setProperty('height', '24px', 'important');
+  });
+
+  alignMealBanner();
+
+  const maxHeight = printableHeightPx();
+
+  // Force le calcul de mise en page avec les styles d'impression actifs.
+  let currentHeight = sheet.getBoundingClientRect().height;
+
+  if (!Number.isFinite(currentHeight) || currentHeight <= maxHeight) {
+    return;
+  }
+
+  // Premier ajustement : uniquement la réduction strictement nécessaire.
+  let zoom = Math.min(1, (maxHeight / currentHeight) * 0.985);
+  zoom = Math.max(0.70, zoom);
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    sheet.style.zoom = String(zoom);
+
+    // Compenser la réduction de largeur du zoom pour continuer à exploiter
+    // toute la largeur de la feuille et éviter des retours à la ligne inutiles.
+    sheet.style.width = `${100 / zoom}%`;
+
+    resetMealAlignment();
+    alignMealBanner();
+
+    currentHeight = sheet.getBoundingClientRect().height;
+
+    if (!Number.isFinite(currentHeight) || currentHeight <= maxHeight) {
+      break;
+    }
+
+    const correction = (maxHeight / currentHeight) * 0.985;
+    const nextZoom = Math.max(0.70, zoom * correction);
+
+    if (Math.abs(nextZoom - zoom) < 0.002) {
+      zoom = Math.max(0.70, zoom - 0.01);
+    } else {
+      zoom = nextZoom;
+    }
+  }
+}
+
+function restoreScreenLayoutAfterPrint() {
+  clearPrintFit();
+  resetMealAlignment();
+
+  requestAnimationFrame(() => {
+    if (!$('sheet')?.classList.contains('hidden')) {
+      alignMealBanner();
+    }
+  });
+}
+
 async function activityCard(activity) {
   const logo = await attachmentUrl(activity.visual);
 
@@ -752,21 +882,11 @@ function bindEvents() {
 
   window.addEventListener('beforeprint', () => {
     updatePrintDate();
-
-    // Firefox applique le CSS d'impression avant l'événement beforeprint.
-    // On efface donc les hauteurs calculées à l'écran puis on recalcule
-    // l'alignement matin / repas avec les dimensions réelles de l'A4.
-    resetMealAlignment();
-    alignMealBanner();
+    preparePrintFit();
   });
 
   window.addEventListener('afterprint', () => {
-    // Après impression, on revient aux dimensions naturelles de l'écran
-    // puis on réaligne proprement le bandeau repas.
-    resetMealAlignment();
-    requestAnimationFrame(() => {
-      if (!$('sheet')?.classList.contains('hidden')) alignMealBanner();
-    });
+    restoreScreenLayoutAfterPrint();
   });
 
   window.addEventListener('resize', () => {
