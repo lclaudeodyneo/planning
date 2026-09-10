@@ -1,0 +1,506 @@
+:root {
+  --accent: #711aa2;
+  --monday: #5b8def;
+  --tuesday: #55a868;
+  --wednesday: #c77cff;
+  --thursday: #e6a23c;
+  --friday: #e66b6b;
+  --ink: #26222a;
+  --muted: #6f6874;
+  --line: #ded9e1;
+  --surface: #ffffff;
+  --surface-soft: #f7f4f9;
+  --shadow: 0 7px 24px rgba(35, 23, 42, .10);
+  --radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #f0edf3;
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  padding: 14px;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+.toolbar {
+  width: min(1500px, 100%);
+  margin: 0 auto 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border-top: 4px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.tool-group {
+  display: grid;
+  gap: 4px;
+  min-width: 220px;
+}
+
+.tool-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.tool-group select {
+  height: 38px;
+  padding: 0 34px 0 10px;
+  border: 1px solid #cfc7d4;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.print-button {
+  height: 38px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.print-button:disabled,
+select:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.status {
+  margin-left: auto;
+  align-self: center;
+  min-height: 18px;
+  max-width: 430px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.planning-sheet {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+#printInner {
+  min-height: 100%;
+  transform-origin: top left;
+}
+
+.planning-header {
+  min-height: 110px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 8px solid var(--accent);
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(113,26,162,.065), rgba(255,255,255,0) 42%),
+    var(--surface);
+}
+
+.service-name {
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.planning-header h1 {
+  margin: 4px 0 0;
+  font-size: 27px;
+  line-height: 1.05;
+}
+
+.identity-block {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 330px;
+  justify-content: flex-end;
+}
+
+.portrait-wrap {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  overflow: hidden;
+  border-radius: 9px;
+  border: 2px solid rgba(113,26,162,.18);
+  background: #ece7f0;
+}
+
+.portrait-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.portrait-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: #ede6f1;
+  color: var(--accent);
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.identity-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.user-full-name {
+  margin-top: 3px;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  min-height: 620px;
+}
+
+.day-column {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr 1fr;
+  border-right: 1px solid var(--line);
+}
+
+.day-column:last-child {
+  border-right: 0;
+}
+
+.day-header {
+  padding: 9px 7px;
+  color: white;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+.half-day {
+  min-height: 0;
+  padding: 8px;
+  background: #fff;
+}
+
+.half-day + .half-day {
+  border-top: 2px solid #d9d1de;
+}
+
+.half-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 7px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.half-label::after {
+  content: "";
+  height: 1px;
+  flex: 1 1 auto;
+  background: rgba(113,26,162,.24);
+}
+
+.activity-list {
+  display: grid;
+  gap: 6px;
+}
+
+.activity-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 7px;
+  padding: 6px;
+  border: 1px solid #e1dce5;
+  border-left: 4px solid var(--day-color);
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(38,34,42,.04);
+}
+
+.activity-card.no-visual {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.activity-visual {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: #f5f2f7;
+}
+
+.activity-title {
+  font-size: 12.5px;
+  line-height: 1.15;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.activity-time {
+  margin-top: 2px;
+  color: var(--accent);
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+.activity-meta {
+  margin-top: 2px;
+  color: #4f4854;
+  font-size: 10.5px;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.activity-meta strong {
+  font-weight: 800;
+}
+
+.empty-half {
+  color: #9a939e;
+  font-size: 10.5px;
+  font-style: italic;
+}
+
+.empty-state {
+  margin: 18px;
+  padding: 18px;
+  border: 1px dashed #cfc6d4;
+  border-radius: 8px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.fatal-error {
+  width: min(1500px, 100%);
+  margin: 12px auto;
+  padding: 12px 14px;
+  border: 1px solid #c84c4c;
+  border-radius: 8px;
+  background: #fff3f3;
+  color: #842828;
+  white-space: pre-wrap;
+  font-size: 13px;
+}
+
+/* Densité automatique à l'écran et à l'impression */
+.density-compact .activity-card {
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 5px;
+  padding: 5px;
+}
+
+.density-compact .activity-visual {
+  width: 32px;
+  height: 32px;
+}
+
+.density-compact .activity-title {
+  font-size: 11.5px;
+}
+
+.density-compact .activity-time,
+.density-compact .activity-meta {
+  font-size: 9.8px;
+}
+
+.density-ultra .activity-card {
+  grid-template-columns: 27px minmax(0, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-left-width: 3px;
+}
+
+.density-ultra .activity-visual {
+  width: 27px;
+  height: 27px;
+}
+
+.density-ultra .activity-title {
+  font-size: 10.6px;
+}
+
+.density-ultra .activity-time,
+.density-ultra .activity-meta {
+  font-size: 9px;
+}
+
+.density-ultra .activity-list {
+  gap: 4px;
+}
+
+@media (max-width: 950px) {
+  body {
+    padding: 8px;
+  }
+
+  .planning-sheet {
+    overflow-x: auto;
+  }
+
+  #printInner {
+    min-width: 930px;
+  }
+}
+
+/*
+  IMPRESSION
+  - A4 paysage : 297 x 210 mm
+  - marge 5 mm
+  - surface utile : 287 x 200 mm
+  Le JS applique en plus un facteur d'échelle si le contenu dépasse.
+*/
+@page {
+  size: A4 landscape;
+  margin: 5mm;
+}
+
+@media print {
+  html,
+  body {
+    width: 297mm;
+    height: 210mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .screen-only {
+    display: none !important;
+  }
+
+  #app {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #printViewport {
+    width: 287mm !important;
+    height: 200mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+
+  #printInner {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    transform-origin: top left !important;
+  }
+
+  .planning-header {
+    min-height: 25mm;
+    padding: 3.5mm 4mm;
+    border-top-width: 2mm;
+  }
+
+  .service-name {
+    font-size: 11pt;
+  }
+
+  .planning-header h1 {
+    font-size: 17pt;
+  }
+
+  .identity-block {
+    min-width: 78mm;
+  }
+
+  .portrait-wrap {
+    width: 18mm;
+    height: 18mm;
+    flex-basis: 18mm;
+  }
+
+  .identity-label {
+    font-size: 7.5pt;
+  }
+
+  .user-full-name {
+    font-size: 13pt;
+  }
+
+  .week-grid {
+    min-height: 173mm;
+    height: 173mm;
+  }
+
+  .day-header {
+    padding: 2mm 1.5mm;
+    font-size: 9.5pt;
+  }
+
+  .half-day {
+    padding: 1.6mm;
+    overflow: hidden;
+  }
+
+  .half-label {
+    margin-bottom: 1.2mm;
+    font-size: 6.7pt;
+  }
+
+  .activity-list {
+    gap: 1.1mm;
+  }
+
+  .activity-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .empty-state {
+    display: none !important;
+  }
+}
