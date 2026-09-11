@@ -1,0 +1,2174 @@
+'use strict';
+
+const TABLES = {
+  participations: 'Participations',
+  activites: 'Activites',
+  usagers: 'Usagers',
+  jours: 'Jours_de_la_semaine',
+  heures: 'Heures',
+  animateurs: 'Animateurs',
+  activitesAutres: 'Activites_autres',
+  reeducations: 'Reeducations',
+  reeducateurs: 'Reeducateurs'
+};
+
+const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+
+const DAY_COLORS = {
+  Lundi: '#5b8def',
+  Mardi: '#55a868',
+  Mercredi: '#c77cff',
+  Jeudi: '#e6a23c',
+  Vendredi: '#e66b6b'
+};
+
+const state = {
+  tables: {},
+  people: [],
+  activities: [],
+  otherActivities: [],
+  selectedId: null,
+  attachmentUrls: new Map()
+};
+
+const $ = (id) => document.getElementById(id);
+
+
+/* =========================================================
+   OUTILS
+   ========================================================= */
+
+function rowsFromTable(table) {
+  if (!table || !Array.isArray(table.id)) {
+    return [];
+  }
+
+  return table.id.map((id, index) =>
+    Object.fromEntries(
+      Object.entries(table).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value[index] : value
+      ])
+    )
+  );
+}
+
+function isTrue(value) {
+  return (
+    value === true ||
+    value === 1 ||
+    value === 'true' ||
+    value === 'TRUE'
+  );
+}
+
+function refIds(value) {
+  if (value == null) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value[0] === 'L'
+      ? value.slice(1).filter(Number.isFinite)
+      : value.filter(Number.isFinite);
+  }
+
+  return Number.isFinite(value)
+    ? [value]
+    : [];
+}
+
+
+function byId(rows) {
+  return new Map(
+    rows.map((row) => [row.id, row])
+  );
+}
+
+
+function text(value, fallback = '') {
+  return value == null || value === ''
+    ? fallback
+    : String(value);
+}
+
+
+function normalizeDay(value) {
+  const normalized =
+    text(value).trim().toLowerCase();
+
+  return (
+    DAYS.find(
+      (day) =>
+        day.toLowerCase() === normalized
+    ) ||
+    text(value, 'Jour')
+  );
+}
+
+
+function minutes(value) {
+  const match =
+    text(value).match(
+      /(\d{1,2})\D(\d{2})/
+    );
+
+  return match
+    ? Number(match[1]) * 60 +
+        Number(match[2])
+    : 9999;
+}
+
+
+function initials(name) {
+  return text(name, '?')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
+
+
+function colorFor(name) {
+  let hue = 0;
+
+  for (const character of text(name)) {
+    hue =
+      (hue * 31 +
+        character.charCodeAt(0)) %
+      360;
+  }
+
+  return `hsl(${hue} 48% 48%)`;
+}
+
+
+function esc(value) {
+  return text(value).replace(
+    /[&<>"']/g,
+    (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    })[character]
+  );
+}
+
+
+function firstDefined(
+  row,
+  columnNames,
+  fallback = ''
+) {
+  for (const columnName of columnNames) {
+    if (
+      row &&
+      row[columnName] != null &&
+      row[columnName] !== ''
+    ) {
+      return row[columnName];
+    }
+  }
+
+  return fallback;
+}
+
+
+/*
+ * Lecture robuste des colonnes Oui / Non de Grist.
+ */
+function isTrue(value) {
+  if (
+    value === true ||
+    value === 1 ||
+    value === '1'
+  ) {
+    return true;
+  }
+
+  if (typeof value === 'string') {
+    const normalized =
+      value.trim().toLowerCase();
+
+    return [
+      'true',
+      'oui',
+      'yes',
+      'vrai'
+    ].includes(normalized);
+  }
+
+  return false;
+}
+
+
+/* =========================================================
+   PIÈCES JOINTES GRIST
+   ========================================================= */
+
+let attachmentTokenInfo = null;
+
+
+async function attachmentUrl(value) {
+  const ids = refIds(value);
+
+  if (!ids.length) {
+    return '';
+  }
+
+  const id = ids[0];
+
+  if (state.attachmentUrls.has(id)) {
+    return state.attachmentUrls.get(id);
+  }
+
+  try {
+    if (!attachmentTokenInfo) {
+      attachmentTokenInfo =
+        await grist.docApi.getAccessToken({
+          readOnly: true
+        });
+    }
+
+    const url =
+      `${attachmentTokenInfo.baseUrl}/attachments/${id}/download` +
+      `?auth=${encodeURIComponent(
+        attachmentTokenInfo.token
+      )}`;
+
+    state.attachmentUrls.set(
+      id,
+      url
+    );
+
+    return url;
+
+  } catch (error) {
+    console.error(
+      `Impossible de charger la pièce jointe ${id}`,
+      error
+    );
+
+    return '';
+  }
+}
+
+
+/* =========================================================
+   CHARGEMENT DES TABLES
+   ========================================================= */
+
+async function fetchAll() {
+  showStatus(
+    'Lecture des tables Grist…'
+  );
+
+  const entries =
+    await Promise.all(
+      Object.entries(TABLES).map(
+        async ([key, name]) => [
+          key,
+          await grist.docApi.fetchTable(name)
+        ]
+      )
+    );
+
+  state.tables =
+    Object.fromEntries(
+      entries.map(
+        ([key, table]) => [
+          key,
+          rowsFromTable(table)
+        ]
+      )
+    );
+
+  buildModel();
+  populatePeople();
+
+  const first =
+    state.people[0];
+
+  if (first) {
+    state.selectedId =
+      first.id;
+
+    $('personSelect').value =
+      String(first.id);
+
+    await render();
+
+  } else {
+    showStatus(
+      'Aucun usager trouvé dans la table Usagers.',
+      true
+    );
+  }
+}
+
+
+/* =========================================================
+   CONSTRUCTION DU MODÈLE
+   ========================================================= */
+
+function buildModel() {
+  const users =
+    state.tables.usagers;
+
+  const activities =
+    state.tables.activites;
+
+  const participations =
+    state.tables.participations;
+
+  const days =
+    byId(state.tables.jours);
+
+  const hours =
+    byId(state.tables.heures);
+
+  const animators =
+    byId(state.tables.animateurs);
+
+  const otherActivityTypes =
+    byId(state.tables.activitesAutres);
+
+  const partners =
+    byId(state.tables.reeducateurs);
+
+
+  /* ---------------------------------------------------------
+     PARTICIPANTS PAR ACTIVITÉ
+     --------------------------------------------------------- */
+
+  const participantsByActivity =
+    new Map();
+
+  for (const participation of participations) {
+
+    const activityId =
+      refIds(
+        participation.Activites
+      )[0];
+
+    if (!activityId) {
+      continue;
+    }
+
+    const participantSet =
+      participantsByActivity.get(
+        activityId
+      ) ||
+      new Set();
+
+    refIds(
+      participation.Participants
+    ).forEach(
+      (participantId) => {
+        participantSet.add(
+          participantId
+        );
+      }
+    );
+
+    participantsByActivity.set(
+      activityId,
+      participantSet
+    );
+  }
+
+
+  /* ---------------------------------------------------------
+     USAGERS
+     --------------------------------------------------------- */
+
+  state.people = users
+    .filter((user) => !isTrue(user.Parti_e))
+    .map((user) => ({
+      id: user.id,
+      name: text(
+        user.Usager,
+        `${text(user.Prenom)} ${text(user.Nom)}`.trim()
+      ),
+      lastName: text(user.Nom).trim(),
+      firstName: text(user.Prenom).trim(),
+      portrait: user.Portrait,
+      presence: refIds(user.Presence).map((id) =>
+        normalizeDay(days.get(id)?.Jour)
+      ),
+      flags: {
+        Lundi: user.Lu,
+        Mardi: user.Ma,
+        Mercredi: user.Me,
+        Jeudi: user.Je,
+        Vendredi: user.Ve
+      }
+    }))
+
+    .sort((a, b) => {
+      const lastNameComparison = a.lastName.localeCompare(
+        b.lastName,
+        'fr',
+        { sensitivity: 'base' }
+      );
+
+      if (lastNameComparison !== 0) {
+        return lastNameComparison;
+      }
+
+      return a.firstName.localeCompare(
+        b.firstName,
+        'fr',
+        { sensitivity: 'base' }
+      );
+    });
+
+
+
+  /* ---------------------------------------------------------
+     ACTIVITÉS
+     --------------------------------------------------------- */
+
+  state.activities =
+    activities
+      .map((activity) => {
+
+        const dayRow =
+          days.get(
+            refIds(
+              activity.Jour
+            )[0]
+          );
+
+        const startRow =
+          hours.get(
+            refIds(
+              activity.Heure_debut
+            )[0]
+          );
+
+        const endRow =
+          hours.get(
+            refIds(
+              activity.Heure_fin
+            )[0]
+          );
+
+
+        const animatorNames =
+          refIds(
+            activity.Animateur_s
+          )
+            .map(
+              (id) =>
+                animators.get(id)
+            )
+            .filter(Boolean)
+            .map(
+              (animator) =>
+                text(
+                  animator.Nom2,
+                  `${text(
+                    animator.Prenom
+                  )} ${text(
+                    animator.Nom
+                  )}`.trim()
+                )
+            );
+
+
+        /*
+         * Nouvelles colonnes :
+         *
+         * Groupe ouvert
+         * Année complète
+         */
+
+        const groupOpenValue =
+          firstDefined(
+            activity,
+            [
+              'Groupe_ouvert',
+              'Groupe_Ouvert'
+            ],
+            false
+          );
+
+        const fullYearValue =
+          firstDefined(
+            activity,
+            [
+              'Annee_complete',
+              'Annee_Complete',
+              'Annee_complete_'
+            ],
+            false
+          );
+
+
+        return {
+          id:
+            activity.id,
+
+          kind:
+            'regular',
+
+          name:
+            text(
+              activity.Nom_activite,
+              'Activité'
+            ),
+
+          day:
+            normalizeDay(
+              dayRow?.Jour ||
+              activity.gristHelper_Display2
+            ),
+
+          dayOrder:
+            Number(
+              activity.Jour_Num_jour ||
+              dayRow?.Num_jour ||
+              99
+            ),
+
+          start:
+            text(
+              startRow?.Heures ||
+              activity.gristHelper_Display3
+            ),
+
+          end:
+            text(
+              endRow?.Heures ||
+              activity.gristHelper_Display4
+            ),
+
+          animators:
+            animatorNames,
+
+          capacity:
+            activity.Capacite,
+
+          description:
+            text(
+              activity.Remarques_planning
+            ).slice(0, 100),
+
+          visual:
+            activity.Visuel,
+
+          groupOpen:
+            isTrue(
+              groupOpenValue
+            ),
+
+          fullYear:
+            isTrue(
+              fullYearValue
+            ),
+
+          participants:
+            participantsByActivity.get(
+              activity.id
+            ) ||
+            new Set()
+        };
+      })
+
+      .sort(sortActivities);
+
+
+  /* ---------------------------------------------------------
+     ACTIVITÉS AUTRES / RÉÉDUCATIONS
+     --------------------------------------------------------- */
+
+  state.otherActivities =
+    state.tables.reeducations
+      .map((otherActivity) => {
+
+        const typeRow =
+          otherActivityTypes.get(
+            refIds(
+              otherActivity.Type
+            )[0]
+          );
+
+        const dayRow =
+          days.get(
+            refIds(
+              otherActivity.Jour
+            )[0]
+          );
+
+        const partnerRow =
+          partners.get(
+            refIds(
+              otherActivity.Partenaire
+            )[0]
+          );
+
+        const userIds =
+          refIds(
+            otherActivity.Usagers
+          );
+
+
+        const typeName =
+          text(
+            typeRow?.Type ||
+            otherActivity.gristHelper_Display,
+            'Activité autre'
+          );
+
+
+        const partnerName =
+          text(
+            partnerRow?.Partenaire ||
+            partnerRow?.Organisation ||
+            otherActivity.gristHelper_Display4 ||
+            otherActivity.gristHelper_Display6
+          );
+
+
+        const hourRow =
+          hours.get(
+            refIds(
+              firstDefined(
+                otherActivity,
+                [
+                  'Heure',
+                  'Horaire'
+                ]
+              )
+            )[0]
+          );
+
+
+        const rawSchedule =
+          text(
+            hourRow?.Heures ||
+            firstDefined(
+              otherActivity,
+              [
+                'Horaire',
+                'gristHelper_Display3'
+              ]
+            )
+          );
+
+
+        const scheduleParts =
+          rawSchedule
+            .split(
+              /\s*[–—-]\s*/
+            )
+            .filter(Boolean);
+
+
+        return {
+          id:
+            otherActivity.id,
+
+          kind:
+            'other',
+
+          name:
+            typeName,
+
+          day:
+            normalizeDay(
+              dayRow?.Jour ||
+              otherActivity.gristHelper_Display2
+            ),
+
+          dayOrder:
+            Number(
+              dayRow?.Num_jour ||
+              99
+            ),
+
+          start:
+            scheduleParts[0] ||
+            rawSchedule,
+
+          end:
+            scheduleParts[1] ||
+            '',
+
+          schedule:
+            rawSchedule,
+
+          partner:
+            partnerName,
+
+          place:
+            text(
+              otherActivity.Lieu
+            ),
+
+          description:
+            '',
+
+          visual:
+            typeRow?.Visuel_act_autre,
+
+          participants:
+            new Set(userIds)
+        };
+      })
+
+      .sort(sortActivities);
+}
+
+
+/* =========================================================
+   TRI
+   ========================================================= */
+
+function sortActivities(a, b) {
+  return (
+    a.dayOrder -
+      b.dayOrder ||
+
+    minutes(a.start) -
+      minutes(b.start) ||
+
+    a.name.localeCompare(
+      b.name,
+      'fr'
+    )
+  );
+}
+
+
+/* =========================================================
+   SÉLECTEUR D'USAGER
+   ========================================================= */
+
+function populatePeople() {
+  $('personSelect').innerHTML =
+    state.people
+      .map(
+        (person) =>
+          `<option value="${person.id}">
+            ${esc(person.name)}
+          </option>`
+      )
+      .join('');
+}
+
+
+/* =========================================================
+   MESSAGE D'ÉTAT
+   ========================================================= */
+
+function showStatus(
+  message,
+  error = false
+) {
+  $('status').textContent =
+    message;
+
+  $('status').classList.toggle(
+    'error',
+    error
+  );
+
+  $('status').classList.remove(
+    'hidden'
+  );
+
+  $('sheet').classList.add(
+    'hidden'
+  );
+}
+
+
+/* =========================================================
+   MATIN / APRÈS-MIDI
+   ========================================================= */
+
+function periodOf(activity) {
+  return minutes(activity.start) <
+    13 * 60
+    ? 'Matin'
+    : 'Après-midi';
+}
+
+
+/* =========================================================
+   PRÉSENCE
+   ========================================================= */
+
+function isPresent(person, day) {
+  return (
+    person.presence.includes(day) ||
+
+    person.flags[day] === true ||
+
+    person.flags[day] === 1
+  );
+}
+
+
+/* =========================================================
+   Date d'impression
+   ========================================================= */
+function updatePrintDate() {
+  const printDate = $('printDate');
+
+  if (!printDate) {
+    return;
+  }
+
+  const formattedDate = new Intl.DateTimeFormat('fr-FR', {
+    dateStyle: 'long'
+  }).format(new Date());
+
+  printDate.textContent = `Imprimé le ${formattedDate}`;
+}
+
+
+/* =========================================================
+   OPACITÉ
+   ========================================================= */
+
+function opacityFor(day) {
+  const input =
+    $(`opacity${day}`);
+
+  const value =
+    input
+      ? Number(input.value)
+      : 18;
+
+  return (
+    Math.min(
+      100,
+      Math.max(
+        0,
+        value
+      )
+    ) / 100
+  );
+}
+
+
+/* =========================================================
+   COULEURS
+   ========================================================= */
+
+function hexToRgba(
+  hex,
+  opacity
+) {
+  const normalized =
+    hex.replace('#', '');
+
+  const number =
+    Number.parseInt(
+      normalized,
+      16
+    );
+
+  const red =
+    (number >> 16) & 255;
+
+  const green =
+    (number >> 8) & 255;
+
+  const blue =
+    number & 255;
+
+  return `rgba(${red}, ${green}, ${blue}, ${opacity})`;
+}
+
+
+/* =========================================================
+   AFFICHAGE DU PLANNING
+   ========================================================= */
+
+async function render() {
+  const person = state.people.find(
+    (item) => item.id === Number(state.selectedId)
+  );
+
+  if (!person) {
+    return;
+  }
+
+  $('status').classList.add('hidden');
+  $('sheet').classList.remove('hidden');
+
+  $('personName').textContent = person.name;
+
+  const presentDays = DAYS.filter(
+    (day) => isPresent(person, day)
+  );
+
+  $('presenceText').textContent = presentDays.length
+    ? presentDays.join(', ')
+    : 'Présence habituelle non renseignée';
+
+  const portraitUrl = await attachmentUrl(person.portrait);
+
+  $('portrait').innerHTML = portraitUrl
+    ? `
+      <img
+        src="${portraitUrl}"
+        alt="Portrait de ${esc(person.name)}"
+      >
+    `
+    : `
+      <span>
+        ${esc(initials(person.name))}
+      </span>
+    `;
+
+  const cards = await Promise.all(
+    DAYS.map((day) => renderDay(person, day))
+  );
+
+  $('weekGrid').innerHTML = `
+    ${cards.join('')}
+
+    <div
+      class="meal-banner"
+      aria-label="Repas de 12 heures"
+    >
+      <span>
+        12 h · Repas
+      </span>
+    </div>
+  `;
+
+  alignMealBanner();
+  updatePrintDate();
+  buildPrintSheet();
+}
+
+
+
+/* =========================================================
+   AFFICHAGE D'UNE JOURNÉE
+
+   ORDRE DE PRIORITÉ :
+
+   1. USAGER ABSENT
+      → aucune activité affichée.
+
+   2. USAGER PRÉSENT + activité Année complète
+      → activité inscrite affichée.
+      → groupes ouverts masqués sur cette demi-journée.
+
+   3. USAGER PRÉSENT + activité non Année complète
+      → activité inscrite affichée.
+      → groupes ouverts affichés.
+
+   4. USAGER PRÉSENT + aucune inscription
+      → groupes ouverts affichés.
+
+   La logique est indépendante entre :
+   - matin
+   - après-midi
+   ========================================================= */
+
+async function renderDay(
+  person,
+  day
+) {
+
+  /*
+   * On détermine immédiatement
+   * si l'usager est présent.
+   */
+
+  const present =
+    isPresent(
+      person,
+      day
+    );
+
+
+  /* ---------------------------------------------------------
+     ACTIVITÉS AUXQUELLES L'USAGER EST INSCRIT
+     --------------------------------------------------------- */
+
+  const enrolledActivities =
+    present
+      ? state.activities.filter(
+          (activity) => (
+            activity.day === day &&
+            activity.participants.has(
+              person.id
+            )
+          )
+        )
+      : [];
+
+
+  /* ---------------------------------------------------------
+     GROUPE OUVERT
+     --------------------------------------------------------- */
+
+  function shouldShowOpenGroup(
+    openActivity
+  ) {
+
+    /*
+     * Si l'usager est absent :
+     * aucun groupe ouvert.
+     */
+
+    if (!present) {
+      return false;
+    }
+
+
+    const openPeriod =
+      periodOf(
+        openActivity
+      );
+
+
+    /*
+     * Inscriptions de l'usager
+     * sur la même demi-journée.
+     */
+
+    const enrolledSamePeriod =
+      enrolledActivities.filter(
+        (activity) =>
+          periodOf(activity) ===
+          openPeriod
+      );
+
+
+    /*
+     * Aucune activité inscrite :
+     * groupes ouverts proposés.
+     */
+
+    if (
+      enrolledSamePeriod.length ===
+      0
+    ) {
+      return true;
+    }
+
+
+    /*
+     * Présence d'une activité
+     * Année complète :
+     *
+     * groupes ouverts masqués.
+     */
+
+    const hasFullYearActivity =
+      enrolledSamePeriod.some(
+        (activity) =>
+          activity.fullYear ===
+          true
+      );
+
+
+    if (
+      hasFullYearActivity
+    ) {
+      return false;
+    }
+
+
+    /*
+     * Activité inscrite,
+     * mais pas Année complète :
+     *
+     * groupes ouverts affichés.
+     */
+
+    return true;
+  }
+
+
+  /* ---------------------------------------------------------
+     ACTIVITÉS ORDINAIRES
+     --------------------------------------------------------- */
+
+  const regularActivities =
+    state.activities.filter(
+      (activity) => {
+
+        /*
+         * PRIORITÉ ABSOLUE :
+         *
+         * usager absent =
+         * aucune activité.
+         */
+
+        if (!present) {
+          return false;
+        }
+
+
+        /*
+         * Mauvais jour.
+         */
+
+        if (
+          activity.day !== day
+        ) {
+          return false;
+        }
+
+
+        /*
+         * L'usager est inscrit :
+         * activité toujours affichée.
+         */
+
+        if (
+          activity.participants.has(
+            person.id
+          )
+        ) {
+          return true;
+        }
+
+
+        /*
+         * Pas inscrit
+         * + groupe fermé :
+         *
+         * activité masquée.
+         */
+
+        if (
+          !activity.groupOpen
+        ) {
+          return false;
+        }
+
+
+        /*
+         * Groupe ouvert :
+         * application de la règle
+         * Année complète.
+         */
+
+        return shouldShowOpenGroup(
+          activity
+        );
+      }
+    );
+
+
+  /* ---------------------------------------------------------
+     RÉÉDUCATIONS / ACTIVITÉS AUTRES
+     --------------------------------------------------------- */
+
+  const otherActivities =
+    state.otherActivities.filter(
+      (activity) => (
+        present &&
+        activity.day === day &&
+        activity.participants.has(
+          person.id
+        )
+      )
+    );
+
+
+  /* ---------------------------------------------------------
+     RASSEMBLEMENT
+     --------------------------------------------------------- */
+
+  const activities = [
+    ...regularActivities,
+    ...otherActivities
+  ].sort(sortActivities);
+
+
+  /* ---------------------------------------------------------
+     MATIN / APRÈS-MIDI
+     --------------------------------------------------------- */
+
+  const groups = {
+    Matin:
+      activities.filter(
+        (activity) =>
+          periodOf(activity) ===
+          'Matin'
+      ),
+
+    'Après-midi':
+      activities.filter(
+        (activity) =>
+          periodOf(activity) ===
+          'Après-midi'
+      )
+  };
+
+
+  const showEmpty =
+    $('showEmpty').checked;
+
+  const sections = [];
+
+
+  /* ---------------------------------------------------------
+     CONSTRUCTION DES DEMI-JOURNÉES
+     --------------------------------------------------------- */
+
+  for (
+    const label of [
+      'Matin',
+      'Après-midi'
+    ]
+  ) {
+
+    const list =
+      groups[label];
+
+
+    /*
+     * Si aucune activité et
+     * que les créneaux vides
+     * sont masqués.
+     */
+
+    if (
+      !list.length &&
+      !showEmpty
+    ) {
+
+      if (
+        label === 'Matin'
+      ) {
+        sections.push(
+          '<div class="meal-gap" aria-hidden="true"></div>'
+        );
+      }
+
+      continue;
+    }
+
+
+    /*
+     * Contenu de la demi-journée.
+     */
+
+    const inner =
+      list.length
+        ? (
+            await Promise.all(
+              list.map(
+                activityCard
+              )
+            )
+          ).join('')
+
+        : `
+          <div class="empty-slot">
+            ${
+              present
+                ? 'Aucune activité renseignée'
+                : 'Absent'
+            }
+          </div>
+        `;
+
+
+    sections.push(`
+      <section
+        class="period period-${label.toLowerCase()}"
+      >
+
+        <div class="period-title">
+          ${label}
+        </div>
+
+        ${inner}
+
+      </section>
+    `);
+
+
+    if (
+      label === 'Matin'
+    ) {
+      sections.push(
+        '<div class="meal-gap" aria-hidden="true"></div>'
+      );
+    }
+  }
+
+
+  /* ---------------------------------------------------------
+     COULEUR DE LA JOURNÉE
+     --------------------------------------------------------- */
+
+  const dayColor =
+    DAY_COLORS[day];
+
+  const dayBackground =
+    hexToRgba(
+      dayColor,
+      opacityFor(day)
+    );
+
+  const absenceClass =
+    present
+      ? ''
+      : ' day-absent';
+
+
+  /* ---------------------------------------------------------
+     HTML DU JOUR
+     --------------------------------------------------------- */
+
+  return `
+    <article
+      class="day${absenceClass}"
+      style="
+        --day-color: ${dayColor};
+        --day-background: ${dayBackground};
+      "
+    >
+
+      <div class="day-head">
+
+        <h3>
+          ${day}
+        </h3>
+
+        <span>
+          ${
+            present
+              ? `${activities.length} activité${
+                  activities.length > 1
+                    ? 's'
+                    : ''
+                }`
+              : 'ABSENT·E'
+          }
+        </span>
+
+      </div>
+
+      <div class="day-content">
+
+        ${sections.join('')}
+
+      </div>
+
+    </article>
+  `;
+}
+
+
+/* =========================================================
+   ALIGNEMENT DU BANDEAU REPAS
+   ========================================================= */
+
+function alignMealBanner() {
+  const grid =
+    $('weekGrid');
+
+  const morningSections = [
+    ...grid.querySelectorAll(
+      '.period-matin'
+    )
+  ];
+
+  const banner =
+    grid.querySelector(
+      '.meal-banner'
+    );
+
+
+  if (
+    !morningSections.length ||
+    !banner
+  ) {
+    return;
+  }
+
+
+  morningSections.forEach(
+    (section) => {
+      section.style.minHeight =
+        '';
+    }
+  );
+
+
+  const maxMorningHeight =
+    Math.max(
+      ...morningSections.map(
+        (section) =>
+          section
+            .getBoundingClientRect()
+            .height
+      )
+    );
+
+
+  morningSections.forEach(
+    (section) => {
+      section.style.minHeight =
+        `${maxMorningHeight}px`;
+    }
+  );
+
+
+  const firstGap =
+    grid.querySelector(
+      '.meal-gap'
+    );
+
+
+  if (!firstGap) {
+    return;
+  }
+
+
+  const gridRect =
+    grid.getBoundingClientRect();
+
+  const gapRect =
+    firstGap.getBoundingClientRect();
+
+
+  banner.style.top =
+    `${
+      gapRect.top -
+      gridRect.top
+    }px`;
+}
+
+
+
+/* =========================================================
+   IMPRESSION A4 DÉDIÉE
+   ========================================================= */
+
+const PRINT_DENSITIES = [
+  '',
+  'density-1',
+  'density-2',
+  'density-3',
+  'density-4'
+];
+
+function printPeriodMarkup(
+  period,
+  label
+) {
+  if (period) {
+    return period.innerHTML;
+  }
+
+  return `
+    <div class="period-title">
+      ${esc(label)}
+    </div>
+  `;
+}
+
+function buildPrintSheet() {
+  const printSheet = $('printSheet');
+  const weekGrid = $('weekGrid');
+
+  if (
+    !printSheet ||
+    !weekGrid
+  ) {
+    return;
+  }
+
+  const dayArticles = [
+    ...weekGrid.querySelectorAll(':scope > .day')
+  ];
+
+  if (!dayArticles.length) {
+    printSheet.innerHTML = '';
+    return;
+  }
+
+  const portraitHtml =
+    $('portrait')?.innerHTML ||
+    '<span>?</span>';
+
+  const personName =
+    $('personName')?.textContent ||
+    '—';
+
+  const presence =
+    $('presenceText')?.textContent ||
+    '';
+
+  const printDate =
+    $('printDate')?.textContent ||
+    '';
+
+  const logoSrc =
+    $('siteLogo')?.getAttribute('src') ||
+    'logo.png';
+
+  const headerCells = [];
+  const morningCells = [];
+  const afternoonCells = [];
+
+  for (
+    let index = 0;
+    index < DAYS.length;
+    index += 1
+  ) {
+    const day = DAYS[index];
+    const article = dayArticles[index];
+
+    const dayColor =
+      article?.style.getPropertyValue(
+        '--day-color'
+      ) ||
+      DAY_COLORS[day];
+
+    const dayBackground =
+      article?.style.getPropertyValue(
+        '--day-background'
+      ) ||
+      hexToRgba(
+        DAY_COLORS[day],
+        opacityFor(day)
+      );
+
+    const dayHead =
+      article?.querySelector('.day-head');
+
+    const dayCount =
+      dayHead?.querySelector('span')
+        ?.textContent ||
+      '';
+
+    const periods = article
+      ? [
+          ...article.querySelectorAll(
+            '.period'
+          )
+        ]
+      : [];
+
+    const morning =
+      periods.find(
+        (period) =>
+          period.classList.contains(
+            'period-matin'
+          )
+      ) ||
+      null;
+
+    const afternoon =
+      periods.find(
+        (period) =>
+          !period.classList.contains(
+            'period-matin'
+          )
+      ) ||
+      null;
+
+    const absentClass =
+      article?.classList.contains(
+        'day-absent'
+      )
+        ? ' is-absent'
+        : '';
+
+    const cssVars =
+      `--day-color:${dayColor};` +
+      `--day-background:${dayBackground};`;
+
+    headerCells.push(`
+      <div
+        class="print-day-head"
+        style="${cssVars}"
+      >
+        <h3>${esc(day)}</h3>
+        <span>${esc(dayCount)}</span>
+      </div>
+    `);
+
+    morningCells.push(`
+      <section
+        class="print-period print-morning${absentClass}"
+        style="${cssVars}"
+      >
+        ${printPeriodMarkup(
+          morning,
+          'Matin'
+        )}
+      </section>
+    `);
+
+    afternoonCells.push(`
+      <section
+        class="print-period print-afternoon${absentClass}"
+        style="${cssVars}"
+      >
+        ${printPeriodMarkup(
+          afternoon,
+          'Après-midi'
+        )}
+      </section>
+    `);
+  }
+
+  printSheet.className =
+    'print-sheet';
+
+  printSheet.innerHTML = `
+    <header class="print-page-head">
+      <div class="print-page-identity">
+        <div class="print-page-portrait">
+          ${portraitHtml}
+        </div>
+
+        <div class="print-page-titles">
+          <p class="print-page-kicker">
+            SAJ Anagallis - Planning 2026-27
+          </p>
+          <h1 class="print-page-name">
+            ${esc(personName)}
+          </h1>
+          <div class="print-page-subline">
+            ${esc(presence)}
+            ${
+              printDate
+                ? ` - ${esc(printDate)}`
+                : ''
+            }
+          </div>
+        </div>
+      </div>
+
+      <img
+        class="print-page-logo"
+        src="${esc(logoSrc)}"
+        alt="Logo du service"
+      >
+    </header>
+
+    <div class="print-week-banner">
+      ${DAYS.map(
+        (day) =>
+          `<span>${esc(day)}</span>`
+      ).join('')}
+    </div>
+
+    <div class="print-planning-grid">
+      ${headerCells.join('')}
+      ${morningCells.join('')}
+
+      <div class="print-meal-row">
+        12 h - Repas
+      </div>
+
+      ${afternoonCells.join('')}
+    </div>
+
+    <footer class="print-page-foot">
+      Odynéo - Les Tourrais de Craponne - Service d'accueil de Jour Anagallis.
+    </footer>
+  `;
+}
+
+function clearPrintDensity() {
+  const printSheet = $('printSheet');
+
+  if (!printSheet) {
+    return;
+  }
+
+  printSheet.classList.remove(
+    ...PRINT_DENSITIES.filter(Boolean)
+  );
+}
+
+function printLayoutFits() {
+  const printSheet = $('printSheet');
+
+  if (!printSheet) {
+    return true;
+  }
+
+  const sheetRect =
+    printSheet.getBoundingClientRect();
+
+  const cells = [
+    ...printSheet.querySelectorAll(
+      '.print-period'
+    )
+  ];
+
+  const periodOverflow =
+    cells.some(
+      (cell) => {
+        const cellRect =
+          cell.getBoundingClientRect();
+
+        const lastChild =
+          cell.lastElementChild;
+
+        const lastRect =
+          lastChild
+            ? lastChild.getBoundingClientRect()
+            : null;
+
+        const contentOutsideCell =
+          lastRect &&
+          (
+            lastRect.bottom >
+              cellRect.bottom + 1 ||
+            lastRect.right >
+              cellRect.right + 1
+          );
+
+        const cellOutsidePage =
+          cellRect.bottom >
+            sheetRect.bottom + 1 ||
+          cellRect.right >
+            sheetRect.right + 1;
+
+        return (
+          contentOutsideCell ||
+          cellOutsidePage
+        );
+      }
+    );
+
+  const footer =
+    printSheet.querySelector(
+      '.print-page-foot'
+    );
+
+  const footerOutsidePage =
+    footer
+      ? footer.getBoundingClientRect().bottom >
+          sheetRect.bottom + 1
+      : false;
+
+  return (
+    !periodOverflow &&
+    !footerOutsidePage
+  );
+}
+
+function choosePrintDensity() {
+  const printSheet = $('printSheet');
+
+  if (!printSheet) {
+    return;
+  }
+
+  document.body.classList.add(
+    'print-measure'
+  );
+
+  clearPrintDensity();
+
+  for (
+    let index = 0;
+    index < PRINT_DENSITIES.length;
+    index += 1
+  ) {
+    clearPrintDensity();
+
+    const density =
+      PRINT_DENSITIES[index];
+
+    if (density) {
+      printSheet.classList.add(
+        density
+      );
+    }
+
+    /* Force le navigateur à recalculer les dimensions. */
+    void printSheet.offsetHeight;
+
+    if (printLayoutFits()) {
+      break;
+    }
+  }
+
+  document.body.classList.remove(
+    'print-measure'
+  );
+}
+
+function waitForPrintImages(
+  timeout = 1800
+) {
+  const printSheet = $('printSheet');
+
+  if (!printSheet) {
+    return Promise.resolve();
+  }
+
+  const images = [
+    ...printSheet.querySelectorAll('img')
+  ];
+
+  const pending = images
+    .filter(
+      (image) => !image.complete
+    )
+    .map(
+      (image) =>
+        new Promise(
+          (resolve) => {
+            const done = () => {
+              image.removeEventListener(
+                'load',
+                done
+              );
+              image.removeEventListener(
+                'error',
+                done
+              );
+              resolve();
+            };
+
+            image.addEventListener(
+              'load',
+              done,
+              { once: true }
+            );
+
+            image.addEventListener(
+              'error',
+              done,
+              { once: true }
+            );
+          }
+        )
+    );
+
+  if (!pending.length) {
+    return Promise.resolve();
+  }
+
+  return Promise.race([
+    Promise.all(pending),
+    new Promise(
+      (resolve) =>
+        setTimeout(
+          resolve,
+          timeout
+        )
+    )
+  ]);
+}
+
+async function preparePrintLayout() {
+  updatePrintDate();
+  buildPrintSheet();
+  await waitForPrintImages();
+  choosePrintDensity();
+}
+
+/* =========================================================
+   CARTE ACTIVITÉ
+   ========================================================= */
+
+async function activityCard(
+  activity
+) {
+  const logo =
+    await attachmentUrl(
+      activity.visual
+    );
+
+
+  const time =
+    activity.schedule ||
+    [
+      activity.start,
+      activity.end
+    ]
+      .filter(Boolean)
+      .join(' – ');
+
+
+  const cardColor =
+    colorFor(
+      activity.name
+    );
+
+
+  const regularMeta =
+    activity.kind === 'regular' &&
+    activity.animators.length
+      ? `
+        <div>
+          <strong>Avec :</strong>
+          ${esc(
+            activity.animators.join(
+              ', '
+            )
+          )}
+        </div>
+      `
+      : '';
+
+
+  const otherMeta =
+    activity.kind === 'other'
+      ? `
+        ${
+          activity.partner &&
+          activity.partner.trim()
+            ? `
+              <div>
+                <strong>Avec :</strong>
+                ${esc(
+                  activity.partner
+                )}
+              </div>
+            `
+            : ''
+        }
+
+        ${
+          activity.place &&
+          activity.place.trim()
+            ? `
+              <div>
+                <strong>Lieu :</strong>
+                ${esc(
+                  activity.place
+                )}
+              </div>
+            `
+            : ''
+        }
+      `
+      : '';
+
+
+  return `
+    <article
+      class="
+        activity-card
+        ${
+          activity.kind === 'other'
+            ? ' activity-card-other'
+            : ''
+        }
+      "
+      style="
+        --card-color: ${cardColor}
+      "
+    >
+
+      ${
+        logo
+          ? `
+            <img
+              class="activity-logo"
+              src="${logo}"
+              alt=""
+            >
+          `
+          : ''
+      }
+
+      <h4 class="activity-title">
+        ${esc(
+          activity.name
+        )}
+      </h4>
+
+      ${
+        time
+          ? `
+            <div class="activity-time">
+              ${esc(time)}
+            </div>
+          `
+          : ''
+      }
+
+      <div class="activity-meta">
+
+        ${regularMeta}
+
+        ${otherMeta}
+
+      </div>
+
+      ${
+        activity.description
+          ? `
+            <p class="activity-desc">
+              ${esc(
+                activity.description.slice(
+                  0,
+                  100
+                )
+              )}
+            </p>
+          `
+          : ''
+      }
+
+    </article>
+  `;
+}
+
+
+/* =========================================================
+   ERREURS
+   ========================================================= */
+
+function showError(error) {
+  console.error(error);
+
+  showStatus(
+    'Une erreur empêche l’affichage du planning.',
+    true
+  );
+
+
+  $('errorText').textContent =
+    `${error?.message || error}\n\n` +
+    'Vérifiez que les tables portent exactement ces noms :\n' +
+    Object.values(TABLES)
+      .join('\n');
+
+
+  $('errorDialog').showModal();
+}
+
+
+/* =========================================================
+   ÉVÉNEMENTS
+   ========================================================= */
+
+$('personSelect')
+  .addEventListener(
+    'change',
+    (event) => {
+
+      state.selectedId =
+        Number(
+          event.target.value
+        );
+
+      render()
+        .catch(showError);
+    }
+  );
+
+
+$('showEmpty')
+  .addEventListener(
+    'change',
+    () => {
+      render()
+        .catch(showError);
+    }
+  );
+
+
+$('formatSelect')
+  .addEventListener(
+    'change',
+    (event) => {
+
+      document.body.classList.toggle(
+        'print-a3',
+        event.target.value === 'a3'
+      );
+    }
+  );
+
+
+for (const day of DAYS) {
+  $(`opacity${day}`)
+    .addEventListener(
+      'input',
+      () => {
+        render()
+          .catch(showError);
+      }
+    );
+}
+
+
+$('printBtn')
+  .addEventListener(
+    'click',
+    async () => {
+      await preparePrintLayout();
+      window.print();
+    }
+  );
+
+
+$('reloadBtn')
+  .addEventListener(
+    'click',
+    () => {
+      fetchAll()
+        .catch(showError);
+    }
+  );
+
+
+window.addEventListener(
+  'beforeprint',
+  () => {
+    updatePrintDate();
+    buildPrintSheet();
+    choosePrintDensity();
+  }
+);
+
+
+/* =========================================================
+   INITIALISATION GRIST
+   ========================================================= */
+
+grist.ready({
+  requiredAccess: 'full'
+});
+
+
+grist.onOptions(
+  (_options, interaction) => {
+
+    if (
+      interaction?.access_level &&
+      interaction.access_level !==
+        'full'
+    ) {
+
+      showStatus(
+        'Autorisez « Accès complet au document » pour lire les tables liées.',
+        true
+      );
+    }
+  }
+);
+
+
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+
+fetchAll()
+  .catch(showError);
