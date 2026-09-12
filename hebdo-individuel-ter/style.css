@@ -523,83 +523,148 @@ dialog button {
   }
 }
 
-/* ==================== IMPRESSION A4 - MISE EN PAGE DÉDIÉE ==================== */
+/* ==================== IMPRESSION ADAPTATIVE A4 / A3 ==================== */
 
 /*
- * L'impression n'utilise plus la grille écran.
- * Une page dédiée est reconstruite par script.js à partir du planning affiché.
- * Cela évite les coupures de jeudi/vendredi et supprime le positionnement absolu
- * du bandeau repas lors de l'impression.
+ * L'écran reste inchangé.
+ * Pour l'impression, script.js reconstruit une page dédiée puis mesure
+ * le planning sélectionné. La taille des tuiles, pictogrammes et polices
+ * est ensuite calculée spécifiquement pour cette personne.
+ *
+ * Règle absolue : une seule page dans le format sélectionné.
  */
 .print-sheet {
   display: none;
+
+  /* Dimensions de page utiles (A4 paysage par défaut : 297x210 - marges). */
+  --print-page-width: 285mm;
+  --print-page-height: 194mm;
+
+  /* Répartition verticale des demi-journées, ajustée par JavaScript. */
+  --print-morning-track: 1fr;
+  --print-afternoon-track: 1fr;
+
+  /* En-tête et structure fixes pour tous les usagers ; les variables de tuiles sont ajustées par JavaScript. */
+  --ph-height: 19mm;
+  --ph-gap: 5mm;
+  --ph-pad-bottom: 1mm;
+  --portrait-size: 17mm;
+  --portrait-border: .5mm;
+  --portrait-radius: 1.6mm;
+  --portrait-font: 14.5pt;
+  --identity-gap: 3.5mm;
+  --kicker-font: 6.5pt;
+  --kicker-margin: .75mm;
+  --name-font: 16pt;
+  --subline-font: 5.8pt;
+  --subline-margin: .7mm;
+  --logo-width: 27mm;
+  --logo-height: 12mm;
+  --week-height: 6mm;
+  --week-font: 6.6pt;
+  --week-radius: 1.2mm;
+  --grid-day-height: 8.5mm;
+  --grid-meal-height: 6.5mm;
+  --grid-column-gap: 1mm;
+  --grid-top-pad: .9mm;
+  --day-head-pad-x: 1.1mm;
+  --day-title-font: 10pt;
+  --day-count-font: 4.7pt;
+
+  --period-pad: 1.15mm;
+  --period-title-margin: .95mm;
+  --period-title-font: 5.8pt;
+  --card-gap: .95mm;
+  --card-pad-y: 1.05mm;
+  --card-pad-left: 1.15mm;
+  --card-pad-right: 11mm;
+  --card-border: .45mm;
+  --card-radius: 1.1mm;
+  --activity-title-font: 7pt;
+  --activity-title-margin: .55mm;
+  --activity-time-font: 5.6pt;
+  --activity-time-pad-y: .3mm;
+  --activity-time-pad-x: .8mm;
+  --activity-meta-font: 5.15pt;
+  --activity-meta-margin: .65mm;
+  --activity-meta-line: 1.12;
+  --activity-desc-font: 4.7pt;
+  --activity-desc-margin: .6mm;
+  --activity-desc-line: 1.08;
+  --activity-logo-size: 9.5mm;
+  --activity-logo-offset: .8mm;
+  --empty-min-height: 8mm;
+  --empty-pad: 1mm;
+  --empty-font: 5.2pt;
+  --meal-font: 8pt;
+  --meal-margin: .35mm;
+  --foot-height: 3.8mm;
+  --foot-font: 4.3pt;
+  --foot-pad-top: .55mm;
 }
 
+/* Valeur de secours. script.js insère une règle @page dynamique juste avant l'impression. */
 @page {
   size: A4 landscape;
   margin: 8mm 6mm;
 }
 
-/* Mode invisible utilisé uniquement pour mesurer la future page A4 avant impression. */
+/* Mesure invisible avant ouverture de la boîte d'impression. */
 body.print-measure .print-sheet {
   position: fixed !important;
-  left: -400mm !important;
+  left: -500mm !important;
   top: 0 !important;
   z-index: -1 !important;
   display: flex !important;
   visibility: hidden !important;
   pointer-events: none !important;
-}
-
-/* Base commune au mode mesure et à l'impression réelle. */
-body.print-measure .print-sheet {
-  width: 285mm;
-  height: 194mm;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  flex-direction: column;
-  background: #fff;
-  color: var(--ink);
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
-  font-variant-caps: small-caps;
+  width: var(--print-page-width) !important;
+  height: var(--print-page-height) !important;
+  min-height: var(--print-page-height) !important;
+  max-height: var(--print-page-height) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  flex-direction: column !important;
+  background: #fff !important;
+  color: var(--ink) !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  font-variant-caps: small-caps !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
-/*
- * Les règles ci-dessous sont déclarées hors @media print également afin que
- * le JavaScript puisse mesurer exactement la page à l'avance.
- */
+/* ---------- En-tête ---------- */
 .print-page-head {
-  flex: 0 0 17mm;
-  min-height: 17mm;
+  flex: 0 0 var(--ph-height);
+  min-height: var(--ph-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 5mm;
-  padding: 0 1mm 1.5mm;
+  gap: var(--ph-gap);
+  padding: 0 1mm var(--ph-pad-bottom);
+  overflow: hidden;
 }
 
 .print-page-identity {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 3mm;
+  gap: var(--identity-gap);
 }
 
 .print-page-portrait {
-  flex: 0 0 15mm;
-  width: 15mm;
-  height: 15mm;
+  flex: 0 0 var(--portrait-size);
+  width: var(--portrait-size);
+  height: var(--portrait-size);
   display: grid;
   place-items: center;
   overflow: hidden;
-  border: .45mm solid #cfe2e5;
-  border-radius: 1.4mm;
+  border: var(--portrait-border) solid #cfe2e5;
+  border-radius: var(--portrait-radius);
   background: var(--soft);
   color: var(--accent);
-  font-size: 13pt;
+  font-size: var(--portrait-font);
   font-weight: 800;
 }
 
@@ -612,80 +677,60 @@ body.print-measure .print-sheet {
 
 .print-page-titles {
   min-width: 0;
+  overflow: hidden;
 }
 
 .print-page-kicker {
-  margin: 0 0 .8mm;
+  margin: 0 0 var(--kicker-margin);
   color: var(--accent);
-  font-size: 6.4pt;
+  font-size: var(--kicker-font);
   line-height: 1;
   font-weight: 800;
   letter-spacing: .12em;
+  white-space: nowrap;
 }
 
 .print-page-name {
   margin: 0;
   color: var(--ink);
-  font-size: 15pt;
+  font-size: var(--name-font);
   line-height: 1.02;
   font-weight: 800;
+  white-space: normal;
 }
 
 .print-page-subline {
-  margin-top: .8mm;
+  margin-top: var(--subline-margin);
   color: var(--muted);
-  font-size: 5.8pt;
-  line-height: 1.1;
+  font-size: var(--subline-font);
+  line-height: 1.08;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .print-page-logo {
-  flex: 0 0 25mm;
-  width: 25mm;
-  max-height: 12mm;
+  flex: 0 0 var(--logo-width);
+  width: var(--logo-width);
+  max-height: var(--logo-height);
   object-fit: contain;
   object-position: right center;
 }
 
-.print-week-banner {
-  flex: 0 0 5.8mm;
-  height: 5.8mm;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  overflow: hidden;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 1.2mm 1.2mm 0 0;
-}
-
-.print-week-banner span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  border-right: .25mm solid rgba(255,255,255,.48);
-  font-size: 6.4pt;
-  line-height: 1;
-  font-weight: 800;
-}
-
-.print-week-banner span:last-child {
-  border-right: 0;
-}
-
+/* ---------- Grille ---------- */
 .print-planning-grid {
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows:
-    7mm
-    minmax(min-content, 1fr)
-    5.2mm
-    minmax(min-content, 1fr);
-  column-gap: 1.4mm;
+    var(--grid-day-height)
+    var(--print-morning-track)
+    var(--grid-meal-height)
+    var(--print-afternoon-track);
+  column-gap: var(--grid-column-gap);
   row-gap: 0;
-  padding-top: 1.2mm;
+  padding-top: var(--grid-top-pad);
   overflow: hidden;
 }
 
@@ -695,7 +740,7 @@ body.print-measure .print-sheet {
   align-items: center;
   justify-content: space-between;
   gap: 1mm;
-  padding: 0 1.4mm;
+  padding: 0 var(--day-head-pad-x);
   overflow: hidden;
   background: var(--day-color, var(--accent));
   color: #fff;
@@ -710,24 +755,25 @@ body.print-measure .print-sheet {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 7.8pt;
+  font-size: var(--day-title-font);
   line-height: 1;
 }
 
 .print-day-head span {
   flex: 0 0 auto;
-  font-size: 4.8pt;
+  font-size: var(--day-count-font);
   line-height: 1;
   opacity: .94;
   white-space: nowrap;
 }
 
+/* ---------- Demi-journées ---------- */
 .print-period {
   position: relative;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  padding: 1.15mm;
+  padding: var(--period-pad);
   background: var(--day-background, #fbfcfd);
   border-left: .25mm solid rgba(0,0,0,.08);
   border-right: .25mm solid rgba(0,0,0,.08);
@@ -750,23 +796,28 @@ body.print-measure .print-sheet {
 }
 
 .print-period .period-title {
-  margin: 0 0 .95mm;
+  margin: 0 0 var(--period-title-margin);
   color: var(--ink);
-  font-size: 5.8pt;
+  font-size: var(--period-title-font);
   line-height: 1;
   font-weight: 800;
   letter-spacing: .06em;
 }
 
+/* ---------- Tuiles ---------- */
 .print-period .activity-card {
   position: relative;
   min-width: 0;
   overflow: hidden;
-  margin: 0 0 .95mm;
-  padding: 1.05mm 11mm 1.05mm 1.15mm;
-  background: rgba(255,255,255,.96);
-  border: .45mm solid var(--card-color, var(--accent));
-  border-radius: 1.1mm;
+  margin: 0 0 var(--card-gap);
+  padding:
+    var(--card-pad-y)
+    var(--card-pad-right)
+    var(--card-pad-y)
+    var(--card-pad-left);
+  background: rgba(255,255,255,.97);
+  border: var(--card-border) solid var(--card-color, var(--accent));
+  border-radius: var(--card-radius);
   box-shadow: none;
   break-inside: avoid;
   page-break-inside: avoid;
@@ -777,25 +828,24 @@ body.print-measure .print-sheet {
 }
 
 .print-period .activity-title {
-  margin: 0 0 .55mm;
+  margin: 0 0 var(--activity-title-margin);
   padding: 0;
   overflow-wrap: anywhere;
   color: var(--ink);
-  font-size: 7pt;
-  line-height: 1.04;
+  font-size: var(--activity-title-font);
+  line-height: 1.05;
   font-weight: 800;
 }
 
 .print-period .activity-time {
   display: inline-flex;
   align-items: center;
-  max-width: calc(100% - 1mm);
-  padding: .3mm .8mm;
-  overflow: hidden;
+  max-width: 100%;
+  padding: var(--activity-time-pad-y) var(--activity-time-pad-x);
   color: var(--accent);
   background: var(--soft);
   border-radius: .8mm;
-  font-size: 5.6pt;
+  font-size: var(--activity-time-font);
   line-height: 1;
   font-weight: 800;
   white-space: nowrap;
@@ -803,11 +853,11 @@ body.print-measure .print-sheet {
 
 .print-period .activity-meta {
   width: auto;
-  margin-top: .65mm;
+  margin-top: var(--activity-meta-margin);
   overflow-wrap: anywhere;
   color: #4e626e;
-  font-size: 5.15pt;
-  line-height: 1.12;
+  font-size: var(--activity-meta-font);
+  line-height: var(--activity-meta-line);
 }
 
 .print-period .activity-meta strong {
@@ -815,273 +865,68 @@ body.print-measure .print-sheet {
 }
 
 .print-period .activity-desc {
-  margin: .6mm 0 0;
+  margin: var(--activity-desc-margin) 0 0;
   overflow-wrap: anywhere;
   color: var(--muted);
-  font-size: 4.7pt;
-  line-height: 1.08;
+  font-size: var(--activity-desc-font);
+  line-height: var(--activity-desc-line);
 }
 
 .print-period .activity-logo {
   position: absolute;
-  top: .8mm;
-  right: .8mm;
-  width: 9.5mm;
-  height: 9.5mm;
+  top: var(--activity-logo-offset);
+  right: var(--activity-logo-offset);
+  width: var(--activity-logo-size);
+  height: var(--activity-logo-size);
   object-fit: contain;
   border-radius: .8mm;
   background: transparent;
 }
 
 .print-period .empty-slot {
-  min-height: 8mm;
+  min-height: var(--empty-min-height);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1mm;
+  padding: var(--empty-pad);
   border: .25mm dashed #cad6dc;
   border-radius: 1mm;
   color: #80909a;
   background: rgba(255,255,255,.46);
-  font-size: 5.2pt;
+  font-size: var(--empty-font);
   line-height: 1.1;
   text-align: center;
 }
 
+/* ---------- Repas / pied ---------- */
 .print-meal-row {
   grid-column: 1 / -1;
   min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: .55mm 0;
+  margin: var(--meal-margin) 0;
   background: var(--accent);
   color: #fff;
   border-radius: 1mm;
-  font-size: 6.2pt;
+  font-size: var(--meal-font);
   line-height: 1;
   font-weight: 800;
   letter-spacing: .02em;
 }
 
 .print-page-foot {
-  flex: 0 0 4.2mm;
-  min-height: 4.2mm;
+  flex: 0 0 var(--foot-height);
+  min-height: var(--foot-height);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-top: .8mm;
+  padding-top: var(--foot-pad-top);
   color: #7d8b93;
   border-top: .2mm solid var(--line);
-  font-size: 4.5pt;
+  font-size: var(--foot-font);
   line-height: 1;
   text-align: center;
-}
-
-/* Densités de secours : utilisées seulement si un planning est trop chargé. */
-.print-sheet.density-1 .print-period {
-  padding: .95mm;
-}
-.print-sheet.density-1 .print-period .activity-card {
-  margin-bottom: .75mm;
-  padding: .9mm 10mm .9mm 1mm;
-}
-.print-sheet.density-1 .print-period .activity-title {
-  font-size: 6.6pt;
-}
-.print-sheet.density-1 .print-period .activity-time {
-  font-size: 5.3pt;
-}
-.print-sheet.density-1 .print-period .activity-meta {
-  margin-top: .5mm;
-  font-size: 4.9pt;
-}
-.print-sheet.density-1 .print-period .activity-desc {
-  margin-top: .45mm;
-  font-size: 4.45pt;
-}
-.print-sheet.density-1 .print-period .activity-logo {
-  width: 8.8mm;
-  height: 8.8mm;
-}
-
-.print-sheet.density-2 .print-page-head {
-  flex-basis: 16mm;
-  min-height: 16mm;
-}
-.print-sheet.density-2 .print-page-portrait {
-  flex-basis: 14mm;
-  width: 14mm;
-  height: 14mm;
-}
-.print-sheet.density-2 .print-page-name {
-  font-size: 14pt;
-}
-.print-sheet.density-2 .print-planning-grid {
-  grid-template-rows: 6.5mm minmax(min-content, 1fr) 4.9mm minmax(min-content, 1fr);
-  column-gap: 1.15mm;
-}
-.print-sheet.density-2 .print-period {
-  padding: .82mm;
-}
-.print-sheet.density-2 .print-period .period-title {
-  margin-bottom: .7mm;
-  font-size: 5.45pt;
-}
-.print-sheet.density-2 .print-period .activity-card {
-  margin-bottom: .6mm;
-  padding: .75mm 9.2mm .75mm .85mm;
-}
-.print-sheet.density-2 .print-period .activity-title {
-  font-size: 6.25pt;
-}
-.print-sheet.density-2 .print-period .activity-time {
-  font-size: 5.05pt;
-}
-.print-sheet.density-2 .print-period .activity-meta {
-  margin-top: .42mm;
-  font-size: 4.65pt;
-  line-height: 1.08;
-}
-.print-sheet.density-2 .print-period .activity-desc {
-  margin-top: .38mm;
-  font-size: 4.25pt;
-}
-.print-sheet.density-2 .print-period .activity-logo {
-  width: 8mm;
-  height: 8mm;
-}
-.print-sheet.density-2 .print-period .empty-slot {
-  min-height: 6.5mm;
-}
-
-.print-sheet.density-3 .print-page-head {
-  flex-basis: 15mm;
-  min-height: 15mm;
-}
-.print-sheet.density-3 .print-page-portrait {
-  flex-basis: 13mm;
-  width: 13mm;
-  height: 13mm;
-}
-.print-sheet.density-3 .print-page-name {
-  font-size: 13pt;
-}
-.print-sheet.density-3 .print-page-kicker,
-.print-sheet.density-3 .print-page-subline {
-  font-size: 5.4pt;
-}
-.print-sheet.density-3 .print-planning-grid {
-  grid-template-rows: 6.2mm minmax(min-content, 1fr) 4.6mm minmax(min-content, 1fr);
-  column-gap: 1mm;
-}
-.print-sheet.density-3 .print-day-head {
-  padding: 0 1mm;
-}
-.print-sheet.density-3 .print-day-head h3 {
-  font-size: 7.1pt;
-}
-.print-sheet.density-3 .print-day-head span {
-  font-size: 4.4pt;
-}
-.print-sheet.density-3 .print-period {
-  padding: .7mm;
-}
-.print-sheet.density-3 .print-period .period-title {
-  margin-bottom: .55mm;
-  font-size: 5.1pt;
-}
-.print-sheet.density-3 .print-period .activity-card {
-  margin-bottom: .48mm;
-  padding: .65mm 8.4mm .65mm .75mm;
-}
-.print-sheet.density-3 .print-period .activity-title {
-  font-size: 5.95pt;
-}
-.print-sheet.density-3 .print-period .activity-time {
-  font-size: 4.8pt;
-  padding: .25mm .6mm;
-}
-.print-sheet.density-3 .print-period .activity-meta {
-  margin-top: .35mm;
-  font-size: 4.45pt;
-}
-.print-sheet.density-3 .print-period .activity-desc {
-  margin-top: .3mm;
-  font-size: 4.05pt;
-}
-.print-sheet.density-3 .print-period .activity-logo {
-  width: 7.2mm;
-  height: 7.2mm;
-}
-
-.print-sheet.density-4 .print-page-head {
-  flex-basis: 14mm;
-  min-height: 14mm;
-}
-.print-sheet.density-4 .print-page-portrait {
-  flex-basis: 12mm;
-  width: 12mm;
-  height: 12mm;
-}
-.print-sheet.density-4 .print-page-name {
-  font-size: 12.4pt;
-}
-.print-sheet.density-4 .print-page-logo {
-  width: 22mm;
-  max-height: 10mm;
-}
-.print-sheet.density-4 .print-week-banner {
-  flex-basis: 5.2mm;
-  height: 5.2mm;
-}
-.print-sheet.density-4 .print-planning-grid {
-  grid-template-rows: 5.8mm minmax(min-content, 1fr) 4.3mm minmax(min-content, 1fr);
-  column-gap: .85mm;
-  padding-top: .8mm;
-}
-.print-sheet.density-4 .print-day-head h3 {
-  font-size: 6.8pt;
-}
-.print-sheet.density-4 .print-day-head span {
-  font-size: 4.2pt;
-}
-.print-sheet.density-4 .print-period {
-  padding: .58mm;
-}
-.print-sheet.density-4 .print-period .period-title {
-  margin-bottom: .45mm;
-  font-size: 4.9pt;
-}
-.print-sheet.density-4 .print-period .activity-card {
-  margin-bottom: .38mm;
-  padding: .55mm 7.6mm .55mm .65mm;
-  border-width: .35mm;
-}
-.print-sheet.density-4 .print-period .activity-title {
-  font-size: 5.7pt;
-}
-.print-sheet.density-4 .print-period .activity-time {
-  font-size: 4.6pt;
-}
-.print-sheet.density-4 .print-period .activity-meta {
-  margin-top: .28mm;
-  font-size: 4.25pt;
-  line-height: 1.04;
-}
-.print-sheet.density-4 .print-period .activity-desc {
-  margin-top: .25mm;
-  font-size: 3.9pt;
-  line-height: 1.03;
-}
-.print-sheet.density-4 .print-period .activity-logo {
-  width: 6.6mm;
-  height: 6.6mm;
-}
-.print-sheet.density-4 .print-page-foot {
-  flex-basis: 3.6mm;
-  min-height: 3.6mm;
-  font-size: 4.2pt;
 }
 
 @media print {
@@ -1112,10 +957,10 @@ body.print-measure .print-sheet {
   .print-sheet {
     display: flex !important;
     flex-direction: column !important;
-    width: 285mm !important;
-    height: 194mm !important;
-    min-height: 194mm !important;
-    max-height: 194mm !important;
+    width: var(--print-page-width) !important;
+    height: var(--print-page-height) !important;
+    min-height: var(--print-page-height) !important;
+    max-height: var(--print-page-height) !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: hidden !important;
